@@ -7,6 +7,7 @@
   "author": "",
   "dependencies": {
     "bootstrap": "^4.0.0",
-    "mithril": "^1.1.6"
+    "mithril": "^1.1.6",
+    "popper.js": "^1.14.0"
   }
 }
