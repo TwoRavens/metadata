@@ -6,6 +6,10 @@ import * as common from './common/common';
 import Table from './common/views/Table';
 import Header from './common/views/Header';
 
+import data from '../data/fearonLaitin.json'
+
+console.log(data);
+
 class Body {
     view(vnode) {
         let {mode} = vnode.attrs;
