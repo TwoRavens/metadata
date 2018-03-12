@@ -9,6 +9,7 @@ import Header from './common/views/Header';
 class Body {
     view(vnode) {
         let {mode} = vnode.attrs;
+        mode = mode || 'editor';
 
         let modes = {
             'editor': Editor,
@@ -49,6 +50,6 @@ class Data {
 }
 
 m.route(document.body, '/', {
-    '/': m(Body, {mode: 'editor'}),
+    '/': Body,
     '/:mode': Body
 });
