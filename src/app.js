@@ -1,5 +1,7 @@
 import data from '../data/fearonLaitin.json'
 
+export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'time'];
+
 export let variableTable = [];
 export let updateVariableTable = () => {
     for (let variable in data['variables']) {
@@ -27,3 +29,5 @@ export let partitionVariableTable = () => {
 };
 
 export let getVariable = (name) => data['variables'][name];
+
+export let customStatistics = [];
