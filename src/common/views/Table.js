@@ -1,4 +1,4 @@
-import m from 'mithril'
+import m from 'mithril';
 
 import {varColor, selVarColor, mergeAttributes} from "../common";
 
@@ -17,9 +17,11 @@ import {varColor, selVarColor, mergeAttributes} from "../common";
 // ```
 
 export default class Table {
-
     view(vnode) {
-        let {id, headers, data, attrsAll, attrsRows} = vnode.attrs;
+        let {id, data, headers, attrsAll, attrsRows} = vnode.attrs;
+        if (typeof data === 'function') {
+            data = data();
+        }
 
         // Interactive rows and checkboxes
         let {activeRow, onclickRow} = vnode.attrs;
@@ -27,11 +29,11 @@ export default class Table {
 
         let allChecked = false;
         if (checkboxes) allChecked = data.length === checkboxes.size;
-        
+
         let setAllChecked = (checked) => {
             // turn on or off all checks
             data.map((row) => {
-                if (checked !== checkboxes.has(row[0])) onclickCheckbox(row[0], checked)
+                if (checked !== checkboxes.has(row[0])) onclickCheckbox(row[0], checked);
             });
         };
 
@@ -43,24 +45,19 @@ export default class Table {
             })) : undefined
         ]) : undefined;
 
-        return m(`table#${id}`, mergeAttributes({style: {width: '100%'}}, attrsAll),
-            // rows
-            [headerDiv, ...data.map((row) => {
+        return m(`table#${id}`, mergeAttributes({style: {width: '100%'}}, attrsAll), [
+            headerDiv,
+            ...data.map((row) => {
                 return m('tr', mergeAttributes({
-                        style: {'background-color': row[0] === activeRow ? selVarColor : varColor},
-                        onclick: () => onclickRow(row[0])
-                    }, attrsRows),
-
-                    // columns
-                    [
-                        ...row.map((item) => m('td', item)),
-                        checkboxes ? m('td', m('input[type="checkbox"]', {
-                            onclick: m.withAttr("checked", (checked) => onclickCheckbox(row[0], checked)),
-                            checked: checkboxes.has(row[0])
-                        })) : undefined
-                    ]
-                )
-            })]
-        )
-    }
+                    style: {'background-color': row[0] === activeRow ? selVarColor : varColor},
+                    onclick: () => onclickRow(row[0])
+                }, attrsRows), [
+                    ...row.map((item) => m('td', item)),
+                    checkboxes ? m('td', m('input[type="checkbox"]', {
+                        onclick: m.withAttr("checked", (checked) => onclickCheckbox(row[0], checked)),
+                        checked: checkboxes.has(row[0])
+                    })) : undefined
+                ]);
+            })]);
+    };
 }

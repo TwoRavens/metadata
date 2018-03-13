@@ -47,13 +47,20 @@ class Report {
     }
 }
 
+window.addEventListener('scroll', function(e) {
+    if (this.scrollY === this.scrollMaxY && m.route.get('/data')) {
+        test_data.data = test_data.data.concat(test_data.data.slice(0, 100));
+        console.log(test_data.data.length);
+        m.redraw();
+    }
+});
+
 class Data {
     view() {
         return m(Table, {
             headers: test_data.columns,
-            data: test_data.data
+            data: _ => test_data.data
         });
-
     }
 }
 
