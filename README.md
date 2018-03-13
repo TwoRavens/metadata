@@ -24,7 +24,7 @@ The following fields in `preprocess.json` may be edited by users:
   - varnameTypes
   - labl
 
-## Adding fields in preprocess
+## Adding fields to preprocess
 
 Users may add a new field in preprocess. For example, maybe there a dataset-level statistic that we have no included, or a column statistic that the user has created and wants to add to the metadata. User enters:
   - Name of new field
@@ -42,10 +42,10 @@ Users may include graphics as part of their customized information about a datas
   
 We'll store these images and put the path in `preprocess.json`. You'll see the image in the editor/viewer.
 
-## Allow users to toggle the visibility of variables and automatically generated fields.
+## Display options
 
-You may specify the variables, and information about each variable, that you want to make visible to others.
+You may specify the variables, information about each variable, and images that you want to make visible to others.
 
-## Generate reports for the users
+## Generate reports
 
 Users may export a report (in html or pdf) that resembles a codebook. This report that contains all information in `preprocess.json`, including anything the user has added, as well as all graphics that have been submitted to our system.
