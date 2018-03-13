@@ -6,7 +6,8 @@ import * as common from './common/common';
 import Table from './common/views/Table';
 import Header from './common/views/Header';
 
-import data from '../data/fearonLaitin.json'
+import data from '../data/fearonLaitin.json';
+import test_data from '../data/test.json';
 
 console.log(data);
 
@@ -24,7 +25,7 @@ class Body {
         return [
             m(Header),
             m(modes[mode])
-        ]
+        ];
     }
 }
 
@@ -36,8 +37,7 @@ class Editor {
                     ['var1', 'descriptive stuff', 'string'],
                     ['var1', 'descriptive stuff', 'string']
                 ]
-            }
-        )
+        });
     }
 }
 
@@ -49,7 +49,11 @@ class Report {
 
 class Data {
     view() {
-        return m('div', 'data');
+        return m(Table, {
+            headers: test_data.columns,
+            data: test_data.data
+        });
+
     }
 }
 
