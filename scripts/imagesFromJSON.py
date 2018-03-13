@@ -7,7 +7,9 @@ data = json.load(open('../data/fearonLaitin.json'))
 
 pprint(data)	#data loaded
 
-print(data["variables"]["polity2l"])	#sample data access
+print("\n\n\nended\n")
+
+pprint(data["variables"]["ended"])	#sample data access
 
 
 plt.plot([1,2,3,4])
