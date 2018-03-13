@@ -1,4 +1,7 @@
-# metadata
+
+Application to view and edit the metadata produced by the TwoRavens preprocessing service.
+
+# Install
 
 1. git clone
 2. cd metadata
