@@ -8,6 +8,9 @@ import Header from './common/views/Header';
 
 import * as app from './app';
 
+// For data view
+import test_data from '../data/test.json';
+
 class Body {
     view(vnode) {
         let {mode} = vnode.attrs;
@@ -22,7 +25,7 @@ class Body {
         return [
             m(Header),
             m(modes[mode])
-        ]
+        ];
     }
 }
 
@@ -57,7 +60,6 @@ class Editor {
                 attrsAll: {style: {width: '50%'}}
             })
         ]
-
     }
 }
 
@@ -69,7 +71,11 @@ class Report {
 
 class Data {
     view() {
-        return m('div', 'data');
+        return m(Table, {
+            headers: test_data.columns,
+            data: test_data.data
+        });
+
     }
 }
 
