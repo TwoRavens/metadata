@@ -32,9 +32,13 @@ export let partitionVariableTable = (variableTable) => {
     return {upper: upperVars, lower: lowerVars};
 };
 
-export let setVariableField = (variable, field, value) => {
-    console.log(variable + ' ' + field + ' ' + value)
+export let customFields = {};
+export let setCustomField = (variable, field, value) => {
+    // create key for variable if it does not exist
+    customFields[variable] = customFields[variable] || {};
+    customFields[variable][field] = value;
 };
+
 
 export let statisticUIDCount = {};
 export let customStatistics = {};
@@ -45,13 +49,12 @@ export let setCustomStatistic = (variable, statUID, field, value) => {
         statisticUIDCount[variable] = -1;
     }
 
-    // create key for statistic if it does not exist
+    // create key for new statistic if UID does not exist
     if (statUID > statisticUIDCount[variable]) {
 
         // ignore if no value was added (prevents adding new empty rows)
         if (value === '') return;
 
-        // assign to the data tree
         customStatistics[variable][statUID] = customStatistics[variable][statUID] || {};
         statisticUIDCount[variable]++;
     }

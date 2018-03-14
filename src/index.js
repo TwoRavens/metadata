@@ -94,7 +94,8 @@ class Editor {
             ...variableData ? app.accordionStatistics.map((statistic) => [statistic, variableData[statistic]]) : [],
             ...['classification', 'units', 'note'].map((field) => [field, m(TextField, {
                 id: 'textField' + field,
-                oninput: (value) => app.setVariableField(app.selectedVariable, field, value),
+                value: (app.customFields[app.selectedVariable] || {})[field] || '',
+                onblur: (value) => app.setCustomField(app.selectedVariable, field, value),
                 style: {margin: 0}
             })])
         ];
