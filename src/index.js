@@ -1,10 +1,13 @@
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import './pkgs/bootstrap4/css/bootstrap.css';
+import './pkgs/bootstrap/css/bootstrap-theme.css';
+import './pkgs/bootstrap/css/bootstrap.css';
 
 import m from 'mithril';
 
 import * as common from './common/common';
 import Table from './common/views/Table';
 import Header from './common/views/Header';
+import ButtonRadio from './common/views/ButtonRadio';
 
 import * as app from './app';
 
@@ -24,7 +27,15 @@ class Body {
         };
 
         return [
-            m(Header),
+            m(Header, {
+                contents: m(ButtonRadio, {
+                    id: 'modeButtonBar',
+                    attrsAll: {style: {width: '200px', 'margin-right': '2em'}, class: 'navbar-right'},
+                    onclick: (value) => m.route.set('/' + value.toLowerCase()),
+                    activeSection: mode,
+                    sections: [{value: 'Editor'}, {value: 'Report'}, {value: 'Data'}]
+                })
+            }),
             m(modes[mode])
         ];
     }
@@ -65,6 +76,7 @@ class Editor {
 
         return m('div#editor', {
                 style: {
+                    'margin-top': common.heightHeader + 1 + 'px',
                     height: `calc(100% - ${common.heightHeader + 1}px)`,
                     width: '100%',
                     position: 'absolute',
@@ -78,7 +90,7 @@ class Editor {
                     'overflow-y': 'auto'
                 }
             }, [
-                m('h4#variablesHeader', 'Variables'),
+                m('h4#variablesHeader', {style: {'text-align': 'center'}}, 'Variables'),
                 m(Table, {
                     id: 'variablesListUpper',
                     headers: ['Name', 'Label'],
@@ -120,14 +132,14 @@ class Editor {
                     'overflow-y': 'auto'
                 }
             }, [
-                m('h4#statisticsComputedHeader', 'Computed Statistics'),
+                m('h4#statisticsComputedHeader', {style: {'text-align': 'center'}}, 'Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
                     headers: ['Name', 'Value'],
                     data: this.statisticsData(app.selectedVariable),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-                m('h4#statisticsCustomHeader', 'Custom Statistics'),
+                m('h4#statisticsCustomHeader', {style: {'text-align': 'center'}}, 'Custom Statistics'),
                 m(Table, {
                     id: 'statisticsCustom',
                     headers: ['Name', 'Value'],
@@ -140,7 +152,10 @@ class Editor {
 
 class Report {
     view() {
-        return m('div', 'report');
+        return m('div', {
+                style: {'margin-top': common.heightHeader + 1 + 'px'}
+            },
+            'report');
     }
 }
 
@@ -156,11 +171,13 @@ class Data {
     view() {
         return m(Table, {
             headers: test_data.columns,
-            data: _ => test_data.data
+            data: _ => test_data.data,
+            attrsAll: {style: {'margin-top': common.heightHeader + 1 + 'px'}}
         });
     }
 }
 
+m.route.prefix("")
 m.route(document.body, '/', {
     '/': Body,
     '/:mode': Body
