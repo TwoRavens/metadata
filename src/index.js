@@ -31,15 +31,6 @@ class Body {
 }
 
 class Editor {
-    selectedVariableAccordion() {
-        if (!app.selectedVariable) return;
-        let variableData = app.getVariable(app.selectedVariable);
-
-        return m('div#variableListCenter', app.accordionStatistics.map((statistic) => m('div', [
-            statistic,
-            variableData[statistic]
-        ])))
-    }
 
     statisticsData(name) {
         let statisticsData = [];
@@ -61,7 +52,16 @@ class Editor {
 
     view() {
 
+        // Collect data for variable tables
+        let variableData = app.getVariable(app.selectedVariable);
+        let center = variableData ? app.accordionStatistics.map(
+            (statistic) => [statistic, variableData[statistic]]) : [];
+
         let {upper, lower} = app.partitionVariableTable();
+
+        // Sets spacing of variable table column
+        let colgroupVariables = m('colgroup',
+            m('col', {span: 1, style: {width: '10em'}}))
 
         return m('div#editor', {
                 style: {
@@ -84,14 +84,31 @@ class Editor {
                     headers: ['Name', 'Label'],
                     data: upper,
                     activeRow: app.selectedVariable,
-                    onclickRow: app.selectVariable
+                    onclick: app.selectVariable,
+                    tableTags: colgroupVariables,
+                    attrsCells: {style: {padding: '.5em'}}
                 }),
-                this.selectedVariableAccordion(),
+                m(Table, {
+                    id: 'variablesListCenter',
+                    headers: ['Name', 'Value'],
+                    data: center,
+                    attrsCells: {style: {padding: '.3em'}},
+                    attrsAll: {
+                        style: {
+                            width: 'calc(100% - 2em)',
+                            'margin-left': '1em',
+                            'border-left': '1px solid #dee2e6',
+                            'box-shadow': '0 3px 6px #777'
+                        }
+                    }
+                }),
                 m(Table, {
                     id: 'variablesListLower',
                     data: lower,
                     activeRow: app.selectedVariable,
-                    onclickRow: app.selectVariable
+                    onclick: app.selectVariable,
+                    tableTags: colgroupVariables,
+                    attrsCells: {style: {padding: '.5em'}}
                 })
             ]),
             m('div#statistics', {
@@ -106,12 +123,16 @@ class Editor {
                 m('h4#statisticsComputedHeader', 'Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
+                    headers: ['Name', 'Value'],
                     data: this.statisticsData(app.selectedVariable),
+                    attrsCells: {style: {padding: '.5em'}}
                 }),
                 m('h4#statisticsCustomHeader', 'Custom Statistics'),
                 m(Table, {
                     id: 'statisticsCustom',
+                    headers: ['Name', 'Value'],
                     data: app.customStatistics,
+                    attrsCells: {style: {padding: '.5em'}}
                 })
             ]))
     }
@@ -123,7 +144,7 @@ class Report {
     }
 }
 
-window.addEventListener('scroll', function(e) {
+window.addEventListener('scroll', function (e) {
     if (this.scrollY === this.scrollMaxY && m.route.get('/data')) {
         test_data.data = test_data.data.concat(test_data.data.slice(0, 100));
         console.log(test_data.data.length);

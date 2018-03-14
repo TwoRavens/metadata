@@ -1,4 +1,5 @@
 import data from '../data/fearonLaitin.json'
+import m from 'mithril'
 
 export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'time'];
 
