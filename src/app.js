@@ -1,21 +1,24 @@
 import data from '../data/fearonLaitin.json'
-import m from 'mithril'
 
+export let getData = () => data;
 export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'time'];
 
-export let variableTable = [];
-export let updateVariableTable = () => {
-    for (let variable in data['variables']) {
-        variableTable.push([variable, data['variables']['labl']]);
-    }
+export let usedVariables = new Set();
+export let allVariables = Object.keys(data['variables']);
+
+// If variable is not set, then it sets all variables.
+export let setUsedVariable = (status, variable) => {
+    if (variable) status ? usedVariables.add(variable) : usedVariables.delete(variable);
+    else usedVariables = status ? new Set(allVariables) : new Set();
+
+    console.log(usedVariables);
 };
 
-updateVariableTable();
-
 export let selectedVariable = '';
-export let selectVariable = (variable) => selectedVariable = variable;
+export let selectVariable = (variable) =>
+    selectedVariable = selectedVariable === variable ? '' : variable;
 
-export let partitionVariableTable = () => {
+export let partitionVariableTable = (variableTable) => {
     let upperVars = [];
     let lowerVars = [];
 
@@ -28,6 +31,11 @@ export let partitionVariableTable = () => {
     }
     return {upper: upperVars, lower: lowerVars};
 };
+
+export let setField = (variable, field, value) => {
+    console.log(variable + ' ' + field + ' ' + value)
+};
+
 
 export let getVariable = (name) => data['variables'][name];
 

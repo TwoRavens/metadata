@@ -21,8 +21,7 @@ export default class Header {
                 style: {
                     float: 'left',
                     background: menuColor,
-                    height: heightHeader + 'px',
-                    'border-bottom': borderColor
+                    height: heightHeader + 'px'
                 }
             }, attrsInterface),
             [

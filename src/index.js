@@ -13,7 +13,7 @@ import * as app from './app';
 
 // For data view
 import test_data from '../data/test.json';
-import {getVariable, accordionStatistics} from "./app";
+import TextField from "./common/views/TextField";
 
 class Body {
     view(vnode) {
@@ -43,15 +43,26 @@ class Body {
 
 class Editor {
 
-    statisticsData(name) {
+    variableTable() {
+        return Object.keys(app.getData()['variables']).map((variable) => [
+            variable,
+            app.getData()['variables']['labl'],
+            m('input[type=checkbox]', {
+                onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable)),
+                checked: app.usedVariables.has(variable)
+            })
+        ])
+    };
+
+    statisticsTable(name) {
         let statisticsData = [];
-        let variable = getVariable(name);
+        let variable = app.getVariable(name);
 
         if (variable === undefined) return [];
 
         for (let statistic in variable) {
             // Don't include statistics that are already in the accordion
-            if (accordionStatistics.indexOf(statistic) !== -1) continue;
+            if (app.accordionStatistics.indexOf(statistic) !== -1) continue;
 
             let acceptedTypes = ['string', 'number', 'boolean'];
             if (acceptedTypes.indexOf(typeof(variable[statistic])) === -1) continue;
@@ -62,22 +73,34 @@ class Editor {
     }
 
     view() {
-
         // Collect data for variable tables
         let variableData = app.getVariable(app.selectedVariable);
-        let center = variableData ? app.accordionStatistics.map(
-            (statistic) => [statistic, variableData[statistic]]) : [];
+        let center = [
+            ...variableData ? app.accordionStatistics.map((statistic) => [statistic, variableData[statistic]]) : [],
+            ...['classification', 'units', 'note'].map((field) => [field, m(TextField, {
+                id: 'textField' + field,
+                oninput: (value) => app.setField(app.selectedVariable, field, value),
+                style: {margin: 0}
+            })])];
 
-        let {upper, lower} = app.partitionVariableTable();
+        let {upper, lower} = app.partitionVariableTable(this.variableTable());
+
+        let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
+            onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked)),
+            checked: app.allVariables.length === app.usedVariables.size
+        })
 
         // Sets spacing of variable table column
-        let colgroupVariables = m('colgroup',
-            m('col', {span: 1, style: {width: '10em'}}))
+        let colgroupVariables = () => m('colgroup',
+            m('col', {span: 1, width: '10em'}),
+            m('col', {span: 1}),
+            m('col', {span: 1, width: '2em'})
+        )
 
         return m('div#editor', {
                 style: {
-                    'margin-top': common.heightHeader + 1 + 'px',
-                    height: `calc(100% - ${common.heightHeader + 1}px)`,
+                    'margin-top': common.heightHeader + 'px',
+                    height: `calc(100% - ${common.heightHeader}px)`,
                     width: '100%',
                     position: 'absolute',
                     'overflow': 'hidden'
@@ -93,14 +116,14 @@ class Editor {
                 m('h4#variablesHeader', {style: {'text-align': 'center'}}, 'Variables'),
                 m(Table, {
                     id: 'variablesListUpper',
-                    headers: ['Name', 'Label'],
+                    headers: ['Name', 'Label', variableAllCheckbox],
                     data: upper,
                     activeRow: app.selectedVariable,
                     onclick: app.selectVariable,
-                    tableTags: colgroupVariables,
+                    tableTags: colgroupVariables(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-                m(Table, {
+                app.selectedVariable ? m(Table, {
                     id: 'variablesListCenter',
                     headers: ['Name', 'Value'],
                     data: center,
@@ -113,13 +136,13 @@ class Editor {
                             'box-shadow': '0 3px 6px #777'
                         }
                     }
-                }),
+                }) : undefined,
                 m(Table, {
                     id: 'variablesListLower',
                     data: lower,
                     activeRow: app.selectedVariable,
                     onclick: app.selectVariable,
-                    tableTags: colgroupVariables,
+                    tableTags: colgroupVariables(),
                     attrsCells: {style: {padding: '.5em'}}
                 })
             ]),
@@ -136,7 +159,7 @@ class Editor {
                 m(Table, {
                     id: 'statisticsComputed',
                     headers: ['Name', 'Value'],
-                    data: this.statisticsData(app.selectedVariable),
+                    data: this.statisticsTable(app.selectedVariable),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
                 m('h4#statisticsCustomHeader', {style: {'text-align': 'center'}}, 'Custom Statistics'),
@@ -153,7 +176,7 @@ class Editor {
 class Report {
     view() {
         return m('div', {
-                style: {'margin-top': common.heightHeader + 1 + 'px'}
+                style: {'margin-top': common.heightHeader + 'px'}
             },
             'report');
     }
@@ -172,7 +195,7 @@ class Data {
         return m(Table, {
             headers: test_data.columns,
             data: _ => test_data.data,
-            attrsAll: {style: {'margin-top': common.heightHeader + 1 + 'px'}}
+            attrsAll: {style: {'margin-top': common.heightHeader + 'px'}}
         });
     }
 }
