@@ -20,7 +20,10 @@ export default class TextField {
                 style: {'margin': '5px 0', 'width': '100%'}
             },
             vnode.attrs,
-            {oninput: m.withAttr('value', vnode.attrs.oninput)})
+            {
+                oninput: vnode.attrs.oninput ? m.withAttr('value', vnode.attrs.oninput) : undefined,
+                onblur: vnode.attrs.onblur ? m.withAttr('value', vnode.attrs.onblur) : undefined
+            })
         );
     }
 }

@@ -54,34 +54,50 @@ class Editor {
         ])
     };
 
-    statisticsTable(name) {
-        let statisticsData = [];
-        let variable = app.getVariable(name);
+    statisticsTable(variableName) {
+        let statisticsTable = [];
+        let statistics = app.getData()['variables'][variableName];
 
-        if (variable === undefined) return [];
+        if (statistics === undefined) return [];
 
-        for (let statistic in variable) {
+        for (let stat in statistics) {
             // Don't include statistics that are already in the accordion
-            if (app.accordionStatistics.indexOf(statistic) !== -1) continue;
+            if (app.accordionStatistics.indexOf(stat) !== -1) continue;
 
             let acceptedTypes = ['string', 'number', 'boolean'];
-            if (acceptedTypes.indexOf(typeof(variable[statistic])) === -1) continue;
+            if (acceptedTypes.indexOf(typeof(statistics[stat])) === -1) continue;
 
-            statisticsData.push([statistic, variable[statistic]])
+            statisticsTable.push([stat, statistics[stat], '--'])
         }
-        return statisticsData;
+        return statisticsTable;
+    }
+
+    customStatisticsTable(variableName) {
+        let statistics = app.customStatistics[variableName] || [];
+
+        return [...Object.keys(statistics), (app.statisticUIDCount[variableName] || 0) + 1].map((UID) => [
+            UID,
+            ...['name', 'value', 'replication'].map((field) => m(TextField, {
+                id: 'textField' + variableName + UID + field,
+                value: statistics[UID] ? statistics[UID][field] || '' : '',
+                onblur: (value) =>
+                    app.setCustomStatistic(variableName, UID, field, value),
+                style: {margin: 0}
+            }))
+        ]);
     }
 
     view() {
         // Collect data for variable tables
-        let variableData = app.getVariable(app.selectedVariable);
+        let variableData = app.getData()['variables'][app.selectedVariable];
         let center = [
             ...variableData ? app.accordionStatistics.map((statistic) => [statistic, variableData[statistic]]) : [],
             ...['classification', 'units', 'note'].map((field) => [field, m(TextField, {
                 id: 'textField' + field,
-                oninput: (value) => app.setField(app.selectedVariable, field, value),
+                oninput: (value) => app.setVariableField(app.selectedVariable, field, value),
                 style: {margin: 0}
-            })])];
+            })])
+        ];
 
         let {upper, lower} = app.partitionVariableTable(this.variableTable());
 
@@ -146,7 +162,7 @@ class Editor {
                     attrsCells: {style: {padding: '.5em'}}
                 })
             ]),
-            m('div#statistics', {
+            app.selectedVariable ? m('div#statistics', {
                 style: {
                     display: 'inline-block',
                     width: '50%',
@@ -158,18 +174,20 @@ class Editor {
                 m('h4#statisticsComputedHeader', {style: {'text-align': 'center'}}, 'Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
-                    headers: ['Name', 'Value'],
+                    headers: ['Name', 'Value', 'Replicate'],
                     data: this.statisticsTable(app.selectedVariable),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
                 m('h4#statisticsCustomHeader', {style: {'text-align': 'center'}}, 'Custom Statistics'),
                 m(Table, {
                     id: 'statisticsCustom',
-                    headers: ['Name', 'Value'],
-                    data: app.customStatistics,
-                    attrsCells: {style: {padding: '.5em'}}
+                    headers: ['Name', 'Value', 'Replicate'],
+                    data: this.customStatisticsTable(app.selectedVariable),
+                    attrsCells: {style: {padding: '.5em'}},
+                    showUID: false
                 })
-            ]))
+            ]) : []
+        )
     }
 }
 

@@ -10,33 +10,52 @@ export let allVariables = Object.keys(data['variables']);
 export let setUsedVariable = (status, variable) => {
     if (variable) status ? usedVariables.add(variable) : usedVariables.delete(variable);
     else usedVariables = status ? new Set(allVariables) : new Set();
-
-    console.log(usedVariables);
 };
 
-export let selectedVariable = '';
+export let selectedVariable;
 export let selectVariable = (variable) =>
-    selectedVariable = selectedVariable === variable ? '' : variable;
+    selectedVariable = selectedVariable === variable ? undefined : variable;
 
 export let partitionVariableTable = (variableTable) => {
-    let upperVars = [];
-    let lowerVars = [];
+    let isUpper = true;
+    let upperVars = variableTable.filter((row) => {
+        if (row[0] === selectedVariable) { isUpper = false; return true; }
+        return isUpper;
+    });
 
-    let upper = true;
-    for (let row of variableTable) {
-        if (upper) upperVars.push(row);
-        else lowerVars.push(row);
+    let isLower = false;
+    let lowerVars = variableTable.filter((row) => {
+        if (row[0] === selectedVariable) { isLower = true; return false; }
+        return isLower;
+    });
 
-        if (row[0] === selectedVariable) upper = false;
-    }
     return {upper: upperVars, lower: lowerVars};
 };
 
-export let setField = (variable, field, value) => {
+export let setVariableField = (variable, field, value) => {
     console.log(variable + ' ' + field + ' ' + value)
 };
 
+export let statisticUIDCount = {};
+export let customStatistics = {};
+export let setCustomStatistic = (variable, statUID, field, value) => {
+    // create key for variable if it does not exist
+    if (!customStatistics[variable]) {
+        customStatistics[variable] = {};
+        statisticUIDCount[variable] = -1;
+    }
 
-export let getVariable = (name) => data['variables'][name];
+    // create key for statistic if it does not exist
+    if (statUID > statisticUIDCount[variable]) {
 
-export let customStatistics = [];
+        // ignore if no value was added (prevents adding new empty rows)
+        if (value === '') return;
+
+        // assign to the data tree
+        customStatistics[variable][statUID] = customStatistics[variable][statUID] || {};
+        statisticUIDCount[variable]++;
+    }
+
+    // set value in field in statistic in variable
+    customStatistics[variable][statUID][field] = value;
+};
