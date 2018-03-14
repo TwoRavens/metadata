@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+<script type="text/javascript" src="fearonLaitin.json"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<title>Data Exploration Report</title>
+<style type="text/css">
+/* blueish style */
+/* Color definitions:  http://www.december.com/html/spec/color0.html
+body {
+  margin-top: 1.0em;
+  background-color: #ffffff;
+  font-family: Helvetica, Arial, FreeSans, san-serif;
+  color: #000000;
+}
+h1 { font-size: 1.8em; color: #1e36ce; }
+h2 { font-size: 1.6em; color: #1e36ce; }
+h3 { font-size: 1.4em; color: #1e36ce; }
+a { color: #1e36ce; text-decoration:none; }
+tt { font-family: "Courier New", Courier; }
+/* pre style removed because it will interfer with pygments */
+p { text-indent: 0px; }
+hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+p.caption { width: 80%; font-style: normal; text-align: left; }
+hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+.alert-text-small   { font-size: 80%;  }
+.alert-text-large   { font-size: 130%; }
+.alert-text-normal  { font-size: 90%;  }
+.alert {
+  padding:8px 35px 8px 14px; margin-bottom:18px;
+  text-shadow:0 1px 0 rgba(255,255,255,0.5);
+  border:1px solid #bababa;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  color: #555;
+  background-color: #f8f8f8;
+  background-position: 10px 5px;
+  background-repeat: no-repeat;
+  background-size: 38px;
+  padding-left: 55px;
+  width: 75%;
+ }
+.alert-block {padding-top:14px; padding-bottom:14px}
+.alert-block > p, .alert-block > ul {margin-bottom:1em}
+.alert li {margin-top: 1em}
+.alert-block p+p {margin-top:5px}
+.alert-notice { background-image: url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_notice.png); }
+.alert-summary  { background-image:url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_summary.png); }
+.alert-warning { background-image: url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_warning.png); }
+.alert-question {background-image:url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_question.png); }
+
+div { text-align: justify; text-justify: inter-word; }
+</style>
+    
+</head>
+
+<body>
+<p>
+<center><h1>Data Exploration Report</h1></center>  <!-- document title --><center>
+<b>Results by TwoRavens: </b> <a href="http://2ra.vn/">Project Link</a></center>
+
+<!-- Date(s) -->
+<center><p id="date"></center></p>
+<script> var today = new Date(); document.getElementById("date").innerHTML = Date(); </script>
+
+<div class="wrapper">
+<div class="profile">
+</div>
+
+    
+<h2>Table of contents</h2>
+<center><p id="TOC" ></p></center>
+<center><p id="headers"></p></center>
+    
+<!––Experimenting-->    
+
+<script>
+//fetching the variable names from json
+varnames = [];
+d3.json("fearonLaitin.json", function(error, data) {
+    for (x in data.variables) {
+             varnames += x + " ";   
+}
+
+varnames = varnames.split(" ");
+
+var txt = [];
+var img = {};
+for (i in varnames){
+    txt += "<h1 id =" + varnames[i] + ">" + varnames[i] + "</h1>";
+    txt += "<img src=img/var" + i + ".png" + " align=bottom width=800></p>"
+}
+    document.getElementById("headers").innerHTML = txt;
+
+})    
+</script>
+    
+
+
+<h1 id="math:problem">Mathematical problem</h1>
+<h1 id="___sec3">Numerical experiments </h1>
+
+<p>
+A set of numerical experiments has been carried out,
+where \( I \), \( a \), and \( T \) are fixed, while \( \Delta t \) and
+\( \theta \) are varied. In particular, \( I=1 \), \( a=2 \),
+\( \Delta t = 1.25, 0.75, 0.5, 0.1 \).
+Figure <a href="#fig:BE">1</a> contains four plots, corresponding to
+four decreasing \( \Delta t \) values. The red dashed line
+represent the numerical solution computed by the Backward
+Euler scheme, while the blue line is the exact solution.
+The corresponding results for the Crank-Nicolson and
+Forward Euler methods appear in Figures <a href="#fig:CN">2</a>
+and <a href="#fig:FE">3</a>.
+
+<p>
+<center> <!-- figure label: --> <div id="fig:BE"></div> <!-- FIGURE -->
+<hr class="figure">
+<center><p class="caption"> </p></center><p><img src="img/var1.png" align="bottom" width=800></p>
+</center>
+
+<p>
+<center> <!-- figure label: --> <div id="fig:CN"></div> <!-- FIGURE -->
+<hr class="figure">
+<p><img src="img/var2.png" align="bottom" width=800></p>
+</center>
+  
+
+</div>
+
+</body>
+</html>
