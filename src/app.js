@@ -42,13 +42,18 @@ export let partitionVariableTable = (variableTable) => {
 };
 
 export let customFields = {};
-export let setCustomField = (variable, field, value) => {
+export let setCustomField = (variable, statistic, field, value) => {
     // ignore non-edits
-    if (data['variables'][variable][field] === value) return;
+    if (data['variables'][variable][field] === value) {
+        if (customFields[variable] && customFields[variable][statistic])
+            delete customFields[variable][statistic][field];
+        return;
+    }
 
     // create key for variable if it does not exist
     customFields[variable] = customFields[variable] || {};
-    customFields[variable][field] = value;
+    customFields[variable][statistic] = customFields[variable][statistic] || {};
+    customFields[variable][statistic][field] = value;
 };
 
 
@@ -143,8 +148,8 @@ export let getReportData = () => {
                 }
             }
 
-            for (let field in customFields[variable]) {
-                varData[field] = customFields[variable][field];
+            for (let statistic in customFields[variable]) {
+                varData[statistic] = customFields[variable][statistic];
             }
 
             if (usedCustomStatistics[variable]) {
