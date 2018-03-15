@@ -14,6 +14,7 @@ import * as app from './app';
 // For data view
 import test_data from '../data/test.json';
 import TextField from "./common/views/TextField";
+import {isStatistic} from "./app";
 
 class Body {
     view(vnode) {
@@ -43,6 +44,7 @@ class Body {
 
 class Editor {
 
+    // data within variable table
     variableTable() {
         return Object.keys(app.getData()['variables']).map((variable) => [
             variable,
@@ -54,43 +56,9 @@ class Editor {
         ])
     };
 
-    statisticsTable(variableName) {
-        let statisticsTable = [];
-        let statistics = app.getData()['variables'][variableName];
-
-        if (statistics === undefined) return [];
-
-        for (let stat in statistics) {
-            // Don't include statistics that are already in the accordion
-            if (app.accordionStatistics.indexOf(stat) !== -1) continue;
-
-            let acceptedTypes = ['string', 'number', 'boolean'];
-            if (acceptedTypes.indexOf(typeof(statistics[stat])) === -1) continue;
-
-            statisticsTable.push([stat, statistics[stat], '--'])
-        }
-        return statisticsTable;
-    }
-
-    customStatisticsTable(variableName) {
-        let statistics = app.customStatistics[variableName] || [];
-
-        return [...Object.keys(statistics), (app.statisticUIDCount[variableName] || 0) + 1].map((UID) => [
-            UID,
-            ...['name', 'value', 'replication'].map((field) => m(TextField, {
-                id: 'textField' + variableName + UID + field,
-                value: statistics[UID] ? statistics[UID][field] || '' : '',
-                onblur: (value) =>
-                    app.setCustomStatistic(variableName, UID, field, value),
-                style: {margin: 0}
-            }))
-        ]);
-    }
-
-    view() {
-        // Collect data for variable tables
-        let variableData = app.getData()['variables'][app.selectedVariable];
-        let center = [
+    // data shown within accordion upon variable click
+    variableAccordionTable(variableData) {
+        return [
             ...variableData ? app.accordionStatistics.map((statistic) => [statistic, variableData[statistic]]) : [],
             ...['classification', 'units', 'note'].map((field) => [field, m(TextField, {
                 id: 'textField' + field,
@@ -99,12 +67,72 @@ class Editor {
                 style: {margin: 0}
             })])
         ];
+    }
 
+    // data within statistics table
+    statisticsTable(variableName) {
+        let statistics = app.getData()['variables'][variableName];
+        if (statistics === undefined) return [];
+
+        return Object.keys(statistics)
+            .filter((stat) => app.isStatistic(variableName, stat))
+            .map((stat) => [
+                stat,
+                statistics[stat],
+                '--',
+                m('input[type=checkbox]', {
+                    onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variableName, stat)),
+                    checked: (app.usedStatistics[variableName] || new Set()).has(stat)
+                })
+            ])
+    }
+
+    // data within custom statistics table
+    customStatisticsTable(variableName) {
+        let statistics = app.customStatistics[variableName] || [];
+        let newUID = (app.statisticUIDCount[variableName] || 0) + 1;
+
+        return [...Object.keys(statistics), newUID].map((UID) => [
+            UID,
+            ...['name', 'value', 'replication'].map((field) => m(TextField, {
+                id: 'textField' + variableName + UID + field,
+                value: statistics[UID] ? statistics[UID][field] || '' : '',
+                onblur: (value) =>
+                    app.setCustomStatistic(variableName, UID, field, value),
+                style: {margin: 0}
+            })),
+            UID === newUID ? undefined : m('input[type=checkbox]', {
+                onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, variableName, UID)),
+                checked: (app.usedCustomStatistics[variableName] || new Set()).has(UID)
+            })
+        ]);
+    }
+
+    view() {
+        // retrieve data from data source
+        let variableData = app.getData()['variables'][app.selectedVariable];
+        let statisticsData = Object.keys(variableData|| {}).filter((stat) => isStatistic(app.selectedVariable, stat));
+
+        // format variable table data
+        let center = this.variableAccordionTable(variableData)
         let {upper, lower} = app.partitionVariableTable(this.variableTable());
 
+        // Checkboxes for toggling all states
         let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked)),
             checked: app.allVariables.length === app.usedVariables.size
+        })
+
+        let usedStats = app.usedStatistics[app.selectedVariable]
+        let statisticsAllCheckbox = m('input#statisticsAllCheck[type=checkbox]', {
+            onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, app.selectedVariable)),
+            checked: usedStats && (statisticsData.length === usedStats.size)
+        })
+
+        let usedCustStats = app.usedCustomStatistics[app.selectedVariable]
+        let customStatisticsAllCheckbox = m('input#customStatisticsAllCheck[type=checkbox]', {
+            onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, app.selectedVariable)),
+            checked: usedCustStats && usedCustStats.size !== 0 && (Object.keys(app.customStatistics[app.selectedVariable] || {}).length === usedCustStats.size)
         })
 
         // Sets spacing of variable table column
@@ -175,14 +203,14 @@ class Editor {
                 m('h4#statisticsComputedHeader', {style: {'text-align': 'center'}}, 'Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
-                    headers: ['Name', 'Value', 'Replicate'],
+                    headers: ['Name', 'Value', 'Replicate', statisticsAllCheckbox],
                     data: this.statisticsTable(app.selectedVariable),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
                 m('h4#statisticsCustomHeader', {style: {'text-align': 'center'}}, 'Custom Statistics'),
                 m(Table, {
                     id: 'statisticsCustom',
-                    headers: ['Name', 'Value', 'Replicate'],
+                    headers: ['Name', 'Value', 'Replicate', customStatisticsAllCheckbox],
                     data: this.customStatisticsTable(app.selectedVariable),
                     attrsCells: {style: {padding: '.5em'}},
                     showUID: false

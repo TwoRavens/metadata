@@ -6,7 +6,7 @@ export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'ti
 export let usedVariables = new Set();
 export let allVariables = Object.keys(data['variables']);
 
-// If variable is not set, then it sets all variables.
+// If passed variable is undefined, then all variables are set.
 export let setUsedVariable = (status, variable) => {
     if (variable) status ? usedVariables.add(variable) : usedVariables.delete(variable);
     else usedVariables = status ? new Set(allVariables) : new Set();
@@ -46,7 +46,7 @@ export let setCustomStatistic = (variable, statUID, field, value) => {
     // create key for variable if it does not exist
     if (!customStatistics[variable]) {
         customStatistics[variable] = {};
-        statisticUIDCount[variable] = -1;
+        statisticUIDCount[variable] = 0;
     }
 
     // create key for new statistic if UID does not exist
@@ -61,4 +61,39 @@ export let setCustomStatistic = (variable, statUID, field, value) => {
 
     // set value in field in statistic in variable
     customStatistics[variable][statUID][field] = value;
+};
+
+let statisticalDatatypes = ['string', 'number', 'boolean'];
+
+// Checks if an entry for a variable is a statistic
+export let isStatistic = (variable, stat) =>
+    accordionStatistics.indexOf(stat) === -1 &&
+        statisticalDatatypes.indexOf(typeof(data['variables'][variable][stat])) !== -1;
+
+export let usedStatistics = {};
+// If statistic is undefined, all statistics are set
+export let setUsedStatistic = (status, variable, statistic) => {
+    // create key for variable if it does not exist
+    usedStatistics[variable] = usedStatistics[variable] || new Set();
+
+    if (statistic) status ?
+        usedStatistics[variable].add(statistic) :
+        usedStatistics[variable].delete(statistic);
+    else usedStatistics[variable] = status ?
+        new Set(Object.keys(data['variables'][variable]).filter((stat) => isStatistic(variable, stat))) :
+        new Set();
+};
+
+export let usedCustomStatistics = {};
+// If UID is undefined, all UIDs are set
+export let setUsedCustomStatistic = (status, variable, UID) => {
+    // create key for variable if it does not exist
+    usedCustomStatistics[variable] = usedCustomStatistics[variable] || new Set();
+
+    if (UID) status ?
+        usedCustomStatistics[variable].add(UID) :
+        usedCustomStatistics[variable].delete(UID);
+    else usedCustomStatistics[variable] = status ?
+        new Set(Object.keys(customStatistics[variable] || [])) :
+        new Set();
 };
