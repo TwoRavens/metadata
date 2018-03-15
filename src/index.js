@@ -48,7 +48,7 @@ class Editor {
     variableTable() {
         return Object.keys(app.getData()['variables']).map((variable) => [
             variable,
-            app.getData()['variables']['labl'],
+            (app.customFields[variable] || {})['labl'] || app.getData()['variables'][variable]['labl'] || '',
             m('input[type=checkbox]', {
                 onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable)),
                 checked: app.usedVariables.has(variable)
@@ -58,15 +58,20 @@ class Editor {
 
     // data shown within accordion upon variable click
     variableAccordionTable(variableData) {
-        return [
-            ...variableData ? app.accordionStatistics.map((statistic) => [statistic, variableData[statistic]]) : [],
-            ...['classification', 'units', 'note'].map((field) => [field, m(TextField, {
+        variableData = variableData || [];
+
+        let value = (field) => {
+            let defaultVal = (app.customFields[app.selectedVariable] || {})[field] || variableData[field] || '';
+            if (app.editableStatistics.indexOf(field) === -1) return defaultVal;
+
+            return m(TextField, {
                 id: 'textField' + field,
-                value: (app.customFields[app.selectedVariable] || {})[field] || '',
+                value: defaultVal,
                 onblur: (value) => app.setCustomField(app.selectedVariable, field, value),
                 style: {margin: 0}
-            })])
-        ];
+            })
+        }
+        return [...app.accordionStatistics, ...app.ontologyStatistics].map((statistic) => [statistic, value(statistic)])
     }
 
     // data within statistics table
@@ -74,11 +79,23 @@ class Editor {
         let statistics = app.getData()['variables'][variableName];
         if (statistics === undefined) return [];
 
+        let value = (field) => {
+            let defaultVal = (app.customFields[app.selectedVariable] || {})[field] || statistics[field] || '';
+            if (app.editableStatistics.indexOf(field) === -1) return defaultVal;
+
+            return m(TextField, {
+                id: 'textField' + field,
+                value: defaultVal,
+                onblur: (value) => app.setCustomField(app.selectedVariable, field, value),
+                style: {margin: 0}
+            })
+        }
+
         return Object.keys(statistics)
             .filter((stat) => app.isStatistic(variableName, stat))
             .map((stat) => [
                 stat,
-                statistics[stat],
+                value(stat),
                 '--',
                 m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variableName, stat)),
