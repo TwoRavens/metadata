@@ -8,12 +8,13 @@ import * as common from './common/common';
 import Table from './common/views/Table';
 import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
+import TextField from "./common/views/TextField";
 
 import * as app from './app';
+import './index.css';
 
 // For data view
 import test_data from '../data/test.json';
-import TextField from "./common/views/TextField";
 
 class Body {
     view(vnode) {
@@ -173,9 +174,11 @@ class Editor {
                 }
             }, m('div#variables', {
                 style: {
-                    display: 'inline-block',
-                    width: '50%',
-                    height: '100%',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    right: app.leftpanelSize + '%',
                     'overflow-y': 'auto'
                 }
             }, [
@@ -214,13 +217,26 @@ class Editor {
             ]),
             app.selectedVariable ? m('div#statistics', {
                 style: {
-                    display: 'inline-block',
-                    width: '50%',
-                    height: '100%',
-                    float: 'right',
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: app.leftpanelSize + '%',
                     'overflow-y': 'auto'
                 }
             }, [
+                m('div#horizontalDrag', {
+                    style:
+                        {
+                            position: 'absolute',
+                            left: '-4px',
+                            top: 0,
+                            bottom: 0,
+                            width: '12px',
+                            cursor: 'w-resize'
+                        },
+                    onmousedown: (e) => app.resizeEditor(e)
+                }),
                 m('h4#statisticsComputedHeader', {style: {'text-align': 'center'}}, 'Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
@@ -254,7 +270,7 @@ class Report {
     }
 }
 
-window.addEventListener('scroll', function(e) {
+window.addEventListener('scroll', function (e) {
     if (this.scrollY === this.scrollMaxY && m.route.get('/data')) {
         test_data.data.slice(0, 100).forEach(x => test_data.data.push(x));
         m.redraw();

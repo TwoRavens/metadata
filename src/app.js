@@ -1,5 +1,29 @@
 import data from '../data/fearonLaitin.json';
 
+let isResizingEditor = false;
+export let leftpanelSize = 50;
+export let resizeEditor = (e) => {
+    isResizingEditor = true;
+    document.body.classList.add('no-select');
+    resizeEditorTick(e);
+};
+
+let resizeEditorTick = (e) => {
+    leftpanelSize = (1 - e.clientX / document.getElementById('editor').clientWidth) * 100;
+
+    document.getElementById('variables').style.right = leftpanelSize + "%";
+    document.getElementById('statistics').style.width = leftpanelSize + "%";
+};
+
+document.onmousemove = (e) => isResizingEditor && resizeEditorTick(e);
+
+document.onmouseup = () => {
+    if (isResizingEditor) {
+        isResizingEditor = false;
+        document.body.classList.remove('no-select');
+    }
+};
+
 export let getData = () => data;
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
 export let ontologyStatistics = ['classification', 'units', 'note'];
