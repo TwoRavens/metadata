@@ -1,7 +1,7 @@
 import data from '../data/fearonLaitin.json';
 
 export let getData = () => data;
-export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'time'];
+export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
 export let ontologyStatistics = ['classification', 'units', 'note'];
 export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTypes', ...ontologyStatistics];
 
