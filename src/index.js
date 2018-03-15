@@ -43,6 +43,20 @@ class Body {
 
 class Editor {
 
+    cellValue(data, statistic, field) {
+        let customVal = ((app.customFields[app.selectedVariable] || {})[statistic] || {})[field];
+        let defaultVal = field === 'value' ? data[statistic] : '--';  // missing from preprocess.json
+        let chosenVal = customVal || defaultVal || '';
+        if (app.editableStatistics.indexOf(statistic) === -1 || field === 'description') return chosenVal;
+
+        return m(TextField, {
+            id: 'textField' + statistic + field,
+            value: chosenVal,
+            onblur: (value) => app.setCustomField(app.selectedVariable, statistic, field, value),
+            style: {margin: 0}
+        })
+    }
+
     // data within variable table
     variableTable() {
         return Object.keys(app.getData()['variables']).map((variable) => [
@@ -56,26 +70,14 @@ class Editor {
     };
 
     // data shown within accordion upon variable click
-    variableAccordionTable(variableData) {
-        variableData = variableData || [];
+    variableAccordionTable(variableName) {
+        let statistics = app.getData()['variables'][variableName];
+        statistics = statistics || [];
 
-        let value = (statistic, field) => {
-            let customVal = ((app.customFields[app.selectedVariable] || {})[statistic] || {})[field];
-            let defaultVal = field === 'value' ? variableData[statistic] : '--';  // missing from preprocess.json
-            let chosenVal = customVal || defaultVal || '';
-            if (app.editableStatistics.indexOf(statistic) === -1 || field === 'description') return chosenVal;
-
-            return m(TextField, {
-                id: 'textField' + statistic + field,
-                value: chosenVal,
-                onblur: (value) => app.setCustomField(app.selectedVariable, statistic, field, value),
-                style: {margin: 0}
-            })
-        }
-        return [...app.accordionStatistics, ...app.ontologyStatistics].map((statistic) => [
-            statistic,
-            value(statistic, 'value'),
-            value(statistic, 'description')
+        return [...app.accordionStatistics, ...app.ontologyStatistics].map((stat) => [
+            stat,
+            this.cellValue(statistics, stat, 'value'),
+            this.cellValue(statistics, stat, 'description')
         ])
     }
 
@@ -84,26 +86,12 @@ class Editor {
         let statistics = app.getData()['variables'][variableName];
         if (statistics === undefined) return [];
 
-        let value = (statistic, field) => {
-            let customVal = ((app.customFields[app.selectedVariable] || {})[statistic] || {})[field];
-            let defaultVal = field === 'value' ? statistics[statistic] : '--';
-            let chosenVal = customVal || defaultVal || '';
-            if (app.editableStatistics.indexOf(statistic) === -1 || field === 'description') return chosenVal;
-
-            return m(TextField, {
-                id: 'textField' + statistic + field,
-                value: chosenVal,
-                onblur: (value) => app.setCustomField(app.selectedVariable, statistic, field, value),
-                style: {margin: 0}
-            })
-        }
-
         return Object.keys(statistics)
             .filter((stat) => app.isStatistic(variableName, stat))
             .map((stat) => [
                 stat,
-                value(stat, 'value'),
-                value(stat, 'description'),
+                this.cellValue(statistics, stat, 'value'),
+                this.cellValue(statistics, stat, 'description'),
                 '--',
                 m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variableName, stat)),
@@ -139,7 +127,7 @@ class Editor {
         let statisticsData = Object.keys(variableData || {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
 
         // format variable table data
-        let center = this.variableAccordionTable(variableData)
+        let center = this.variableAccordionTable(app.selectedVariable)
         let {upper, lower} = app.partitionVariableTable(this.variableTable());
 
         // Checkboxes for toggling all states
