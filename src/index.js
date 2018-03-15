@@ -128,7 +128,7 @@ class Editor {
     view() {
         // retrieve data from data source
         let variableData = app.getData()['variables'][app.selectedVariable];
-        let statisticsData = Object.keys(variableData|| {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
+        let statisticsData = Object.keys(variableData || {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
 
         // format variable table data
         let center = this.variableAccordionTable(variableData)
@@ -240,9 +240,12 @@ class Editor {
 class Report {
     view() {
         return m('div', {
-                style: {'margin-top': common.heightHeader + 'px'}
+                style: {
+                    'margin-top': common.heightHeader + 'px',
+                    'white-space': 'pre-wrap'
+                }
             },
-            'report');
+            JSON.stringify(app.getReportData(), null, 2));
     }
 }
 

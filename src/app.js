@@ -43,6 +43,9 @@ export let partitionVariableTable = (variableTable) => {
 
 export let customFields = {};
 export let setCustomField = (variable, field, value) => {
+    // ignore non-edits
+    if (data['variables'][variable][field] === value) return;
+
     // create key for variable if it does not exist
     customFields[variable] = customFields[variable] || {};
     customFields[variable][field] = value;
@@ -121,4 +124,46 @@ export let setUsedCustomStatistic = (status, variable, UID) => {
     else usedCustomStatistics[variable] = status ?
         new Set(Object.keys(customStatistics[variable] || [])) :
         new Set();
+};
+
+export let getReportData = () => {
+    let data = getData();
+    let report = {'variables': {}};
+
+    for (let variable in data['variables']) {
+        let keyCount = {};
+
+        if (usedVariables.has(variable)) {
+            let varData = {};
+            if (!usedStatistics[variable])
+                varData = data['variables'][variable];
+            else {
+                for (let statistic of usedStatistics[variable]) {
+                    varData[statistic] = data['variables'][variable][statistic]
+                }
+            }
+
+            for (let field in customFields[variable]) {
+                varData[field] = customFields[variable][field];
+            }
+
+            if (usedCustomStatistics[variable]) {
+                for (let usedUID of usedCustomStatistics[variable]) {
+                    // add user statistics
+                    let statistic = Object.assign({}, customStatistics[variable][usedUID]);
+                    let name = statistic['name'];
+                    delete statistic['name'];
+
+                    if (!keyCount[name]) keyCount[name] = 0;
+                    keyCount[name]++;
+
+                    let suffix = keyCount[name] === 1 ? '' : keyCount[name];
+                    varData[name + suffix] = statistic
+                }
+            }
+            // console.log(varData);
+            report['variables'][variable] = varData;
+        }
+    }
+    return report;
 };
