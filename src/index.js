@@ -265,9 +265,7 @@ class Data {
     view() {
         return m(Table, {
             headers: [''].concat(test_data.columns),
-            data: _ => {
-                return test_data.data.map((x, i) => [++i].concat(x));
-            },
+            data: _ => test_data.data.map((x, i) => [++i].concat(x)),
             attrsAll: {style: {'margin-top': common.heightHeader + 'px'}}
         });
     }
