@@ -1,4 +1,4 @@
-import data from '../data/fearonLaitin.json'
+import data from '../data/fearonLaitin.json';
 
 export let getData = () => data;
 export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'time'];

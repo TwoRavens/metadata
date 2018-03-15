@@ -254,10 +254,12 @@ class Report {
     }
 }
 
-window.addEventListener('scroll', function (e) {
+test_data.data.forEach((x, i) => test_data.data[i] = [++i].concat(x));
+
+window.addEventListener('scroll', function(e) {
     if (this.scrollY === this.scrollMaxY && m.route.get('/data')) {
-        test_data.data = test_data.data.concat(test_data.data.slice(0, 100));
-        console.log(test_data.data.length);
+        let idx = test_data.data.length;
+        test_data.data.slice(0, 100).forEach(x => test_data.data.push([idx++].concat(x)));
         m.redraw();
     }
 });
@@ -265,14 +267,14 @@ window.addEventListener('scroll', function (e) {
 class Data {
     view() {
         return m(Table, {
-            headers: test_data.columns,
+            headers: [''].concat(test_data.columns),
             data: _ => test_data.data,
             attrsAll: {style: {'margin-top': common.heightHeader + 'px'}}
         });
     }
 }
 
-m.route.prefix("")
+m.route.prefix('');
 m.route(document.body, '/', {
     '/': Body,
     '/:mode': Body
