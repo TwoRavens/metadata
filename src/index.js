@@ -103,7 +103,7 @@ class Editor {
             })),
             UID === newUID ? undefined : m('input[type=checkbox]', {
                 onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, variableName, UID)),
-                checked: (app.usedCustomStatistics[variableName] || new Set()).has(UID)
+                checked: (app.usedCustomStatistics[variableName] || new Set()).has(parseInt(UID))
             })
         ]);
     }
@@ -111,7 +111,7 @@ class Editor {
     view() {
         // retrieve data from data source
         let variableData = app.getData()['variables'][app.selectedVariable];
-        let statisticsData = Object.keys(variableData|| {}).filter((stat) => isStatistic(app.selectedVariable, stat));
+        let statisticsData = Object.keys(variableData|| {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
 
         // format variable table data
         let center = this.variableAccordionTable(variableData)
@@ -164,7 +164,7 @@ class Editor {
                     headers: ['Name', 'Label', variableAllCheckbox],
                     data: upper,
                     activeRow: app.selectedVariable,
-                    onclick: app.selectVariable,
+                    onclick: app.setSelectedVariable,
                     tableTags: colgroupVariables(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
@@ -186,7 +186,7 @@ class Editor {
                     id: 'variablesListLower',
                     data: lower,
                     activeRow: app.selectedVariable,
-                    onclick: app.selectVariable,
+                    onclick: app.setSelectedVariable,
                     tableTags: colgroupVariables(),
                     attrsCells: {style: {padding: '.5em'}}
                 })
@@ -215,7 +215,7 @@ class Editor {
                     attrsCells: {style: {padding: '.5em'}},
                     showUID: false
                 })
-            ]) : []
+            ]) : undefined
         )
     }
 }

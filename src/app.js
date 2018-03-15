@@ -3,8 +3,8 @@ import data from '../data/fearonLaitin.json'
 export let getData = () => data;
 export let accordionStatistics = ['numchar', 'nature', 'binary', 'interval', 'time'];
 
-export let usedVariables = new Set();
 export let allVariables = Object.keys(data['variables']);
+export let usedVariables = new Set(allVariables);
 
 // If passed variable is undefined, then all variables are set.
 export let setUsedVariable = (status, variable) => {
@@ -13,8 +13,15 @@ export let setUsedVariable = (status, variable) => {
 };
 
 export let selectedVariable;
-export let selectVariable = (variable) =>
+export let setSelectedVariable = (variable) => {
     selectedVariable = selectedVariable === variable ? undefined : variable;
+
+    // all statistics are enabled by default
+    if (!usedStatistics[selectedVariable]) {
+        usedStatistics[selectedVariable] = new Set(Object.keys(data['variables'][selectedVariable] || {})
+            .filter((stat) => isStatistic(selectedVariable, stat)));
+    }
+};
 
 export let partitionVariableTable = (variableTable) => {
     let isUpper = true;
@@ -49,13 +56,29 @@ export let setCustomStatistic = (variable, statUID, field, value) => {
         statisticUIDCount[variable] = 0;
     }
 
+    // delete empty values/statistics
+    if (value === '') {
+        // ignore adding empty field to nonexistent statistic
+        if (!customStatistics[variable][statUID]) return;
+
+        // delete the field
+        delete customStatistics[variable][statUID][field];
+
+        // attempt to delete the statistic
+        if (Object.keys(customStatistics[variable][statUID]).length === 0) {
+            delete customStatistics[variable][statUID];
+            usedCustomStatistics[variable].delete(parseInt(statUID));
+        }
+
+        return;
+    }
+
     // create key for new statistic if UID does not exist
     if (statUID > statisticUIDCount[variable]) {
-
-        // ignore if no value was added (prevents adding new empty rows)
-        if (value === '') return;
-
         customStatistics[variable][statUID] = customStatistics[variable][statUID] || {};
+
+        // enable new custom statistics by default
+        setUsedCustomStatistic(true, variable, statUID);
         statisticUIDCount[variable]++;
     }
 
