@@ -191,7 +191,7 @@ class Editor {
                     tableTags: colgroupVariables(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-                app.selectedVariable ? m(Table, {
+                app.selectedVariable && m(Table, {
                     id: 'variablesListCenter',
                     headers: ['Name', 'Value', 'Description'],
                     data: center,
@@ -204,7 +204,7 @@ class Editor {
                             'box-shadow': '0 3px 6px #777'
                         }
                     }
-                }) : undefined,
+                }),
                 m(Table, {
                     id: 'variablesListLower',
                     data: lower,
@@ -275,8 +275,11 @@ window.addEventListener('scroll', function (e) {
 
 class Data {
     view() {
+        let headersAttrs = {};
+        test_data.columns.forEach(x => headersAttrs[x] = app.variables[x].nature === 'nominal' ? {style: 'color: red'} : {});
         return m(Table, {
             headers: [''].concat(test_data.columns),
+            headersAttrs,
             data: _ => test_data.data.map((x, i) => [++i].concat(x)),
             attrsAll: {style: {'margin-top': common.heightHeader + 'px'}}
         });

@@ -1,5 +1,7 @@
 import data from '../data/fearonLaitin.json';
 
+export let {variables} = data;
+
 let isResizingEditor = false;
 export let leftpanelSize = 50;
 export let resizeEditor = (e) => {
@@ -132,13 +134,15 @@ export let usedStatistics = {};
 export let setUsedStatistic = (status, variable, statistic) => {
     // create key for variable if it does not exist
     usedStatistics[variable] = usedStatistics[variable] || new Set();
-
-    if (statistic) status ?
-        usedStatistics[variable].add(statistic) :
-        usedStatistics[variable].delete(statistic);
-    else usedStatistics[variable] = status ?
-        new Set(Object.keys(data['variables'][variable]).filter((stat) => isStatistic(variable, stat))) :
-        new Set();
+    if (statistic) {
+        status ?
+            usedStatistics[variable].add(statistic) :
+            usedStatistics[variable].delete(statistic);
+    } else {
+        usedStatistics[variable] = status ?
+            new Set(Object.keys(data['variables'][variable]).filter((stat) => isStatistic(variable, stat))) :
+            new Set();
+    }
 };
 
 export let usedCustomStatistics = {};
@@ -146,13 +150,15 @@ export let usedCustomStatistics = {};
 export let setUsedCustomStatistic = (status, variable, UID) => {
     // create key for variable if it does not exist
     usedCustomStatistics[variable] = usedCustomStatistics[variable] || new Set();
-
-    if (UID) status ?
-        usedCustomStatistics[variable].add(UID) :
-        usedCustomStatistics[variable].delete(UID);
-    else usedCustomStatistics[variable] = status ?
-        new Set(Object.keys(customStatistics[variable] || [])) :
-        new Set();
+    if (UID) {
+        status ?
+            usedCustomStatistics[variable].add(UID) :
+            usedCustomStatistics[variable].delete(UID);
+    } else {
+        usedCustomStatistics[variable] = status ?
+            new Set(Object.keys(customStatistics[variable] || [])) :
+            new Set();
+    }
 };
 
 export let getReportData = () => {
@@ -164,17 +170,10 @@ export let getReportData = () => {
 
         if (usedVariables.has(variable)) {
             let varData = {};
-            if (!usedStatistics[variable])
-                varData = data['variables'][variable];
-            else {
-                for (let statistic of usedStatistics[variable]) {
-                    varData[statistic] = data['variables'][variable][statistic]
-                }
-            }
+            if (!usedStatistics[variable]) varData = data['variables'][variable];
+            else usedStatistics[variable].forEach(stat => varData[stat] = data['variables'][variable][stat]);
 
-            for (let statistic in customFields[variable]) {
-                varData[statistic] = customFields[variable][statistic];
-            }
+            for (stat in customFields[variable]) varData[stat] = stat;
 
             if (usedCustomStatistics[variable]) {
                 for (let usedUID of usedCustomStatistics[variable]) {
@@ -187,7 +186,7 @@ export let getReportData = () => {
                     keyCount[name]++;
 
                     let suffix = keyCount[name] === 1 ? '' : keyCount[name];
-                    varData[name + suffix] = statistic
+                    varData[name + suffix] = statistic;
                 }
             }
             // console.log(varData);

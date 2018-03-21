@@ -8,6 +8,7 @@ import {selVarColor, mergeAttributes, menuColor} from "../common";
 // m(Table, {
 //     id: id (String),
 //     headers: ['col1Header', 'col2Header'],
+//     headersAttrs: {'colHeader1: attrs, ...},
 //     data: [['row1col1', 'row1col2'], ['row2col1', 'row2col2']] or function
 //     activeRow: 'row1col1', (optional)
 //     onclick: (uid, colID) => console.log(uid + " row was clicked, column number " + colID + " was clicked"), (optional)
@@ -28,7 +29,7 @@ import {selVarColor, mergeAttributes, menuColor} from "../common";
 
 export default class Table {
     view(vnode) {
-        let {id, data, headers, activeRow, onclick, showUID} = vnode.attrs;
+        let {id, data, headers, headersAttrs, activeRow, onclick, showUID} = vnode.attrs;
         // Interface custom attributes
         let {attrsAll, attrsRows, attrsCells, tableTags} = vnode.attrs;
 
@@ -37,10 +38,7 @@ export default class Table {
 
         return m(`table.table#${id}`, mergeAttributes({style: {width: '100%'}}, attrsAll), [
             tableTags,
-            headers ? m('tr', {style: {width: '100%', background: menuColor}}, [
-                ...headers.map((header) => m('th', header))
-            ]) : undefined,
-
+            headers && m('tr', {style: {width: '100%', background: menuColor}}, headers.map(h => m('th', headersAttrs && headersAttrs[h], h))),
             ...data.map((row, i) => m('tr', mergeAttributes(
                 i % 2 === 1 ? {style: {'background': '#fcfcfc'}} : {},
                 row[0] === activeRow ? {style: {'background': selVarColor}} : {},
