@@ -3,11 +3,11 @@ Application to view and edit the metadata produced by the [TwoRavens preprocessi
 
 # Install
 
-1. git clone
-2. cd metadata
-3. npm install
-4. npm install -g parcel-bundler
-5. parcel index.html
+    git clone ...
+    cd metadata
+    npm install
+    npm install -g parcel-bundler
+    parcel index.html
 
 # Uses
 
