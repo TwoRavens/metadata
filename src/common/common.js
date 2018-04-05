@@ -1,6 +1,6 @@
 // Global configuration
 
-export let aboutText = 'TwoRavens v0.1 "Dallas" -- The Norse god Odin had two talking ravens as advisors, who would fly out into the world and report back all they observed. In the Norse, their names were "Thought" and "Memory". In our coming release, our thought-raven automatically advises on statistical model selection, while our memory-raven accumulates previous statistical models from Dataverse, to provide cummulative guidance and meta-analysis.';
+export const ABOUT = 'TwoRavens v0.1 "Dallas" -- The Norse god Odin had two talking ravens as advisors, who would fly out into the world and report back all they observed. In the Norse, their names were "Thought" and "Memory". In our coming release, our thought-raven automatically advises on statistical model selection, while our memory-raven accumulates previous statistical models from Dataverse, to provide cummulative guidance and meta-analysis.';
 
 export let panelMargin = 10;  // in pixels
 export let heightHeader = 62;
@@ -13,7 +13,6 @@ export let csColor = '#419641';
 export let dvColor = '#28a4c9';
 export let gr1Color = '#14bdcc';  // initially was #24a4c9', but that is dvColor, and we track some properties by color assuming them unique
 export let gr2Color = '#ffcccc';
-
 
 export let grayColor = '#c0c0c0';
 export let nomColor = '#ff6600';

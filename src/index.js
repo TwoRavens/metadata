@@ -1,6 +1,5 @@
-import './pkgs/bootstrap4/css/bootstrap.css';
-import './pkgs/bootstrap/css/bootstrap-theme.css';
-import './pkgs/bootstrap/css/bootstrap.css';
+import '../static/bootstrap4/css/bootstrap.css';
+//import '../static/index.css';
 
 import m from 'mithril';
 
@@ -8,42 +7,13 @@ import * as common from './common/common';
 import Table from './common/views/Table';
 import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
-import TextField from "./common/views/TextField";
+import TextField from './common/views/TextField';
 
 import * as app from './app';
-import './index.css';
 
-// For data view
-import test_data from '../data/test.json';
-
-class Body {
-    view(vnode) {
-        let {mode} = vnode.attrs;
-        mode = mode || 'editor';
-
-        let modes = {
-            'editor': Editor,
-            'report': Report,
-            'data': Data
-        };
-
-        return [
-            m(Header, {
-                contents: m(ButtonRadio, {
-                    id: 'modeButtonBar',
-                    attrsAll: {style: {width: '200px', 'margin-right': '2em'}, class: 'navbar-right'},
-                    onclick: (value) => m.route.set('/' + value.toLowerCase()),
-                    activeSection: mode,
-                    sections: [{value: 'Editor'}, {value: 'Report'}, {value: 'Data'}]
-                })
-            }),
-            m(modes[mode])
-        ];
-    }
-}
+import test_data from '../static/data/test.json';
 
 class Editor {
-
     cellValue(data, statistic, field) {
         let customVal = ((app.customFields[app.selectedVariable] || {})[statistic] || {})[field];
         let defaultVal = field === 'value' ? data[statistic] : '--';  // missing from preprocess.json
@@ -166,8 +136,7 @@ class Editor {
 
         return m('div#editor', {
                 style: {
-                    'margin-top': common.heightHeader + 'px',
-                    height: `calc(100% - ${common.heightHeader}px)`,
+                    height: '100%',
                     width: '100%',
                     position: 'absolute',
                     'overflow': 'hidden'
@@ -181,7 +150,7 @@ class Editor {
                     right: app.leftpanelSize + '%',
                     'overflow-y': 'auto'
                 }
-            }, [m('h4#variablesHeader', {style: {'text-align': 'center'}}, 'Variables'),
+            }, [m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
                 m(Table, {
                     id: 'variablesListUpper',
                     headers: ['Name', 'Label', variableAllCheckbox],
@@ -224,7 +193,7 @@ class Editor {
                     'overflow-y': 'auto'
                 }
             }, [
-                m('div#horizontalDrag', {
+                m('#horizontalDrag', {
                     style: {
                         position: 'absolute',
                         left: '-4px',
@@ -259,7 +228,6 @@ class Report {
     view() {
         return m('div', {
             style: {
-                'margin-top': common.heightHeader + 'px',
                 'white-space': 'pre-wrap'
             }
         }, JSON.stringify(app.getReportData(), null, 2));
@@ -280,9 +248,34 @@ class Data {
         return m(Table, {
             headers: [''].concat(test_data.columns),
             headersAttrs,
-            data: _ => test_data.data.map((x, i) => [++i].concat(x)),
-            attrsAll: {style: {'margin-top': common.heightHeader + 'px'}}
+            data: _ => test_data.data.map((x, i) => [++i].concat(x))
         });
+    }
+}
+
+class Body {
+    view(vnode) {
+        let {mode} = vnode.attrs;
+        mode = mode || 'editor';
+
+        let modes = {
+            'editor': Editor,
+            'report': Report,
+            'data': Data
+        };
+
+        return [
+            m(Header,
+                m(ButtonRadio, {
+                    id: 'modeButtonBar',
+                    attrsAll: {style: {width: '200px', 'margin-right': '2em'}, class: 'navbar-right'},
+                    onclick: (value) => m.route.set('/' + value.toLowerCase()),
+                    activeSection: mode,
+                    sections: [{value: 'Editor'}, {value: 'Report'}, {value: 'Data'}]
+                })
+            ),
+            m(modes[mode])
+        ];
     }
 }
 

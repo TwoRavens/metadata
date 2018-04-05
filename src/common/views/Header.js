@@ -1,13 +1,8 @@
-import m from 'mithril'
+import TRImage from '../../../static/images/TwoRavens-sm.png';
 
-import {aboutText, menuColor, borderColor, heightHeader, mergeAttributes} from '../common'
-import TRImage from '../../images/TwoRavens-sm.png';
+import m from 'mithril';
 
-// ```
-// m(Header, {
-//     contents: m(...)
-//     })
-// ```
+import {ABOUT, menuColor, borderColor, heightHeader, mergeAttributes} from '../common';
 
 export default class Header {
     oninit() {
@@ -15,34 +10,25 @@ export default class Header {
     }
 
     view(vnode) {
-        let {contents, attrsInterface} = vnode.attrs;
+        let {attrsInterface} = vnode.attrs;
 
-        return m("nav#navbar.navbar.navbar-default.navbar-fixed-top[role=navigation]", mergeAttributes({
+        return m('nav.navbar.navbar-expand-lg.fixed-top.bg-light', attrsInterface, [
+            m("a.navbar-brand",
+              m("img[alt=TwoRavens][width=100][style=margin-left: 1em]", {
+                  onmouseover: _ => this.about = true,
+                  onmouseout: _ => this.about = false,
+                  src: TRImage
+              })),
+            m(`#about.card[style=display: ${this.about ? 'block' : 'none'}; top: 10px; left: 140px; position: absolute; width: 500px; z-index: 50]`,
+              m('.card-body', ABOUT)),
+            m('div', {
                 style: {
-                    float: 'left',
-                    background: menuColor,
-                    height: heightHeader + 'px'
+                    display: 'flex',
+                    width: 'calc(100% - 158px)',
+                    'justify-content': 'flex-end',
+                    'align-items': 'center'
                 }
-            }, attrsInterface),
-            [
-                m("a.navbar-brand",
-                    m("img[alt=TwoRavens][width=100][style=margin-left: 1em; margin-top: -.75em]",
-                        {
-                            onmouseover: _ => this.about = true,
-                            onmouseout: _ => this.about = false,
-                            src: TRImage
-                        })),
-                m(`#about.panel.panel-default[style=display: ${this.about ? 'block' : 'none'}; top: 10px; left: 140px; position: absolute; width: 500px; z-index: 50]`,
-                    m('.panel-body', aboutText)),
-                m('div', {
-                    style: {
-                        'display': 'flex',
-                        'justify-content': 'flex-end',
-                        'align-items': 'center',
-                        'height': '100%',
-                        'width': 'calc(100% - 158px)'
-                    }
-                }, contents)]
-        )
+            }, vnode.children)
+        ]);
     }
 }

@@ -1,5 +1,6 @@
-import m from 'mithril'
-import {mergeAttributes} from '../common'
+import m from 'mithril';
+
+import {mergeAttributes} from '../common';
 
 // Interface specification
 //
@@ -74,26 +75,22 @@ export default class ButtonRadio {
         this.active = activeSection || this.active;
 
         // Button bar
-        return m(`div#${id}.btn-group[data-toggle=buttons]`, mergeAttributes({style: {'width': '100%'}}, attrsAll),
-            sections.map((section) =>
+        return m(`div#${id}.btn-group.btn-group-toggle[data-toggle=buttons]`, mergeAttributes({style: {'width': '100%'}}, attrsAll),
+            sections.map(section =>
                 // Individual buttons
-                m(`#${section.id || 'btn' + section.value}.btn.btn-default
+                m(`label#${section.id || 'btn' + section.value}.btn.btn-secondary
                     ${section.value.toLowerCase() === (activeSection || this.active).toLowerCase() ? '.active' : ''}`,
-
-                    mergeAttributes({
-                        onmouseover: () => this.hovered = section.value,
-                        onmouseout: () => this.hovered = undefined,
-                        style: {width: getWidth(section.value)},
-                        onclick: () => {
-                            this.active = section.value;
+                  mergeAttributes({
+                      onmouseover: () => this.hovered = section.value,
+                      onmouseout: () => this.hovered = undefined,
+                      style: {width: getWidth(section.value)},
+                      onclick: () => {
+                          this.active = section.value;
                             onclick(section.value);
                         }
-                    }, attrsButtons, section.attrsInterface),
-                    [
-                        m(`input#${id}${section.value}`, {'name': id, 'title': section.title, 'type': 'radio'}),
-                        section.value
-                    ]
-                ))
-        );
+                  }, attrsButtons, section.attrsInterface), [
+                      m(`input#${id}${section.value}`, {'name': id, 'title': section.title, 'type': 'radio'}),
+                      section.value
+                  ])));
     }
 }

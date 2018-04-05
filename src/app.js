@@ -1,4 +1,4 @@
-import data from '../data/fearonLaitin.json';
+import data from '../static/data/fearonLaitin.json';
 
 export let {variables} = data;
 
