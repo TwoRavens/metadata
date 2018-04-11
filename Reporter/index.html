@@ -1,86 +1,106 @@
 <!doctype html>
 <html>
+
 <head>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
   <script type="text/javascript" src="fearonLaitin.json"></script>
   <script src="https://d3js.org/d3.v3.min.js"></script>
-<link rel = "stylesheet" type = "text/css" href = "style.css" />
-<title>Data Exploration Report</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>Data Exploration Report</title>
 </head>
 
 <body>
-<p>
-<center><h1>Data Exploration Report</h1></center>  <!-- document title --><center>
-<b>Results by TwoRavens: </b> <a href="http://2ra.vn/">Project Link</a></center>
+  <p>
+    <center>
+      <h1>Data Exploration Report</h1>
+    </center>
+    <!-- document title -->
+    <center>
+      <b>Results by TwoRavens: </b>
+      <a href="http://2ra.vn/">Project Link</a>
+    </center>
 
-<!-- Date(s) -->
-<center><p id="date"></center></p>
-<script> var today = new Date(); document.getElementById("date").innerHTML = Date(); </script>
-
-
-<center><p><b>
-Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in the Fearon Laitin dataset. </b></p></center> 
-
-
-
-<center><h4 id="headers"></h4></center>
-
-
-<!-- <!––Experimenting-->    
-
-<script>
-//fetching the variable names from json
-varnames = [];
-d3.json("fearonLaitin.json", function(error, data) {
-    console.log(data);
-    let getData = () => data;
-    let newdata = getData();
-    
-    let allVariables = Object.keys(data['variables']);
-
-var txt = [];
-var img = {};
-temp = [];
-    
-// Make some strings to include in our output.
- 
-var tableHeader = "<table id='table'><tr><th>Nature</th><th>Median</th><th>Mean</th><th>Maximum</th><th>Mininum</th><th>Mode</th><th>Herfindahl Index</th></tr>";
-var tableContent = "";
-var tableFooter = "</table></section></div>";
-i = 1;
-for (let variable in data['variables']) 
-{
-    
-    varData = data['variables'][variable];
-    
-    var containerModule = "<div id='modal'><header><h1><b>"+i + ". "+variable+"</b></h1></header><section>"   
-    
-    tableContent = "<tr><td>" + varData.nature + "</td><td>" + varData.median.toFixed(2) + "</td><td>" + (varData.mean).toFixed(4) + "</td><td>" + (varData.max) + "</td><td>" + varData.min + "</td><td>" + (varData.mode) + "</td><td>" + (varData.herfindahl).toFixed(4) +"</tr>";
-    
-    //txt += "<h1 id =" + variable + " style='text-transform: capitalize'" + ">" + variable + "</h1>";
-    
-    txt +=  containerModule +tableHeader + tableContent;
-    txt += "<img  src=img/" + variable + ".png" + " ></p>"+ tableFooter
-    
-    document.getElementById("headers").innerHTML = txt;
-    i++;  
-}
-   
-})   
-    
-
-    
-</script>
-    
+    <!-- Date(s) -->
+    <center>
+      <p id="date">
+    </center>
+    </p>
+    <script> var today = new Date(); document.getElementById("date").innerHTML = Date(); </script>
 
 
-<!--
-<h1 id="math:problem">Mathematical problem</h1>
-<h1 id="___sec3">Numerical experiments </h1>
--->
+    <center>
+      <p>
+        <b>
+          Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in the Fearon Laitin
+          dataset. </b>
+      </p>
+    </center>
 
-  
 
 
+    <center>
+      <h4 id="headers"></h4>
+    </center>
+
+
+    <!-- <!––Experimenting-->
+
+    <script>
+      //fetching the variable names from json
+      varnames = [];
+      d3.json("fearonLaitin.json", function (error, data) {
+        console.log(data);
+        let getData = () => data;
+        let newdata = getData();
+
+        let allVariables = Object.keys(data['variables']);
+        console.log(allVariables)
+
+        var txt = [];
+        var img = {};
+        temp = [];
+
+        // Make some strings to include in our output.
+
+        var tableHeader = "<table id='table'><tr><th>Nature</th><th>Median</th><th>Mean</th><th>Maximum</th><th>Mininum</th><th>Mode</th><th>Herfindahl Index</th></tr>";
+        var tableContent = "";
+        var tableFooter = "</table></section></div>";
+        i = 1;
+        for (let variable in data['variables'])
+        {
+          console.log(data['variables'][variable])
+        }
+
+        for (let variable in data['variables']) {
+
+          varData = data['variables'][variable];
+
+          // Variables
+          // Multiplied each varible by 1 to convert it to a numeric value, otherwise toFixed does not work
+
+          var median = (varData.median == null)? null : (varData.median*1).toFixed(2);
+          var mean = (varData.mean != null)? (varData.mean*1).toFixed(4) : null;
+          var mode = (varData.mode != null)? (varData.mode*1).toFixed(2) : null;
+          var herfindahl = (varData.herfindahl != null)? (varData.herfindahl*1).toFixed(6) : null;
+
+          var containerModule = "<div id='modal'><header><h1><b>" + i + ". " + variable + "</b></h1></header><section>"
+
+          tableContent = "<tr><td>" + varData.nature + "</td><td>" + median + "</td><td>" + mean+ "</td><td>" + (varData.max) + "</td><td>" + varData.min + "</td><td>" + mode + "</td><td>" + herfindahl+ "</tr>";
+
+          //txt += "<h1 id =" + variable + " style='text-transform: capitalize'" + ">" + variable + "</h1>";
+
+          txt += containerModule + tableHeader + tableContent;
+          txt += "<img  src=img/" + variable + ".png" + " ></p>" + tableFooter
+
+          document.getElementById("headers").innerHTML = txt;
+          i++;
+        }
+
+      })
+
+
+
+    </script>
 </body>
+
 </html>
