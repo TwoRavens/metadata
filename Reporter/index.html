@@ -1,114 +1,11 @@
 <!doctype html>
 <html>
 <head>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
-<script type="text/javascript" src="fearonLaitin.json"></script>
-<script src="https://d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+  <script type="text/javascript" src="fearonLaitin.json"></script>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+<link rel = "stylesheet" type = "text/css" href = "style.css" />
 <title>Data Exploration Report</title>
-<style type="text/css">
-/* blueish style */
-/* Color definitions:  http://www.december.com/html/spec/color0.html
-body {
-  margin-top: 1.0em;
-  background-color: #ffffff;
-  font-family: Helvetica, Arial, FreeSans, san-serif;
-  color: #000000;
-}
-h1 { font-size: 1.8em; color: #1e36ce; }
-h2 { font-size: 1.6em; color: #1e36ce; }
-h3 { font-size: 1.4em; color: #1e36ce; }
-a { color: #1e36ce; text-decoration:none; }
-tt { font-family: "Courier New", Courier; }
-/* pre style removed because it will interfer with pygments */
-p { text-indent: 0px; }
-hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-p.caption { width: 80%; font-style: normal; text-align: left; }
-hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-.alert-text-small   { font-size: 80%;  }
-.alert-text-large   { font-size: 130%; }
-.alert-text-normal  { font-size: 90%;  }
-.alert {
-  padding:8px 35px 8px 14px; margin-bottom:18px;
-  text-shadow:0 1px 0 rgba(255,255,255,0.5);
-  border:1px solid #bababa;
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  color: #555;
-  background-color: #f8f8f8;
-  background-position: 10px 5px;
-  background-repeat: no-repeat;
-  background-size: 38px;
-  padding-left: 55px;
-  width: 50%;
- }
-.alert-block {padding-top:14px; padding-bottom:14px}
-.alert-block > p, .alert-block > ul {margin-bottom:1em}
-.alert li {margin-top: 1em}
-.alert-block p+p {margin-top:5px}
-.alert-notice { background-image: url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_notice.png); }
-.alert-summary  { background-image:url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_summary.png); }
-.alert-warning { background-image: url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_warning.png); }
-.alert-question {background-image:url(https://cdn.rawgit.com/hplgit/doconce/master/bundled/html_images/small_gray_question.png); }
-
-div { text-align: justify; text-justify: inter-word; }
-    
-#modal {
-    width: 75%;
-    border: 1px solid #CCC;
-    box-shadow: 0 1px 5px #CCC;
-    border-radius: 5px;
-    font-family: verdana;
-    margin: 25px auto;
-    overflow: hidden;
-    -webkit-box-shadow: 2px 2px 46px -4px rgba(107,107,107,0.57);
--moz-box-shadow: 2px 2px 46px -4px rgba(107,107,107,0.57);
-box-shadow: 2px 2px 46px -4px rgba(107,107,107,0.57);
-  }
-  #modal header {
-    background: #f1f1f1;
-    background-image: -webkit-linear-gradient( top, #f1f1f1, #CCC );
-    background-image: -ms-linear-gradient( top, #f1f1f1, #CCC );
-    background-image: -moz-linear-gradient( top, #f1f1f1, #CCC );
-    background-image: -o-linear-gradient( top, #f1f1f1, #CCC );
-    box-shadow: 0 1px 2px #888;
-    padding: 10px;
-  }
-  #modal h1 {
-    padding: 0;
-    margin: 0;
-    font-size: 25px;
-    font-weight: normal;
-    text-shadow: 0 1px 2px white;
-    color: #000;
-    text-align: left;
-  }
-  #modal section {
-    padding: 10px 30px; 
-    font-size: 12px;
-    line-height: 175%;
-    color: #555;
-  }    
-  #table {
-    font-family: arial, sans-serif;
-    font-size: 15px;
-    border-collapse: collapse;
-    width: 100%;
-  }
-  #th {
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-    font-weight: bold;
-}
-  #td{
-        border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-    font-weight: normal;
-    }
-</style>
-    
 </head>
 
 <body>
@@ -129,7 +26,7 @@ Data Exploration is useful for understanding data. This report gives a quick sum
 <center><h4 id="headers"></h4></center>
 
 
-<!––Experimenting-->    
+<!-- <!––Experimenting-->    
 
 <script>
 //fetching the variable names from json
@@ -147,7 +44,7 @@ temp = [];
     
 // Make some strings to include in our output.
  
-var tableHeader = "<table id='table' style='border: 1px solid black;'><tr><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Nature</th><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Median</th><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Mean</th><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Maximum</th><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Mininum</th><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Mode</th><th bgcolor='#F0F0F0' style='border: 1px solid black ;'>Herfindahl Index</th></tr>";
+var tableHeader = "<table id='table'><tr><th>Nature</th><th>Median</th><th>Mean</th><th>Maximum</th><th>Mininum</th><th>Mode</th><th>Herfindahl Index</th></tr>";
 var tableContent = "";
 var tableFooter = "</table></section></div>";
 i = 1;
@@ -156,14 +53,14 @@ for (let variable in data['variables'])
     
     varData = data['variables'][variable];
     
-    var containerModule = "<div id='modal' style='text-transform: capitalize'><header><h1 font color='#000'><b>"+i + ". "+variable+"</b></h1></header><section>"   
+    var containerModule = "<div id='modal'><header><h1><b>"+i + ". "+variable+"</b></h1></header><section>"   
     
-    tableContent = "<tr><td width='100' style='border: 1px solid black ;'>" + varData.nature + "</td><td width='100'  style='border: 1px solid black ;'>" + varData.median.toFixed(2) + "</td><td width='100'  style='border: 1px solid black ;'>" + (varData.mean).toFixed(4) + "</td><td width='100' style='border: 1px solid black ;'>" + (varData.max) + "</td><td width='100'  style='border: 1px solid black ;'>" + varData.min + "</td><td width='100' style='border: 1px solid black ;'>" + (varData.mode) + "</td><td width='100' style='border: 1px solid black ;'>" + (varData.herfindahl).toFixed(4) +"</tr>";
+    tableContent = "<tr><td>" + varData.nature + "</td><td>" + varData.median.toFixed(2) + "</td><td>" + (varData.mean).toFixed(4) + "</td><td>" + (varData.max) + "</td><td>" + varData.min + "</td><td>" + (varData.mode) + "</td><td>" + (varData.herfindahl).toFixed(4) +"</tr>";
     
     //txt += "<h1 id =" + variable + " style='text-transform: capitalize'" + ">" + variable + "</h1>";
     
     txt +=  containerModule +tableHeader + tableContent;
-    txt += "<img  src=img/" + variable + ".png" + " align=bottom width=75%></p>"+ tableFooter
+    txt += "<img  src=img/" + variable + ".png" + " ></p>"+ tableFooter
     
     document.getElementById("headers").innerHTML = txt;
     i++;  
