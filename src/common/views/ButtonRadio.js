@@ -75,7 +75,7 @@ export default class ButtonRadio {
         this.active = activeSection || this.active;
 
         // Button bar
-        return m(`div#${id}.btn-group.btn-group-toggle[data-toggle=buttons]`, mergeAttributes({style: {'width': '100%'}}, attrsAll),
+        return m(`div#${id}.btn-group[data-toggle=buttons]`, mergeAttributes({style: {'width': '100%'}}, attrsAll),
             sections.map(section =>
                 // Individual buttons
                 m(`label#${section.id || 'btn' + section.value}.btn.btn-secondary
@@ -88,7 +88,7 @@ export default class ButtonRadio {
                           this.active = section.value;
                             onclick(section.value);
                         }
-                  }, attrsButtons, section.attrsInterface), [
+                  }, attrsButtons), [
                       m(`input#${id}${section.value}`, {'name': id, 'title': section.title, 'type': 'radio'}),
                       section.value
                   ])));

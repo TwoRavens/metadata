@@ -7,10 +7,14 @@ import Table from './common/views/Table';
 import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
 import TextField from './common/views/TextField';
+import Canvas from './common/views/Canvas';
 
 import * as app from './app';
 
 import test_data from '../static/data/test.json';
+import {heightFooter} from "./common/common";
+import {panelOcclusion} from "./common/common";
+import {heightHeader} from "./common/common";
 
 class Editor {
     cellValue(data, statistic, field) {
@@ -120,17 +124,17 @@ class Editor {
         // Sets spacing of variable table column
         let colgroupVariables = () => {
             return m('colgroup',
-                     m('col', {span: 1, width: '10em'}),
-                     m('col', {span: 1}),
-                     m('col', {span: 1, width: '2em'}));
+                m('col', {span: 1, width: '10em'}),
+                m('col', {span: 1}),
+                m('col', {span: 1, width: '2em'}));
         };
         let colgroupStatistics = () => {
             return m('colgroup',
-                     m('col', {span: 1, width: '10em'}),
-                     m('col', {span: 1}),
-                     m('col', {span: 1}),
-                     m('col', {span: 1}),
-                     m('col', {span: 1, width: '2em'}));
+                m('col', {span: 1, width: '10em'}),
+                m('col', {span: 1}),
+                m('col', {span: 1}),
+                m('col', {span: 1}),
+                m('col', {span: 1, width: '2em'}));
         };
 
         return m('div#editor', {
@@ -275,7 +279,15 @@ class Body {
                     sections: [{value: 'Editor'}, {value: 'Report'}, {value: 'Data'}]
                 })
             ),
-            m(modes[mode])
+            m('div#canvas', {
+                style: {
+                    width: '100%',
+                    height: `calc(100% - ${heightHeader}px)`,
+                    position: 'fixed',
+                    overflow: 'auto',
+                    top: heightHeader + 'px'
+                }
+            }, m(modes[mode]))
         ];
     }
 }
