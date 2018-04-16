@@ -1,4 +1,5 @@
 import data from '../static/data/fearonLaitin.json';
+import './index.css'
 
 export let {variables} = data;
 
@@ -48,6 +49,14 @@ export let setSelectedVariable = (variable) => {
     if (!usedStatistics[selectedVariable]) {
         usedStatistics[selectedVariable] = new Set(Object.keys(data['variables'][selectedVariable] || {})
             .filter((stat) => isStatistic(selectedVariable, stat)));
+    }
+
+    // ugly hack to make the css animation play
+    let varlist = document.getElementById("variablesListCenter");
+    if (varlist) {
+        varlist.style.animation = '';
+        void varlist.offsetWidth; // re-flow
+        varlist.style.animation = 'slide-down .3s ease';
     }
 };
 

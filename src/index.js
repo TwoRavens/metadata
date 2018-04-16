@@ -169,7 +169,8 @@ class Editor {
                             width: 'calc(100% - 2em)',
                             'margin-left': '1em',
                             'border-left': '1px solid #dee2e6',
-                            'box-shadow': '0 3px 6px #777'
+                            'box-shadow': '0 3px 6px #777',
+                            animation: 'slide-down .4s ease'
                         }
                     }
                 }),
@@ -189,7 +190,8 @@ class Editor {
                     top: 0,
                     bottom: 0,
                     width: app.leftpanelSize + '%',
-                    'overflow-y': 'auto'
+                    'overflow-y': 'auto',
+                    animation: 'appear .5s ease'
                 }
             }, [
                 m('#horizontalDrag', {
