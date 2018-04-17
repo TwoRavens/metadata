@@ -2,7 +2,7 @@
     box-shadow: 0 0 0 0 !important;
 }
 
-
+/* this prevents selections to content. Applied to body when dragging ui elements */
 .no-select {
     -webkit-user-select: none;  /* Chrome all / Safari all */
     -moz-user-select: none;     /* Firefox all */

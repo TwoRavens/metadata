@@ -1,6 +1,17 @@
 import data from '../static/data/fearonLaitin.json';
+import m from 'mithril'
 
 export let {variables} = data;
+
+let data_url = 'http://localhost:8080/preprocess/api/metadata';
+let preprocess_id = 1;
+
+m.request({
+    method: "GET",
+    url: data_url + '/' + preprocess_id
+}).then((result) => {
+    console.log(result)
+});
 
 let isResizingEditor = false;
 export let leftpanelSize = 50;

@@ -8,7 +8,6 @@ import Table from './common/views/Table';
 import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
 import TextField from './common/views/TextField';
-import Canvas from './common/views/Canvas';
 
 import * as app from './app';
 
@@ -210,7 +209,7 @@ class Editor {
                     },
                     onmousedown: app.resizeEditor
                 }),
-                m('h4#statisticsComputedHeader', {style: {'text-align': 'center'}}, 'Computed Statistics'),
+                m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
                     headers: ['Name', 'Value', 'Description', 'Replication', statisticsAllCheckbox],
@@ -218,7 +217,7 @@ class Editor {
                     tableTags: colgroupStatistics(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-                m('h4#statisticsCustomHeader', {style: {'text-align': 'center'}}, 'Custom Statistics'),
+                m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
                 m(Table, {
                     id: 'statisticsCustom',
                     headers: ['Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
@@ -250,7 +249,7 @@ window.addEventListener('scroll', function (e) {
 class Data {
     view() {
         let headersAttrs = {};
-        test_data.columns.forEach(x => headersAttrs[x] = app.variables[x].nature === 'nominal' ? {style: 'color: red'} : {});
+        test_data.columns.forEach(x => headersAttrs[x] = app.variables[x].nature === 'nominal' ? {style: 'color: ' + common.nomColor} : {});
         return m(Table, {
             headers: [''].concat(test_data.columns),
             headersAttrs,
