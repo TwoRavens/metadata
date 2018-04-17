@@ -1,4 +1,5 @@
 import '../static/bootstrap4/css/bootstrap.css';
+import './index.css'
 
 import m from 'mithril';
 

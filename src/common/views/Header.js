@@ -1,8 +1,6 @@
 import TRImage from '../../../static/images/TwoRavens-sm.png';
-
 import m from 'mithril';
-
-import {ABOUT, menuColor, borderColor, heightHeader, mergeAttributes} from '../common';
+import {ABOUT, mergeAttributes} from '../common';
 
 export default class Header {
     oninit() {
@@ -12,15 +10,16 @@ export default class Header {
     view(vnode) {
         let {attrsInterface} = vnode.attrs;
 
-        return m('nav.navbar.navbar-expand-lg.fixed-top.bg-light', attrsInterface, [
+        return m('nav.navbar.navbar-expand-lg.fixed-top.bg-light', mergeAttributes(
+            {style: {'box-shadow': '0 0 4px #888'}}, attrsInterface), [
             m("a.navbar-brand",
-              m("img[alt=TwoRavens][width=100][style=margin-left: 1em]", {
-                  onmouseover: _ => this.about = true,
-                  onmouseout: _ => this.about = false,
-                  src: TRImage
-              })),
+                m("img[alt=TwoRavens][width=100][style=margin-left: 1em]", {
+                    onmouseover: _ => this.about = true,
+                    onmouseout: _ => this.about = false,
+                    src: TRImage
+                })),
             m(`#about.card[style=display: ${this.about ? 'block' : 'none'}; top: 10px; left: 140px; position: absolute; width: 500px; z-index: 50]`,
-              m('.card-body', ABOUT)),
+                m('.card-body', ABOUT)),
             m('div', {
                 style: {
                     display: 'flex',

@@ -1,5 +1,4 @@
 import data from '../static/data/fearonLaitin.json';
-import './index.css'
 
 export let {variables} = data;
 

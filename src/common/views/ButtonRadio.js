@@ -75,10 +75,10 @@ export default class ButtonRadio {
         this.active = activeSection || this.active;
 
         // Button bar
-        return m(`div#${id}.btn-group[data-toggle=buttons]`, mergeAttributes({style: {'width': '100%'}}, attrsAll),
+        return m(`div#${id}.btn-group[role=group][data-toggle=buttons]`, mergeAttributes({style: {'width': '100%'}}, attrsAll),
             sections.map(section =>
                 // Individual buttons
-                m(`label#${section.id || 'btn' + section.value}.btn.btn-secondary
+                m(`label#${section.id || 'btn' + section.value}.btn.btn-outline-secondary
                     ${section.value.toLowerCase() === (activeSection || this.active).toLowerCase() ? '.active' : ''}`,
                   mergeAttributes({
                       onmouseover: () => this.hovered = section.value,
