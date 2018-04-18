@@ -33,9 +33,9 @@ class Editor {
 
     // data within variable table
     variableTable() {
-        return Object.keys(app.getData()['variables']).map((variable) => [
+        return Object.keys(app.variables).map((variable) => [
             variable,
-            ((app.customFields[variable] || {})['labl'] || {})['value'] || app.getData()['variables'][variable]['labl'] || '',
+            ((app.customFields[variable] || {})['labl'] || {})['value'] || app.variables[variable]['labl'] || '',
             m('input[type=checkbox]', {
                 onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable)),
                 checked: app.usedVariables.has(variable)
@@ -45,7 +45,7 @@ class Editor {
 
     // data shown within accordion upon variable click
     variableAccordionTable(variableName) {
-        let statistics = app.getData()['variables'][variableName];
+        let statistics = app.variables[variableName];
         statistics = statistics || [];
 
         return [...app.accordionStatistics, ...app.ontologyStatistics].map((stat) => [
@@ -57,7 +57,7 @@ class Editor {
 
     // data within statistics table
     statisticsTable(variableName) {
-        let statistics = app.getData()['variables'][variableName];
+        let statistics = app.variables[variableName];
         if (statistics === undefined) return [];
         return Object.keys(statistics)
             .filter((stat) => app.isStatistic(variableName, stat))
@@ -96,7 +96,7 @@ class Editor {
 
     view() {
         // retrieve data from data source
-        let variableData = app.getData()['variables'][app.selectedVariable];
+        let variableData = app.variables[app.selectedVariable];
         let statisticsData = Object.keys(variableData || {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
 
         // format variable table data

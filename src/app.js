@@ -1,7 +1,9 @@
-import data from '../static/data/fearonLaitin.json';
 import m from 'mithril'
 
-export let {variables} = data;
+export let variables = {};
+
+let row_cnt = 0;
+let variable_cnt= 0;
 
 let data_url = 'http://localhost:8080/preprocess/api/metadata';
 let preprocess_id = 1;
@@ -10,7 +12,8 @@ m.request({
     method: "GET",
     url: data_url + '/' + preprocess_id
 }).then((result) => {
-    console.log(result)
+    variables = result['data']['variables'];
+    ({row_cnt, variable_cnt} = result['data']['dataset']);
 });
 
 let isResizingEditor = false;
@@ -37,12 +40,11 @@ document.onmouseup = () => {
     }
 };
 
-export let getData = () => data;
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
 export let ontologyStatistics = ['classification', 'units', 'note'];
 export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTypes', ...ontologyStatistics];
 
-export let allVariables = Object.keys(data['variables']);
+export let allVariables = Object.keys(variables);
 export let usedVariables = new Set(allVariables);
 
 // If passed variable is undefined, then all variables are set.
@@ -57,7 +59,7 @@ export let setSelectedVariable = (variable) => {
 
     // all statistics are enabled by default
     if (!usedStatistics[selectedVariable]) {
-        usedStatistics[selectedVariable] = new Set(Object.keys(data['variables'][selectedVariable] || {})
+        usedStatistics[selectedVariable] = new Set(Object.keys(variables[selectedVariable] || {})
             .filter((stat) => isStatistic(selectedVariable, stat)));
     }
 
@@ -89,7 +91,7 @@ export let partitionVariableTable = (variableTable) => {
 export let customFields = {};
 export let setCustomField = (variable, statistic, field, value) => {
     // ignore non-edits
-    if (data['variables'][variable][field] === value) {
+    if (variables[variable][field] === value) {
         if (customFields[variable] && customFields[variable][statistic])
             delete customFields[variable][statistic][field];
         return;
@@ -146,7 +148,7 @@ let statisticalDatatypes = ['string', 'number', 'boolean'];
 // Checks if an entry for a variable is a statistic
 export let isStatistic = (variable, stat) =>
     accordionStatistics.indexOf(stat) === -1 &&
-        statisticalDatatypes.indexOf(typeof(data['variables'][variable][stat])) !== -1;
+        statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1;
 
 export let usedStatistics = {};
 // If statistic is undefined, all statistics are set
@@ -159,7 +161,7 @@ export let setUsedStatistic = (status, variable, statistic) => {
             usedStatistics[variable].delete(statistic);
     } else {
         usedStatistics[variable] = status ?
-            new Set(Object.keys(data['variables'][variable]).filter((stat) => isStatistic(variable, stat))) :
+            new Set(Object.keys(variables[variable]).filter((stat) => isStatistic(variable, stat))) :
             new Set();
     }
 };
@@ -181,16 +183,15 @@ export let setUsedCustomStatistic = (status, variable, UID) => {
 };
 
 export let getReportData = () => {
-    let data = getData();
     let report = {'variables': {}};
 
-    for (let variable in data['variables']) {
+    for (let variable in variables) {
         let keyCount = {};
 
         if (usedVariables.has(variable)) {
             let varData = {};
-            if (!usedStatistics[variable]) varData = data['variables'][variable];
-            else usedStatistics[variable].forEach(stat => varData[stat] = data['variables'][variable][stat]);
+            if (!usedStatistics[variable]) varData = variables[variable];
+            else usedStatistics[variable].forEach(stat => varData[stat] = variables[variable][stat]);
 
             for (stat in customFields[variable]) varData[stat] = stat;
 
