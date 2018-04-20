@@ -119,8 +119,8 @@ export let resizeEditor = (e) => {
 let resizeEditorTick = (e) => {
     leftpanelSize = (1 - e.clientX / document.getElementById('editor').clientWidth) * 100;
 
-    document.getElementById('variables').style.right = leftpanelSize + "%";
-    document.getElementById('statistics').style.width = leftpanelSize + "%";
+    document.getElementById('exterior').style.right = leftpanelSize + "%";
+    document.getElementById('interior').style.width = leftpanelSize + "%";
 };
 
 document.onmousemove = (e) => isResizingEditor && resizeEditorTick(e);
@@ -133,7 +133,7 @@ document.onmouseup = () => {
 };
 
 // display variable list or statistic list in the leftpanel
-export let transposition = 'variable';
+export let transposition = 'Variables';
 export let setTransposition = (trans) => transposition = trans;
 
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
@@ -315,4 +315,47 @@ export let setUsedCustomStatistic = (status, variable, UID) => {
             new Set(Object.keys(customStatistics[variable] || [])) :
             new Set();
     }
+};
+
+
+// transposed statistics menu
+export let selectedStatistic;
+export let setSelectedStatistic = (statistic) => {
+    selectedStatistic = selectedStatistic === statistic ? undefined : statistic;
+
+    // all statistics are enabled by default. Since this is a cross-view, initialize everything
+    Object.keys(variables).forEach(variable => {
+        if (usedStatistics[variable] === undefined) {
+            usedStatistics[variable] = new Set(Object.keys(variables[variable] || {})
+                .filter((stat) => isStatistic(variable, stat)));
+        }
+    });
+};
+
+// Sets the state of a statistic checkbox within all variables
+// If passed variable is undefined, nothing happens
+export let setTransposedUsedStatistic = (status, statistic) => {
+    if (statistic === undefined) return;
+
+    // format into request
+    let updates = {};
+    for (let variable of Object.keys(variables)) {
+        // edit a copy
+        let inclusions = new Set(usedStatistics[variable]);
+
+        // set inclusion on the copy
+        status ? inclusions.add(statistic) : inclusions.delete(statistic);
+
+        // invert inclusions to omissions
+        updates[variable] = {};
+        updates[variable]['omit'] = Object.keys(variables[variable]).filter(stat=>!inclusions.has(stat));
+    }
+    m.request({
+        method: 'POST',
+        url: data_url + 'update-metadata',
+        data: {
+            preprocess_id: preprocess_id,
+            variable_updates: updates
+        }
+    }).then(reloadData);
 };

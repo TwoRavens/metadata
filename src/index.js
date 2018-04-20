@@ -16,6 +16,7 @@ import test_data from '../static/data/test.json';
 import {heightFooter} from "./common/common";
 import {panelOcclusion} from "./common/common";
 import {heightHeader} from "./common/common";
+import {usedStatistics} from "./app";
 
 class Editor {
     cellValue(data, statistic, field) {
@@ -95,7 +96,7 @@ class Editor {
         ]);
     }
 
-    view() {
+    variablesMenu() {
         // retrieve data from data source
         let variableData = app.variables[app.selectedVariable];
         let statisticsData = Object.keys(variableData || {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
@@ -146,7 +147,7 @@ class Editor {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#variables', {
+            }, m('div#exterior', {
                 style: {
                     position: 'absolute',
                     left: 0,
@@ -189,7 +190,7 @@ class Editor {
                     attrsCells: {style: {padding: '.5em'}}
                 })
             ]),
-            app.selectedVariable && m('div#statistics', {
+            app.selectedVariable && m('div#interior', {
                 style: {
                     position: 'absolute',
                     right: 0,
@@ -211,7 +212,7 @@ class Editor {
                     },
                     onmousedown: app.resizeEditor
                 }),
-                m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Computed Statistics'),
+                m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
                 m(Table, {
                     id: 'statisticsComputed',
                     headers: ['Name', 'Value', 'Description', 'Replication', statisticsAllCheckbox],
@@ -222,12 +223,160 @@ class Editor {
                 m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
                 m(Table, {
                     id: 'statisticsCustom',
-                    headers: ['Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
+                    headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
                     data: this.customStatisticsTable(app.selectedVariable),
                     attrsCells: {style: {padding: '.5em'}},
                     showUID: false
                 })
             ]));
+    }
+
+    // data within statistic table for transposed menu, located on the left panel
+    statisticsTransTable(statistics) {
+        if (Object.keys(app.variables).length === 0) return;
+        let firstVar = Object.keys(app.variables)[0];
+
+        return Object.keys(statistics)
+            .filter(statistic => app.isStatistic(firstVar, statistic))
+            .map((statistic) => {
+                let inclusion = Object.keys(app.variables).map(variable => app.usedStatistics[variable].has(statistic));
+
+                let checked = inclusion.every(_ => _);
+                let indeterminate = !checked && inclusion.some(_ => _);
+
+                return [
+                    statistic,
+                    '--', // for description
+                    '--', // for replication
+                    m('input[type=checkbox]', {
+                        onclick: m.withAttr("checked", (checked) => app.setTransposedUsedStatistic(checked, statistic)),
+                        checked: checked,
+                        indeterminate: indeterminate || undefined
+                    })
+                ]
+            });
+    }
+
+    // data within interior variable table for transposed menu, located on the right panel
+    variablesTransTable(statistics, selectedStatistic) {
+        let variables = statistics[selectedStatistic];
+        if (variables === undefined) return [];
+
+        return Object.keys(variables).map((variable) => {
+            return [
+                variable,
+                this.cellValue(variables, variable, 'value'),
+                m('input[type=checkbox]', {
+                    onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variable, selectedStatistic)),
+                    checked: (usedStatistics[variable] || new Set()).has(selectedStatistic)
+                })
+            ]
+        });
+    }
+
+    statisticsMenu() {
+        // transpose the variables data structure
+        let statistics = {};
+
+        for (let variable of Object.keys(app.variables || {}))
+            for (let statistic of Object.keys(app.variables[variable] || {}))
+                statistics[statistic] === undefined ?
+                    statistics[statistic] = {[variable]: app.variables[variable][statistic]} :
+                    statistics[statistic][variable] = app.variables[variable][statistic];
+
+        // retrieve data from data source
+        let statisticData = statistics[app.selectedStatistic];
+        let variableData = Object.keys(statisticData || {});
+
+        // set of enabled checkboxes for right transposed menu
+        let usedVars = new Set(Object.keys(app.usedStatistics)
+            .map(variable => app.usedStatistics[variable].has(app.selectedStatistic)));
+
+        // Sets spacing of variable table column
+        let colgroupStatistics = () => {
+            return m('colgroup',
+                m('col', {span: 1, width: '10em'}),
+                m('col', {span: 1}),
+                m('col', {span: 1}),
+                m('col', {span: 1}),
+                m('col', {span: 1, width: '2em'}));
+        };
+        let colgroupVariables = () => {
+            return m('colgroup',
+                m('col', {span: 1, width: '10em'}),
+                m('col', {span: 1}),
+                m('col', {span: 1, width: '2em'}));
+        };
+
+        return m('div#editor', {
+                style: {
+                    height: '100%',
+                    width: '100%',
+                    position: 'absolute',
+                    'overflow': 'hidden'
+                }
+            }, m('div#exterior', {
+                style: {
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    right: app.leftpanelSize + '%',
+                    'overflow-y': 'auto'
+                }
+            }, [
+                m('h4#statisticsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Statistics'),
+                m(Table, {
+                    id: 'statisticsList',
+                    headers: ['Name', 'Description', 'Replication', ''],
+                    data: this.statisticsTransTable(statistics),
+                    activeRow: app.selectedStatistic,
+                    onclick: app.setSelectedStatistic,
+                    tableTags: colgroupStatistics(),
+                    attrsCells: {style: {padding: '.5em'}}
+                }),
+            ]),
+            app.selectedStatistic && m('div#interior', {
+                style: {
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: app.leftpanelSize + '%',
+                    'overflow-y': 'auto',
+                    animation: 'appear .5s ease'
+                }
+            }, [
+                m('#horizontalDrag', {
+                    style: {
+                        position: 'absolute',
+                        left: '-4px',
+                        top: 0,
+                        bottom: 0,
+                        width: '12px',
+                        cursor: 'w-resize'
+                    },
+                    onmousedown: app.resizeEditor
+                }),
+                m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedStatistic + ' for each variable'),
+                m(Table, {
+                    id: 'variablesComputed',
+                    headers: ['Name', 'Value', ''],
+                    data: this.variablesTransTable(statistics, app.selectedStatistic),
+                    tableTags: colgroupVariables(),
+                    attrsCells: {style: {padding: '.5em'}}
+                }),
+            ]));
+    }
+
+    view() {
+        if (app.transposition === 'Statistics') {
+            return this.statisticsMenu();
+        }
+
+        if (app.transposition === 'Variables') {
+            return this.variablesMenu();
+        }
     }
 }
 
@@ -275,7 +424,7 @@ class Body {
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: app.setTransposition,
                     activeSection: app.transposition,
-                    sections: [{value: 'Variable'}, {value: 'Statistic'}]
+                    sections: [{value: 'Variables'}, {value: 'Statistics'}]
                 }),
                 m("button#btnPeek.btn.btn-outline-secondary", {
                         title: 'Display a data preview',
