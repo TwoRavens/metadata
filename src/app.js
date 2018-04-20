@@ -5,16 +5,31 @@ export let variables = {};
 let row_cnt = 0;
 let variable_cnt= 0;
 
-let data_url = 'http://localhost:8080/preprocess/api/metadata';
-let preprocess_id = 1;
+let data_url = 'http://localhost:8080/preprocess/api/';
 
-m.request({
-    method: "GET",
-    url: data_url + '/' + preprocess_id
-}).then((result) => {
-    variables = result['data']['variables'];
-    ({row_cnt, variable_cnt} = result['data']['dataset']);
-});
+export let getData = (id) => {
+    m.request({
+        method: "GET",
+        url: data_url + 'metadata/' + id
+    }).then((result) => {
+        console.log(result);
+        variables = result['data']['variables'];
+
+        // load variable checkmarks
+        let variable_display = result['data']['variable_display'];
+        usedVariables = new Set(Object.keys(variable_display)
+            .filter((variable) => variable_display[variable]['viewable']));
+
+        // load statistic checkmarks
+        for (let variable of Object.keys(variables)) {
+            let omissions = new Set(variable_display[variable]['omit']);
+            usedStatistics[variable] = new Set(Object.keys(variables[variable])
+                .filter(stat => !omissions.has(stat) && isStatistic(variable, stat)))
+        }
+
+        ({row_cnt, variable_cnt} = result['data']['dataset']);
+    });
+};
 
 let isResizingEditor = false;
 export let leftpanelSize = 50;
@@ -40,17 +55,20 @@ document.onmouseup = () => {
     }
 };
 
+// display variable list or statistic list in the leftpanel
+export let transposition = 'variable';
+export let setTransposition = (trans) => transposition = trans;
+
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
 export let ontologyStatistics = ['classification', 'units', 'note'];
 export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTypes', ...ontologyStatistics];
 
-export let allVariables = Object.keys(variables);
-export let usedVariables = new Set(allVariables);
+export let usedVariables = new Set();
 
 // If passed variable is undefined, then all variables are set.
 export let setUsedVariable = (status, variable) => {
     if (variable) status ? usedVariables.add(variable) : usedVariables.delete(variable);
-    else usedVariables = status ? new Set(allVariables) : new Set();
+    else usedVariables = status ? new Set(Object.keys(variables)) : new Set();
 };
 
 export let selectedVariable;
@@ -90,6 +108,7 @@ export let partitionVariableTable = (variableTable) => {
 
 export let customFields = {};
 export let setCustomField = (variable, statistic, field, value) => {
+    // TODO Move into callback
     // ignore non-edits
     if (variables[variable][field] === value) {
         if (customFields[variable] && customFields[variable][statistic])
@@ -101,12 +120,35 @@ export let setCustomField = (variable, statistic, field, value) => {
     customFields[variable] = customFields[variable] || {};
     customFields[variable][statistic] = customFields[variable][statistic] || {};
     customFields[variable][statistic][field] = value;
+
+    console.log(variable);
+    console.log(statistic);
+    console.log(value);
+    m.request({
+        method: 'POST',
+        url: data_url + 'update-metadata',
+        data: {
+            preprocess_id: preprocess_id,
+            variable_updates: {
+                [variable]: {
+                    value_updates: {
+                        [statistic]: value
+                    }
+                }
+            }
+        }
+    }).then((result) => {
+        console.log(result);
+    });
 };
 
 
 export let statisticUIDCount = {};
 export let customStatistics = {};
 export let setCustomStatistic = (variable, statUID, field, value) => {
+    console.log(customStatistics);
+    // TODO add request
+
     // create key for variable if it does not exist
     if (!customStatistics[variable]) {
         customStatistics[variable] = {};

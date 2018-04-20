@@ -106,10 +106,11 @@ class Editor {
         // Checkboxes for toggling all states
         let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked)),
-            checked: app.allVariables.length === app.usedVariables.size
+            checked: Object.keys(app.variables).length === app.usedVariables.size
         });
 
         let usedStats = app.usedStatistics[app.selectedVariable];
+
         let statisticsAllCheckbox = m('input#statisticsAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, app.selectedVariable)),
             checked: usedStats && (statisticsData.length === usedStats.size)
@@ -259,8 +260,14 @@ class Data {
 }
 
 class Body {
+    oninit(vnode) {
+        let {id} = vnode.attrs;
+        if (id === undefined) console.log("unknown preprocess_id")
+        app.getData(id || 1);
+    }
+
     view(vnode) {
-        let {mode} = vnode.attrs;
+        let {id, mode} = vnode.attrs;
         mode = mode || 'editor';
 
         let modes = {
@@ -271,10 +278,17 @@ class Body {
 
         return [
             m(Header,
+                mode === 'editor' && m(ButtonRadio, {
+                    id: 'editorTransposeButtonBar',
+                    attrsAll: {style: {width: '180px', 'margin-right': '2em'}, class: 'navbar-right'},
+                    onclick: app.setTransposition,
+                    activeSection: app.transposition,
+                    sections: [{value: 'Variable'}, {value: 'Statistic'}]
+                }),
                 m(ButtonRadio, {
                     id: 'modeButtonBar',
                     attrsAll: {style: {width: '200px', 'margin-right': '2em'}, class: 'navbar-right'},
-                    onclick: (value) => m.route.set('/' + value.toLowerCase()),
+                    onclick: (value) => m.route.set('/' + id + '/' + value.toLowerCase()),
                     activeSection: mode,
                     sections: [{value: 'Editor'}, {value: 'Report'}, {value: 'Data'}]
                 })
@@ -295,5 +309,6 @@ class Body {
 m.route.prefix('');
 m.route(document.body, '/', {
     '/': Body,
-    '/:mode': Body
+    '/:id': Body,
+    '/:id/:mode': Body
 });
