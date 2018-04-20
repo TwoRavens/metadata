@@ -12,12 +12,6 @@ import Peek from './common/views/Peek';
 
 import * as app from './app';
 
-import test_data from '../static/data/test.json';
-import {heightFooter} from "./common/common";
-import {panelOcclusion} from "./common/common";
-import {heightHeader} from "./common/common";
-import {usedStatistics} from "./app";
-
 class Editor {
     cellValue(data, statistic, field) {
         let customVal = ((app.customFields[app.selectedVariable] || {})[statistic] || {})[field];
@@ -39,7 +33,7 @@ class Editor {
             variable,
             ((app.customFields[variable] || {})['labl'] || {})['value'] || app.variables[variable]['labl'] || '',
             m('input[type=checkbox]', {
-                onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable)),
+                onclick: e => {e.stopPropagation(); m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable))(e)},
                 checked: app.usedVariables.has(variable)
             })
         ]);
@@ -237,10 +231,11 @@ class Editor {
         let firstVar = Object.keys(app.variables)[0];
 
         return Object.keys(statistics)
-            .filter(statistic => app.isStatistic(firstVar, statistic))
+            .filter(statistic => app.isStatistic(firstVar, statistic) || app.editableStatistics.indexOf(statistic) !== -1)
             .map((statistic) => {
                 let inclusion = Object.keys(app.variables).map(variable => app.usedStatistics[variable].has(statistic));
 
+                let hasCheck = app.editableStatistics.indexOf(statistic) === -1;
                 let checked = inclusion.every(_ => _);
                 let indeterminate = !checked && inclusion.some(_ => _);
 
@@ -248,10 +243,13 @@ class Editor {
                     statistic,
                     '--', // for description
                     '--', // for replication
-                    m('input[type=checkbox]', {
-                        onclick: m.withAttr("checked", (checked) => app.setTransposedUsedStatistic(checked, statistic)),
+                    hasCheck && m('input[type=checkbox]', {
+                        onclick: e => {
+                            e.stopPropagation();
+                            m.withAttr("checked", (checked) => app.setTransposedUsedStatistic(checked, statistic))(e)
+                        },
                         checked: checked,
-                        indeterminate: indeterminate || undefined
+                        indeterminate: indeterminate
                     })
                 ]
             });
@@ -262,13 +260,15 @@ class Editor {
         let variables = statistics[selectedStatistic];
         if (variables === undefined) return [];
 
+        let hasCheck = app.editableStatistics.indexOf(selectedStatistic) === -1;
+
         return Object.keys(variables).map((variable) => {
             return [
                 variable,
-                this.cellValue(variables, variable, 'value'),
-                m('input[type=checkbox]', {
+                this.cellValue(app.variables[variable], selectedStatistic, 'value'),
+                hasCheck && m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variable, selectedStatistic)),
-                    checked: (usedStatistics[variable] || new Set()).has(selectedStatistic)
+                    checked: (app.usedStatistics[variable] || new Set()).has(selectedStatistic)
                 })
             ]
         });
@@ -296,7 +296,6 @@ class Editor {
         let colgroupStatistics = () => {
             return m('colgroup',
                 m('col', {span: 1, width: '10em'}),
-                m('col', {span: 1}),
                 m('col', {span: 1}),
                 m('col', {span: 1}),
                 m('col', {span: 1, width: '2em'}));
@@ -444,10 +443,10 @@ class Body {
             m('div#canvas', {
                 style: {
                     width: '100%',
-                    height: `calc(100% - ${heightHeader}px)`,
+                    height: `calc(100% - ${common.heightHeader}px)`,
                     position: 'fixed',
                     overflow: 'auto',
-                    top: heightHeader + 'px'
+                    top: common.heightHeader + 'px'
                 }
             }, m(modes[mode]))
         ];
