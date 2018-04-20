@@ -40,18 +40,7 @@ export let getData = (id) => {
     });
 };
 
-
-let resetPeek = () => {
-    peekSkip = 0;
-    peekData = [];
-
-    peekAllDataReceived = false;
-    peekIsGetting = false;
-
-    // this will cause a redraw in the peek menu
-    localStorage.removeItem('peekTableData');
-};
-
+// peek window
 let peekBatchSize = 100;
 let peekSkip = 0;
 let peekData = [];
@@ -68,6 +57,7 @@ let onStorageEvent = (e) => {
         updatePeek();
     }
 };
+window.addEventListener('storage', onStorageEvent);
 
 let updatePeek = () => {
     // peekAllDataReceived = true;
@@ -99,8 +89,19 @@ let updatePeek = () => {
     });
 };
 
-window.addEventListener('storage', onStorageEvent);
+let resetPeek = () => {
+    peekSkip = 0;
+    peekData = [];
 
+    peekAllDataReceived = false;
+    peekIsGetting = false;
+
+    // this will cause a redraw in the peek menu
+    localStorage.removeItem('peekTableData');
+};
+
+
+// window resizing
 let isResizingEditor = false;
 export let leftpanelSize = 50;
 export let resizeEditor = (e) => {
@@ -292,38 +293,4 @@ export let setUsedCustomStatistic = (status, variable, UID) => {
             new Set(Object.keys(customStatistics[variable] || [])) :
             new Set();
     }
-};
-
-export let getReportData = () => {
-    let report = {'variables': {}};
-
-    for (let variable in variables) {
-        let keyCount = {};
-
-        if (usedVariables.has(variable)) {
-            let varData = {};
-            if (!usedStatistics[variable]) varData = variables[variable];
-            else usedStatistics[variable].forEach(stat => varData[stat] = variables[variable][stat]);
-
-            for (stat in customFields[variable]) varData[stat] = stat;
-
-            if (usedCustomStatistics[variable]) {
-                for (let usedUID of usedCustomStatistics[variable]) {
-                    // add user statistics
-                    let statistic = Object.assign({}, customStatistics[variable][usedUID]);
-                    let name = statistic['name'];
-                    delete statistic['name'];
-
-                    if (!keyCount[name]) keyCount[name] = 0;
-                    keyCount[name]++;
-
-                    let suffix = keyCount[name] === 1 ? '' : keyCount[name];
-                    varData[name + suffix] = statistic;
-                }
-            }
-            // console.log(varData);
-            report['variables'][variable] = varData;
-        }
-    }
-    return report;
 };

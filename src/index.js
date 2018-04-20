@@ -237,7 +237,7 @@ class Report {
             style: {
                 'white-space': 'pre-wrap'
             }
-        }, JSON.stringify(app.getReportData(), null, 2));
+        }, "REPORT");
     }
 }
 
