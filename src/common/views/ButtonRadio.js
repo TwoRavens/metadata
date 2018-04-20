@@ -80,17 +80,17 @@ export default class ButtonRadio {
                 // Individual buttons
                 m(`label#${section.id || 'btn' + section.value}.btn.btn-outline-secondary
                     ${section.value.toLowerCase() === (activeSection || this.active).toLowerCase() ? '.active' : ''}`,
-                  mergeAttributes({
-                      onmouseover: () => this.hovered = section.value,
-                      onmouseout: () => this.hovered = undefined,
-                      style: {width: getWidth(section.value)},
-                      onclick: () => {
-                          this.active = section.value;
+                    mergeAttributes({
+                        onmouseover: () => this.hovered = section.value,
+                        onmouseout: () => this.hovered = undefined,
+                        style: {width: getWidth(section.value)},
+                        onclick: () => {
+                            this.active = section.value;
                             onclick(section.value);
                         }
-                  }, attrsButtons), [
-                      m(`input#${id}${section.value}`, {'name': id, 'title': section.title, 'type': 'radio'}),
-                      section.value
-                  ])));
+                    }, attrsButtons), [
+                        m(`input#${id}${section.value}`, {'name': id, 'title': section.title, 'type': 'radio'}),
+                        section.value
+                    ])));
     }
 }

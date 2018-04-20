@@ -8,6 +8,7 @@ import Table from './common/views/Table';
 import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
 import TextField from './common/views/TextField';
+import Peek from './common/views/Peek';
 
 import * as app from './app';
 
@@ -247,23 +248,15 @@ window.addEventListener('scroll', function (e) {
     }
 });
 
-class Data {
-    view() {
-        let headersAttrs = {};
-        test_data.columns.forEach(x => headersAttrs[x] = app.variables[x].nature === 'nominal' ? {style: 'color: ' + common.nomColor} : {});
-        return m(Table, {
-            headers: [''].concat(test_data.columns),
-            headersAttrs,
-            data: _ => test_data.data.map((x, i) => [++i].concat(x))
-        });
-    }
-}
-
 class Body {
     oninit(vnode) {
         let {id} = vnode.attrs;
         if (id === undefined) console.log("unknown preprocess_id")
         app.getData(id || 1);
+
+        // reset peeked data on page load
+        localStorage.setItem('peekHeader', 'metadata ' + id);
+        localStorage.removeItem('peekTableData');
     }
 
     view(vnode) {
@@ -272,25 +265,31 @@ class Body {
 
         let modes = {
             'editor': Editor,
-            'report': Report,
-            'data': Data
+            'report': Report
         };
 
         return [
             m(Header,
                 mode === 'editor' && m(ButtonRadio, {
                     id: 'editorTransposeButtonBar',
-                    attrsAll: {style: {width: '180px', 'margin-right': '2em'}, class: 'navbar-right'},
+                    attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: app.setTransposition,
                     activeSection: app.transposition,
                     sections: [{value: 'Variable'}, {value: 'Statistic'}]
                 }),
+                m("button#btnPeek.btn.btn-outline-secondary", {
+                        title: 'Display a data preview',
+                        style: {"margin-right": '2em'},
+                        onclick: () => window.open('/peek', 'peek')
+                    },
+                    'Data'
+                ),
                 m(ButtonRadio, {
                     id: 'modeButtonBar',
-                    attrsAll: {style: {width: '200px', 'margin-right': '2em'}, class: 'navbar-right'},
+                    attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: (value) => m.route.set('/' + id + '/' + value.toLowerCase()),
                     activeSection: mode,
-                    sections: [{value: 'Editor'}, {value: 'Report'}, {value: 'Data'}]
+                    sections: [{value: 'Editor'}, {value: 'Report'}]
                 })
             ),
             m('div#canvas', {
@@ -309,6 +308,7 @@ class Body {
 m.route.prefix('');
 m.route(document.body, '/', {
     '/': Body,
+    '/peek': Peek,
     '/:id': Body,
-    '/:id/:mode': Body
+    '/:id/:mode': Body,
 });

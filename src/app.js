@@ -1,4 +1,7 @@
 import m from 'mithril'
+import * as common from './common/common';
+
+let preprocess_id;
 
 export let variables = {};
 
@@ -8,6 +11,12 @@ let variable_cnt= 0;
 let data_url = 'http://localhost:8080/preprocess/api/';
 
 export let getData = (id) => {
+
+    if (preprocess_id !== id) {
+        resetPeek();
+        preprocess_id = id;
+    }
+
     m.request({
         method: "GET",
         url: data_url + 'metadata/' + id
@@ -30,6 +39,67 @@ export let getData = (id) => {
         ({row_cnt, variable_cnt} = result['data']['dataset']);
     });
 };
+
+
+let resetPeek = () => {
+    peekSkip = 0;
+    peekData = [];
+
+    peekAllDataReceived = false;
+    peekIsGetting = false;
+
+    // this will cause a redraw in the peek menu
+    localStorage.removeItem('peekTableData');
+};
+
+let peekBatchSize = 100;
+let peekSkip = 0;
+let peekData = [];
+
+let peekAllDataReceived = false;
+let peekIsGetting = false;
+
+let onStorageEvent = (e) => {
+    if (e.key !== 'peekMore' || peekIsGetting) return;
+
+    if (localStorage.getItem('peekMore') === 'true' && !peekAllDataReceived) {
+        localStorage.setItem('peekMore', 'false');
+        peekIsGetting = true;
+        updatePeek();
+    }
+};
+
+let updatePeek = () => {
+    // peekAllDataReceived = true;
+    if (preprocess_id === undefined) {
+        peekAllDataReceived = true;
+        return;
+    }
+
+    m.request({
+        method: 'POST',
+        url: data_url + 'retrieve-rows',
+        data: {
+            preprocess_id: preprocess_id,
+            start_row: peekSkip + 1,
+            num_rows: peekBatchSize,
+            format: 'json'
+        }
+    }).then((response) => {
+        peekIsGetting = false;
+        let headers = response['data']['columns'].map(header => {
+            if (variables[header]['nature'] === 'nominal') {
+                return m('div', {style: 'color: ' + common.nomColor}, header)
+            }
+            return header;
+        });
+        localStorage.setItem('peekTableHeaders', JSON.stringify(headers));
+        peekData = peekData.concat(response['data']['data']);
+        localStorage.setItem('peekTableData', JSON.stringify(peekData));
+    });
+};
+
+window.addEventListener('storage', onStorageEvent);
 
 let isResizingEditor = false;
 export let leftpanelSize = 50;
