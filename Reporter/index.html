@@ -1,106 +1,114 @@
 <!doctype html>
 <html>
-
 <head>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
-  <script type="text/javascript" src="fearonLaitin.json"></script>
-  <script src="https://d3js.org/d3.v3.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <title>Data Exploration Report</title>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css" />
+<title>Data Exploration Report</title>
 </head>
 
 <body>
-  <p>
-    <center>
-      <h1>Data Exploration Report</h1>
-    </center>
-    <!-- document title -->
-    <center>
-      <b>Results by TwoRavens: </b>
-      <a href="http://2ra.vn/">Project Link</a>
-    </center>
+<script src='dist/jspdf.min.js'></script>
+<div id="html-2-pdfwrapper">
+    <div id="row">
+    <center><h1>Data Exploration Report</h1></center>  <!-- document title --><center>
+    <b>Results by TwoRavens: </b> <a href="http://2ra.vn/">Project Link</a></center>
 
     <!-- Date(s) -->
-    <center>
-      <p id="date">
-    </center>
-    </p>
+    <center><p id="date"></p></center>
     <script> var today = new Date(); document.getElementById("date").innerHTML = Date(); </script>
+    <center><p><b>
+    Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in the dataset. </b></p></center> 
+    <button onclick="generate()">Generate PDF</button>
+    </div>
+    <div id="row">
+    <h1 id="table_of_contents">Table of Content</h1>
+    <center><h4 id="toc"></h4></center>    
+    </div>
+    <center><h4 id="headers"></h4></center>
+</div>
 
+<script>
 
-    <center>
-      <p>
-        <b>
-          Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in the Fearon Laitin
-          dataset. </b>
-      </p>
-    </center>
+var content = [];
+toc = [];
+d3.json("/PreprocessedFiles/fearonLaitin.json", function(error, data) {
+    
+// Make some strings to include in our output.
+var tableHeader1 = "";
+var tableContent1 = "";
+var tableFooter1 = "</table><br>";
+var tableHeader2 = "";
+var tableContent2 = "";
+var tableFooter2 = "</table><br>";
+var tableHeader3 = "";
+var tableContent3 = "";
+var tableFooter3 = "</table></section></div>";
+i = 1;
+    
+toc += "<ul id ='hlist'>";
 
+for (let variable in data['variables']) 
+{
+    varData = data['variables'][variable];
+    toc += "<button class = 'buttonhlist'><li><a href='#" + variable + "'>" + capitalizeFirstLetter(variable) + "</a></li></button>"
+}
+toc += "</ul>";    
+document.getElementById("toc").innerHTML = toc;
 
+var tableHeader1 = "<table id='table'><tr><th>Valid</th><th>Invalid</th><th>Median</th><th>Mean</th><th>Mode</th><th>Max</th><th>Min</th></tr>";
 
-    <center>
-      <h4 id="headers"></h4>
-    </center>
+var tableHeader2 = "<table id='table'><tr><th>Unique</th><th>Freqmode</th><th>Fewest</th><th>Mid</th><th>Freqmid</th><th>Std. Deviation</th><th>Herfindahl Index</th></tr>"; 
 
-
-    <!-- <!––Experimenting-->
-
-    <script>
-      //fetching the variable names from json
-      varnames = [];
-      d3.json("fearonLaitin.json", function (error, data) {
-        console.log(data);
-        let getData = () => data;
-        let newdata = getData();
-
-        let allVariables = Object.keys(data['variables']);
-        console.log(allVariables)
-
-        var txt = [];
-        var img = {};
-        temp = [];
-
-        // Make some strings to include in our output.
-
-        var tableHeader = "<table id='table'><tr><th>Nature</th><th>Median</th><th>Mean</th><th>Maximum</th><th>Mininum</th><th>Mode</th><th>Herfindahl Index</th></tr>";
-        var tableContent = "";
-        var tableFooter = "</table></section></div>";
-        i = 1;
-        for (let variable in data['variables'])
-        {
-          console.log(data['variables'][variable])
-        }
-
-        for (let variable in data['variables']) {
-
-          varData = data['variables'][variable];
-
-          // Variables
-          // Multiplied each varible by 1 to convert it to a numeric value, otherwise toFixed does not work
-
-          var median = (varData.median == null)? null : (varData.median*1).toFixed(2);
-          var mean = (varData.mean != null)? (varData.mean*1).toFixed(4) : null;
-          var mode = (varData.mode != null)? (varData.mode*1).toFixed(2) : null;
-          var herfindahl = (varData.herfindahl != null)? (varData.herfindahl*1).toFixed(6) : null;
-
-          var containerModule = "<div id='modal'><header><h1><b>" + i + ". " + variable + "</b></h1></header><section>"
-
-          tableContent = "<tr><td>" + varData.nature + "</td><td>" + median + "</td><td>" + mean+ "</td><td>" + (varData.max) + "</td><td>" + varData.min + "</td><td>" + mode + "</td><td>" + herfindahl+ "</tr>";
-
-          //txt += "<h1 id =" + variable + " style='text-transform: capitalize'" + ">" + variable + "</h1>";
-
-          txt += containerModule + tableHeader + tableContent;
-          txt += "<img  src=img/" + variable + ".png" + " ></p>" + tableFooter
-
-          document.getElementById("headers").innerHTML = txt;
-          i++;
-        }
-
-      })
-
-
-
-    </script>
+var tableHeader3 = "<table id='table'><tr><th>Numchar</th><th>Nature</th><th>Binary</th><th>Interval</th><th>Time</th></tr>"; 
+    
+for (let variable in data['variables']) 
+{   
+    varData = data['variables'][variable];
+    // Variables
+    // Multiplied each varible by 1 to convert it to a numeric value, otherwise toFixed does not work
+    var median = (varData.median == null)? null : (varData.median*1).toFixed(2);
+    var mean = (varData.mean != null)? (varData.mean*1).toFixed(4) : null;
+    var mode = (varData.mode != null)? (varData.mode*1).toFixed(2) : null;
+    var herfindahl = (varData.herfindahl != null)? (varData.herfindahl*1).toFixed(6) : null; 
+    var sd = (varData.sd != null)? (varData.sd*1).toFixed(6) : null; 
+    
+    var containerModule = "<div id='modal' style='text-transform: capitalize'><header><h1 id='" + variable+ "'><b>" +i + ". "+variable+"</b></h1></header><section>"  
+    
+    tableContent1 = "<tr><td>" + varData.valid + "</td><td>" + varData.invalid + "</td><td>" + median+ "</td><td>" + mean + "</td><td>" + mode + "</td><td>" + varData.max + "</td><td>" + varData.min + "</tr>";
+    
+    tableContent2 = "<tr><td>" + varData.uniques + "</td><td>" + varData.freqmode + "</td><td>" + varData.fewest + "</td><td>" + (varData.mid) + "</td><td>" + varData.freqmid + "</td><td>" + sd + "</td><td>" + herfindahl+ "</tr>";
+    
+    tableContent3 = "<tr><td>" + varData.numchar + "</td><td>" + varData.nature + "</td><td>" + varData.binary + "</td><td>" + (varData.interval) + "</td><td>" + varData.time + "</tr>";
+    
+    content +=  containerModule;
+    var label = (varData.labl != "")? content += "<h2><u>Description</u></h2><br>" + "<h3>" + varData.labl + "</h3><br>" : null; 
+    
+    content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'><img  src=img/" + variable + "CDF.png" + "></div>" + "<div class='inner_block'><img  src=img/" + variable + "PDF.png" + "></div></div>"+ "<h2><u>Numeric Summary</u></h2><br>" ;
+    
+    content += tableHeader1 + tableContent1 + tableFooter1 + tableHeader2 + tableContent2 + tableFooter2 + "<h2><u>Non-Numeric Summary</u></h2><br>" + tableHeader3 + tableContent3 + tableFooter3;
+    
+    document.getElementById("headers").innerHTML = content;
+    i++; 
+}   
+})   
+    
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}  
+    
+generate = function()
+{
+	var pdf = new jsPDF('p', 'pt', 'a4');
+	pdf.setFontSize(18);
+	pdf.fromHTML(document.getElementById('html-2-pdfwrapper'));
+    var win = window.open();
+	var iframe = document.createElement('iframe');
+	iframe.setAttribute('style','position:absolute; height:100%; width:100%;');
+	win.document.body.appendChild(iframe);
+    iframe.title = 'report'; 
+	iframe.src = pdf.output('datauristring');
+};
+</script>
 </body>
-
 </html>
