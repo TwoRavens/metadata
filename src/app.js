@@ -4,9 +4,12 @@ import * as common from './common/common';
 let preprocess_id;
 
 export let variables = {};
+// TODO add to preprocess.json
+// TODO load from preprocess.json
+export let customFieldsDataset = [];
 
-let row_cnt = 0;
-let variable_cnt= 0;
+export let row_cnt = 0;
+export let variable_cnt= 0;
 
 let data_url = 'http://localhost:8080/preprocess/api/';
 
@@ -58,8 +61,8 @@ let onStorageEvent = (e) => {
     if (e.key !== 'peekMore' || peekIsGetting) return;
 
     if (localStorage.getItem('peekMore') === 'true' && !peekAllDataReceived) {
-        localStorage.setItem('peekMore', 'false');
         peekIsGetting = true;
+        localStorage.setItem('peekMore', 'false');
         updatePeek();
     }
 };
@@ -133,8 +136,14 @@ document.onmouseup = () => {
 };
 
 // display variable list or statistic list in the leftpanel
-export let transposition = 'Variables';
-export let setTransposition = (trans) => transposition = trans;
+export let editorMode = 'Variables';
+export let setEditorMode = (mode) => editorMode = mode;
+
+export let selectedDatasetField;
+export let setSelectedDatasetAttribute = (attr) => selectedDatasetField = attr;
+
+
+
 
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
 export let ontologyStatistics = ['classification', 'units', 'note'];

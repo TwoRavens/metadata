@@ -90,6 +90,79 @@ class Editor {
         ]);
     }
 
+
+    datasetMenu() {
+        // Sets spacing of variable table column
+        let colgroupAttributes = () => {
+            return m('colgroup',
+                m('col', {span: 1, width: '10em'}),
+                m('col', {span: 1}),
+                m('col', {span: 1}),
+                m('col', {span: 1, width: '2em'}));
+        };
+
+        return m('div#editor', {
+                style: {
+                    height: '100%',
+                    width: '100%',
+                    position: 'absolute',
+                    'overflow': 'hidden'
+                }
+            }, m('div#exterior', {
+                style: {
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    right: app.leftpanelSize + '%',
+                    'overflow-y': 'auto'
+                }
+            }, [
+                m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Dataset Statistics'),
+                m(Table, {
+                    id: 'datasetStatistics',
+                    headers: ['Name', 'Value'],
+                    data: [['Row Count', app.row_cnt], ['Variable Count', app.variable_cnt]],
+                    attrsCells: {style: {padding: '.5em'}}
+                }),
+                m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Dataset Statistics'),
+                m(Table, {
+                    id: 'datasetList',
+                    headers: ['Name', 'Description', 'Replication', ''],
+                    data: app.customFieldsDataset,
+                    activeRow: app.selectedDatasetField,
+                    onclick: app.setSelectedDatasetAttribute,
+                    tableTags: colgroupAttributes(),
+                    attrsCells: {style: {padding: '.5em'}}
+                }),
+            ]),
+            app.selectedStatistic && m('div#interior', {
+                style: {
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: app.leftpanelSize + '%',
+                    'overflow-y': 'auto',
+                    animation: 'appear .5s ease'
+                }
+            }, [
+                m('#horizontalDrag', {
+                    style: {
+                        position: 'absolute',
+                        left: '-4px',
+                        top: 0,
+                        bottom: 0,
+                        width: '12px',
+                        cursor: 'w-resize'
+                    },
+                    onmousedown: app.resizeEditor
+                }),
+                m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedDatasetField),
+            ]));
+    }
+
+
     variablesMenu() {
         // retrieve data from data source
         let variableData = app.variables[app.selectedVariable];
@@ -369,11 +442,15 @@ class Editor {
     }
 
     view() {
-        if (app.transposition === 'Statistics') {
+        if (app.editorMode === 'Dataset') {
+            return this.datasetMenu();
+        }
+
+        if (app.editorMode === 'Statistics') {
             return this.statisticsMenu();
         }
 
-        if (app.transposition === 'Variables') {
+        if (app.editorMode === 'Variables') {
             return this.variablesMenu();
         }
     }
@@ -419,11 +496,11 @@ class Body {
         return [
             m(Header,
                 mode === 'editor' && m(ButtonRadio, {
-                    id: 'editorTransposeButtonBar',
+                    id: 'editorButtonBar',
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
-                    onclick: app.setTransposition,
-                    activeSection: app.transposition,
-                    sections: [{value: 'Variables'}, {value: 'Statistics'}]
+                    onclick: app.setEditorMode,
+                    activeSection: app.editorMode,
+                    sections: [{value: 'Dataset'}, {value: 'Variables'}, {value: 'Statistics'}]
                 }),
                 m("button#btnPeek.btn.btn-outline-secondary", {
                         title: 'Display a data preview',
