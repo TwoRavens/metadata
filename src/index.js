@@ -13,8 +13,8 @@ import Peek from './common/views/Peek';
 import * as app from './app';
 
 class Editor {
-    cellValue(data, statistic, field) {
-        let customVal = ((app.customFields[app.selectedVariable] || {})[statistic] || {})[field];
+    cellValue(data, variable, statistic, field) {
+        let customVal = ((app.customFields[variable] || {})[statistic] || {})[field];
         let defaultVal = field === 'value' ? data[statistic] : '--';  // missing from preprocess.json
         let chosenVal = customVal || defaultVal || '';
         if (app.editableStatistics.indexOf(statistic) === -1 || field === 'description') return chosenVal;
@@ -22,7 +22,7 @@ class Editor {
         return m(TextField, {
             id: 'textField' + statistic + field,
             value: chosenVal,
-            onblur: (value) => app.setCustomField(app.selectedVariable, statistic, field, value),
+            onblur: (value) => app.setCustomField(variable, statistic, field, value),
             style: {margin: 0}
         });
     }
@@ -46,8 +46,8 @@ class Editor {
 
         return [...app.accordionStatistics, ...app.ontologyStatistics].map((stat) => [
             stat,
-            this.cellValue(statistics, stat, 'value'),
-            this.cellValue(statistics, stat, 'description')
+            this.cellValue(statistics, variableName, stat, 'value'),
+            this.cellValue(statistics, variableName, stat, 'description')
         ]);
     }
 
@@ -59,8 +59,8 @@ class Editor {
             .filter((stat) => app.isStatistic(variableName, stat))
             .map((stat) => [
                 stat,
-                this.cellValue(statistics, stat, 'value'),
-                this.cellValue(statistics, stat, 'description'),
+                this.cellValue(statistics, variableName, stat, 'value'),
+                this.cellValue(statistics, variableName, stat, 'description'),
                 '--',
                 m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variableName, stat)),
@@ -338,7 +338,7 @@ class Editor {
         return Object.keys(variables).map((variable) => {
             return [
                 variable,
-                this.cellValue(app.variables[variable], selectedStatistic, 'value'),
+                this.cellValue(app.variables[variable], variable, selectedStatistic, 'value'),
                 hasCheck && m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variable, selectedStatistic)),
                     checked: (app.usedStatistics[variable] || new Set()).has(selectedStatistic)
