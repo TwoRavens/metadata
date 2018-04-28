@@ -1,23 +1,40 @@
 import m from 'mithril'
 import * as common from './common/common';
 
-let preprocess_id;
+export let preprocess_id;
 
 export let variables = {};
 // TODO add to preprocess.json
 // TODO load from preprocess.json
 export let customFieldsDataset = [];
 
-export let row_cnt = 0;
-export let variable_cnt= 0;
+export let row_cnt;
+export let variable_cnt;
 
 let data_url = 'http://localhost:8080/preprocess/api/';
 
-export let getData = (id) => {
+export let uploadFile = (e) => {
+    let file = e.target.files[0];
 
-    if (preprocess_id !== id) {
-        preprocess_id = parseInt(id);
-        resetPeek();
+    let data = new FormData();
+    data.append("source_file", file);
+    data.append("preprocess_file", "");
+
+    m.request({
+        method: "POST",
+        url: data_url + "process-single-file",
+        data: data,
+    }).then(uploadCallback)
+};
+
+let uploadCallback = (response) => {
+    console.log(response);
+};
+
+export let getData = (id) => {
+    if (isNaN(id) || id === '') {
+        preprocess_id = undefined;
+        return;
     }
 
     m.request({
@@ -27,10 +44,20 @@ export let getData = (id) => {
 };
 
 let reloadData = (result) => {
+
     if (!result['success']) {
+        if (result['message'].indexOf("PreprocessJob not found") !== -1) {
+            preprocess_id = undefined;
+            m.route.set('/');
+        }
         console.log(result['message']);
         return;
     }
+
+    preprocess_id = result['data']['self']['preprocess_id'];
+    m.route.set('/' + preprocess_id + '/' + metadataMode);
+
+    resetPeek();
 
     variables = result['data']['variables'];
 
@@ -122,8 +149,8 @@ export let resizeEditor = (e) => {
 let resizeEditorTick = (e) => {
     leftpanelSize = (1 - e.clientX / document.getElementById('editor').clientWidth) * 100;
 
-    document.getElementById('exterior').style.right = leftpanelSize + "%";
-    document.getElementById('interior').style.width = leftpanelSize + "%";
+    document.getElementById('leftView').style.right = leftpanelSize + "%";
+    document.getElementById('rightView').style.width = leftpanelSize + "%";
 };
 
 document.onmousemove = (e) => isResizingEditor && resizeEditorTick(e);
@@ -135,7 +162,10 @@ document.onmouseup = () => {
     }
 };
 
-// display variable list or statistic list in the leftpanel
+// overall mode: ['Home', 'Editor', 'Report']
+export let metadataMode = 'home';
+
+// mode for editor: ['Dataset', 'Variables', 'Statistics']
 export let editorMode = 'Variables';
 export let setEditorMode = (mode) => editorMode = mode;
 

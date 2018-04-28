@@ -12,6 +12,87 @@ import Peek from './common/views/Peek';
 
 import * as app from './app';
 
+class Home {
+    view(vnode) {
+        return m('div#home', {
+                style: {
+                    height: '100%',
+                    width: '100%',
+                    position: 'absolute',
+                    'overflow': 'hidden'
+                }
+            }, m('div#leftView', {
+                style: {
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    right: app.leftpanelSize + '%',
+                    'overflow-y': 'auto'
+                }
+            }, [
+                m('h4#selectDatasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Select Dataset'),
+                m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
+                    m('label', {style: {'margin-right': '2em'}}, 'Preprocess ID'),
+                    m(TextField, {
+                        style: {display: 'inline', width: 'auto'},
+                        id: 'textFieldPreprocessID',
+                        value: app.preprocess_id,
+                        placeholder: 'numeric',
+                        oninput: app.getData
+                    }),
+                    // disabled because it auto-loads
+                    // m('button.btn.btn-outline-secondary', {
+                    //     style: {'margin-left': '2em'},
+                    //     onclick: () => m.route.set('/' + app.preprocess_id + '/editor'),
+                    //     disabled: app.preprocess_id === undefined
+                    // }, 'Load')
+                ]),
+                app.preprocess_id && m(Table, {
+                    id: 'datasetStatistics',
+                    headers: ['Name', 'Value'],
+                    data: [['Row Count', app.row_cnt], ['Variable Count', app.variable_cnt]],
+                    attrsCells: {style: {padding: '.5em'}}
+                })
+            ]),
+            m('div#rightView', {
+                style: {
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: app.leftpanelSize + '%',
+                    'overflow-y': 'auto',
+                    animation: 'appear .5s ease'
+                }
+            }, [
+                m('#horizontalDrag', {
+                    style: {
+                        position: 'absolute',
+                        left: '-4px',
+                        top: 0,
+                        bottom: 0,
+                        width: '12px',
+                        cursor: 'w-resize'
+                    },
+                    onmousedown: app.resizeEditor
+                }),
+                m('h4#uploadDatasetHeader', {
+                    style: {
+                        'padding-top': '.5em',
+                        'text-align': 'center'
+                    }
+                }, 'Upload Dataset'),
+                m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
+                    m('input', {
+                        type: 'file',
+                        onchange: app.uploadFile
+                    })
+                ]),
+            ]));
+    }
+}
+
 class Editor {
     cellValue(data, variable, statistic, field) {
         let customVal = ((app.customFields[variable] || {})[statistic] || {})[field];
@@ -37,7 +118,7 @@ class Editor {
                 checked: app.usedVariables.has(variable)
             })
         ]);
-    };
+    }
 
     // data shown within accordion upon variable click
     variableAccordionTable(variableName) {
@@ -108,7 +189,7 @@ class Editor {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#exterior', {
+            }, m('div#leftView', {
                 style: {
                     position: 'absolute',
                     left: 0,
@@ -136,7 +217,7 @@ class Editor {
                     attrsCells: {style: {padding: '.5em'}}
                 }),
             ]),
-            app.selectedStatistic && m('div#interior', {
+            app.selectedStatistic && m('div#rightView', {
                 style: {
                     position: 'absolute',
                     right: 0,
@@ -214,7 +295,7 @@ class Editor {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#exterior', {
+            }, m('div#leftView', {
                 style: {
                     position: 'absolute',
                     left: 0,
@@ -257,7 +338,7 @@ class Editor {
                     attrsCells: {style: {padding: '.5em'}}
                 })
             ]),
-            app.selectedVariable && m('div#interior', {
+            app.selectedVariable && m('div#rightView', {
                 style: {
                     position: 'absolute',
                     right: 0,
@@ -328,7 +409,7 @@ class Editor {
             });
     }
 
-    // data within interior variable table for transposed menu, located on the right panel
+    // data within rightView variable table for transposed menu, located on the right panel
     variablesTransTable(statistics, selectedStatistic) {
         let variables = statistics[selectedStatistic];
         if (variables === undefined) return [];
@@ -387,7 +468,7 @@ class Editor {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#exterior', {
+            }, m('div#leftView', {
                 style: {
                     position: 'absolute',
                     left: 0,
@@ -408,7 +489,7 @@ class Editor {
                     attrsCells: {style: {padding: '.5em'}}
                 }),
             ]),
-            app.selectedStatistic && m('div#interior', {
+            app.selectedStatistic && m('div#rightView', {
                 style: {
                     position: 'absolute',
                     right: 0,
@@ -476,22 +557,16 @@ window.addEventListener('scroll', function (e) {
 class Body {
     oninit(vnode) {
         let {id} = vnode.attrs;
-        if (id === undefined) console.log("unknown preprocess_id")
-        app.getData(id || 1);
+        app.getData(id);
 
         // reset peeked data on page load
-        localStorage.setItem('peekHeader', 'metadata ' + id);
+        localStorage.setItem('peekHeader', 'Preprocess ID:  ' + id);
         localStorage.removeItem('peekTableData');
     }
 
     view(vnode) {
         let {id, mode} = vnode.attrs;
-        mode = mode || 'editor';
-
-        let modes = {
-            'editor': Editor,
-            'report': Report
-        };
+        app.metadataMode = mode || 'home';
 
         return [
             m(Header,
@@ -502,7 +577,7 @@ class Body {
                     activeSection: app.editorMode,
                     sections: [{value: 'Dataset'}, {value: 'Variables'}, {value: 'Statistics'}]
                 }),
-                m("button#btnPeek.btn.btn-outline-secondary", {
+                app.preprocess_id && m("button#btnPeek.btn.btn-outline-secondary", {
                         title: 'Display a data preview',
                         style: {"margin-right": '2em'},
                         onclick: () => window.open('/peek', 'peek')
@@ -512,9 +587,9 @@ class Body {
                 m(ButtonRadio, {
                     id: 'modeButtonBar',
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
-                    onclick: (value) => m.route.set('/' + id + '/' + value.toLowerCase()),
-                    activeSection: mode,
-                    sections: [{value: 'Editor'}, {value: 'Report'}]
+                    onclick: (value) => m.route.set(app.preprocess_id ? '/' + id + '/' + value.toLowerCase() : '/'),
+                    activeSection: app.metadataMode,
+                    sections: [{value: 'Home'}].concat(app.preprocess_id ? [{value: 'Editor'}, {value: 'Report'}] : [])
                 })
             ),
             m('div#canvas', {
@@ -525,7 +600,11 @@ class Body {
                     overflow: 'auto',
                     top: common.heightHeader + 'px'
                 }
-            }, m(modes[mode]))
+            }, m({
+                'home': Home,
+                'editor': Editor,
+                'report': Report
+            }[app.metadataMode]))
         ];
     }
 }
