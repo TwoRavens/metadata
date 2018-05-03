@@ -7,7 +7,6 @@
 <script src="https://kendo.cdn.telerik.com/2017.2.621/js/jquery.min.js"></script> 
 <script src="https://kendo.cdn.telerik.com/2017.2.621/js/jszip.min.js"></script>
 <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script> 
-	
 <title>Data Exploration Report</title>
 </head>
 
@@ -34,20 +33,22 @@ toc = [];
 d3.json("/PreprocessedFiles/fearonLaitin.json", function(error, data) {
     
 // Make some strings to include in our output.
-var tableHeader1 = "";
+var tableHeader1 = "<table id='table'><tr>";
 var tableContent1 = "";
 var tableFooter1 = "</table><br>";
-var tableHeader2 = "";
+var tableHeader2 = "<table id='table'><tr>";
 var tableContent2 = "";
 var tableFooter2 = "</table><br>";
 var tableHeader3 = "<table id='table'><tr>";
 var tableContent3 = "</tr>";
 var tableFooter3 = "</table></section></div>";
+
 nonNumeric = ['numchar', 'nature', 'binary', 'interval','time'];
+numeric1 = ['valid', 'invalid', 'median','mean','mode','max','min'];
+numeric2 = ['uniques','freqmode','fewest','mid','freqmid','sd','herfindahl'];
 i = 1;
     
 toc += "<ul id ='hlist'>";
-
 for (let variable in data['variables']) 
 {
     varData = data['variables'][variable];
@@ -56,31 +57,43 @@ for (let variable in data['variables'])
 toc += "</ul>";    
 document.getElementById("toc").innerHTML = toc;
 
-tableHeader1 = "<table id='table'><tr><th>Valid</th><th>Invalid</th><th>Median</th><th>Mean</th><th>Mode</th><th>Max</th><th>Min</th></tr>";
+// First Table header
+for (var y = 0; y < numeric1.length; y++) {
+    tableHeader1 += "<th>"+numeric1[y]+"</th>"
+}
+tableHeader1 += "</tr><tr>"; 
 
-tableHeader2 = "<table id='table'><tr><th>Unique</th><th>Freqmode</th><th>Fewest</th><th>Mid</th><th>Freqmid</th><th>Std. Deviation</th><th>Herfindahl Index</th></tr>"; 
+// Second Table header 
+for (var y = 0; y < numeric2.length; y++) {
+    tableHeader2 += "<th>"+numeric2[y]+"</th>"
+}
+tableHeader2 += "</tr><tr>"; 
 
-tableHeader3 += "<th>Numchar</th><th>Nature</th><th>Binary</th><th>Interval</th><th>Time</th></tr>"; 
-
-    
+// Third Table header 
+for (var y = 0; y < nonNumeric.length; y++) {
+    tableHeader3 += "<th>"+nonNumeric[y]+"</th>"
+}    
+tableHeader3 += "</tr><tr>"; 
+ 
 for (let variable in data['variables']) 
 {   
     varData = data['variables'][variable];
-    // Variables
-    // Multiplied each varible by 1 to convert it to a numeric value, otherwise toFixed does not work
-    var median = (varData.median == null)? null : (varData.median*1).toFixed(2);
-    var mean = (varData.mean != null)? (varData.mean*1).toFixed(4) : null;
-    var mode = (varData.mode != null)? (varData.mode*1).toFixed(2) : null;
-    var herfindahl = (varData.herfindahl != null)? (varData.herfindahl*1).toFixed(6) : null; 
-    var sd = (varData.sd != null)? (varData.sd*1).toFixed(6) : null; 
-    
     var containerModule = "<div id='modal' style='text-transform: capitalize'><header><h1 id='" + variable+ "'><b>" +i + ". "+variable+"</b></h1></header><section>"  
     
-    tableContent1 = "<tr><td>" + varData.valid + "</td><td>" + varData.invalid + "</td><td>" + median+ "</td><td>" + mean + "</td><td>" + mode + "</td><td>" + varData.max + "</td><td>" + varData.min + "</tr>";
+    for (var y = 0; y < numeric1.length; y++) {
+    tableContent1 += "<td>" + varData[numeric1[y]] + "</td>"
+    }
+    tableContent1 += "</tr>"; 
     
-    tableContent2 = "<tr><td>" + varData.uniques + "</td><td>" + varData.freqmode + "</td><td>" + varData.fewest + "</td><td>" + (varData.mid) + "</td><td>" + varData.freqmid + "</td><td>" + sd + "</td><td>" + herfindahl+ "</tr>";
+    for (var y = 0; y < numeric2.length; y++) {
+    tableContent2 += "<td>" + varData[numeric2[y]] + "</td>"
+    }
+    tableContent2 += "</tr>";
     
-    tableContent3 = "<tr><td>" + varData.numchar + "</td><td>" + varData.nature + "</td><td>" + varData.binary + "</td><td>" + (varData.interval) + "</td><td>" + varData.time + "</tr>";
+    for (var y = 0; y < nonNumeric.length; y++) {
+    tableContent3 += "<td>" + varData[nonNumeric[y]] + "</td>"
+    }
+    tableContent3 += "</tr>";    
     
     content +=  containerModule;
     var label = (varData.labl != "")? content += "<h2>Description</h2><br>" + "<h3>" + varData.labl + "</h3><br>" : null; 
@@ -90,10 +103,12 @@ for (let variable in data['variables'])
     content += tableHeader1 + tableContent1 + tableFooter1 + tableHeader2 + tableContent2 + tableFooter2 + "<h2>Non-Numeric Summary</h2><br>" + tableHeader3 + tableContent3 + tableFooter3;
     
     document.getElementById("headers").innerHTML = content;
+    var tableContent1 = "";
+    var tableContent2 = "";
+    var tableContent3 = "</tr>";
     i++; 
-}   
+}
 })   
-
 
 // code for Kendo API to export html to PDF
 kendo.pdf.defineFont({
@@ -111,12 +126,10 @@ generate = function ExportPdf(){
 kendo.drawing
     .drawDOM("#html-2-pdfwrapper", 
     { 
-        //forcePageBreak: "#modal", // enabling forcePageBreak would enforce a page break after each modal div   
+        forcePageBreak: "#modal", // enabling forcePageBreak would enforce a page break after each modal div   
 		paperSize:"A4",
         scale:0.5,
         margin: { left: "0cm", top: "1cm", right: "0cm", bottom: "1cm"  },
-	 	
-        
     })
         .then(function(group){
         kendo.drawing.pdf.saveAs(group, "TwoRavens_Data_Exploration_Report.pdf")
