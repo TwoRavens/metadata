@@ -3,12 +3,15 @@
 <head>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 <script src="https://d3js.org/d3.v3.min.js"></script>
+
 <link rel="stylesheet" type="text/css" href="style.css" />
 <title>Data Exploration Report</title>
 </head>
 
 <body>
 <script src='dist/jspdf.min.js'></script>
+<script src='dist/html2canvas.js'></script>
+
 <div id="html-2-pdfwrapper">
     <div id="row">
     <center><h1>Data Exploration Report</h1></center>  <!-- document title --><center>
@@ -19,7 +22,9 @@
     <script> var today = new Date(); document.getElementById("date").innerHTML = Date(); </script>
     <center><p><b>
     Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in the dataset. </b></p></center> 
-    <button onclick="generate()">Generate PDF</button>
+    <button onclick="javascript: generate()">Generate PDF</button>
+    
+
     </div>
     <div id="row">
     <h1 id="table_of_contents">Table of Content</h1>
@@ -27,6 +32,8 @@
     </div>
     <center><h4 id="headers"></h4></center>
 </div>
+
+
 
 <script>
 
@@ -85,8 +92,9 @@ for (let variable in data['variables'])
     var label = (varData.labl != "")? content += "<h2><u>Description</u></h2><br>" + "<h3>" + varData.labl + "</h3><br>" : null; 
     
     content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'><img  src=img/" + variable + "CDF.png" + "></div>" + "<div class='inner_block'><img  src=img/" + variable + "PDF.png" + "></div></div>"+ "<h2><u>Numeric Summary</u></h2><br>" ;
+    // content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'></div>" + "<div class='inner_block'></div></div>"+ "<h2><u>Numeric Summary</u></h2><br>" ;
     
-    content += tableHeader1 + tableContent1 + tableFooter1 + tableHeader2 + tableContent2 + tableFooter2 + "<h2><u>Non-Numeric Summary</u></h2><br>" + tableHeader3 + tableContent3 + tableFooter3;
+    content += tableHeader1 + tableContent1 + tableFooter1 + tableHeader2 + tableContent2 + tableFooter2 + "<h2><u>Non-Numeric Summary</u></h2><br>" + tableHeader3 + tableContent3 + tableFooter3 ;
     
     document.getElementById("headers").innerHTML = content;
     i++; 
@@ -96,18 +104,57 @@ for (let variable in data['variables'])
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }  
-    
-generate = function()
+$(document).ready(function() {
+ 
+ //Generate PDF
+ function generatePDF() {
+     window.scrollTo(0, 0);
+
+     var pdf = new jsPDF('p', 'pt', [580, 630]);
+
+     html2canvas($("#html-2-pdfwrapper")[0], {
+         onrendered: function(canvas) {
+             document.body.appendChild(canvas);
+             var ctx = canvas.getContext('2d');
+             var imgData = canvas.toDataURL("image/png", 1.0);
+             var width = canvas.width;
+             var height = canvas.clientHeight;
+             pdf.addImage(imgData);
+
+         }
+     });
+     setTimeout(function() {
+
+         //jsPDF code to save file
+         pdf.save('sample.pdf');
+     }, 2000);
+ };
+
+});
+$('#cmd').click(function() {
+  var options = {
+  };
+  var pdf = new jsPDF('p', 'pt', 'a4');
+  pdf.addHTML($("#html-2-pdfwrapper")[0], 15, 15, options, function() {
+    pdf.save('pageContent.pdf');
+  });
+});
+function generate()
 {
-	var pdf = new jsPDF('p', 'pt', 'a4');
-	pdf.setFontSize(18);
-	pdf.fromHTML(document.getElementById('html-2-pdfwrapper'));
-    var win = window.open();
-	var iframe = document.createElement('iframe');
-	iframe.setAttribute('style','position:absolute; height:100%; width:100%;');
-	win.document.body.appendChild(iframe);
-    iframe.title = 'report'; 
-	iframe.src = pdf.output('datauristring');
+    
+    // Only way to Get the CSS in the PDF file
+    window.print();
+    
+	// var pdf = new jsPDF('p', 'pt', 'a4');
+	// pdf.setFontSize(18);
+	// pdf.fromHTML(document.getElementById('html-2-pdfwrapper'));
+    // var win = window.open();
+	// var iframe = document.createElement('iframe');
+	// iframe.setAttribute('style','position:absolute; height:100%; width:100%;');
+	// win.document.body.appendChild(iframe);
+    // iframe.title = 'report'; 
+	// iframe.src = pdf.output('datauristring');
+    
 };
 </script>
 </body>
