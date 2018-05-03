@@ -43,6 +43,7 @@ div {
 }
 
 #modal {
+    page-break-before: always;
     text-transform: capitalize;
     width: 75%;
     border: 1px solid #CCC;
