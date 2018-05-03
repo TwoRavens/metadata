@@ -89,6 +89,7 @@ class Home {
                         onchange: app.uploadFile
                     })
                 ]),
+                m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, app.uploadStatus)
             ]));
     }
 }
@@ -203,7 +204,21 @@ class Editor {
                 m(Table, {
                     id: 'datasetStatistics',
                     headers: ['Name', 'Value'],
-                    data: [['Row Count', app.row_cnt], ['Variable Count', app.variable_cnt]],
+                    data: [
+                        ['Name', m(TextField, {
+                            id: 'textFieldDatasetName',
+                            value: app.datasetName,
+                            onblur: (value) => app.setDatasetField('name', value),
+                            style: {margin: 0}
+                        })],
+                        ['Description', m(TextField, {
+                            id: 'textFieldDatasetDescription',
+                            value: app.datasetDescription,
+                            onblur: (value) => app.setDatasetField('description', value),
+                            style: {margin: 0}
+                        })],
+                        ['Row Count', app.row_cnt],
+                        ['Variable Count', app.variable_cnt]],
                     attrsCells: {style: {padding: '.5em'}}
                 }),
                 m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Dataset Statistics'),

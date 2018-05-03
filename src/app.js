@@ -10,25 +10,43 @@ export let customFieldsDataset = [];
 
 export let row_cnt;
 export let variable_cnt;
+export let datasetName;
+export let datasetDescription;
 
 let data_url = 'http://localhost:8080/preprocess/api/';
 
-export let uploadFile = (e) => {
+export let uploadStatus;
+export let uploadFile = async (e) => {
     let file = e.target.files[0];
 
     let data = new FormData();
     data.append("source_file", file);
-    data.append("preprocess_file", "");
 
-    m.request({
+    // initial upload
+    let response = await m.request({
         method: "POST",
         url: data_url + "process-single-file",
         data: data,
-    }).then(uploadCallback)
-};
+    });
 
-let uploadCallback = (response) => {
-    console.log(response);
+    let callback_url = response['callback_url'];
+
+    // get the data
+    let processed = false;
+    while (!processed) {
+        response = await m.request({
+            method: "GET",
+            url: callback_url
+        });
+
+        console.log(response);
+        uploadStatus = response['data']['user_message'];
+
+        if (response['data']['state'] !== "PREPROCESS_STARTED") {
+            processed = true;
+            if (response['data']['state'] === "SUCCESS") reloadData(response['data']['data']);
+        }
+    }
 };
 
 export let getData = (id) => {
@@ -40,29 +58,33 @@ export let getData = (id) => {
     m.request({
         method: "GET",
         url: data_url + 'metadata/' + id
-    }).then(reloadData);
+    }).then((response) => {
+        console.log(response['message']);
+
+        if (!response['success']) {
+            if (response['message'].indexOf("PreprocessJob not found") !== -1) {
+                preprocess_id = undefined;
+                m.route.set('/');
+            }
+            console.log(response['message']);
+            return;
+        }
+        reloadData(response['data'])
+    });
 };
 
-let reloadData = (result) => {
+// takes in only the preprocess.json
+let reloadData = (data) => {
 
-    if (!result['success']) {
-        if (result['message'].indexOf("PreprocessJob not found") !== -1) {
-            preprocess_id = undefined;
-            m.route.set('/');
-        }
-        console.log(result['message']);
-        return;
-    }
-
-    preprocess_id = result['data']['self']['preprocess_id'];
+    preprocess_id = data['self']['preprocess_id'];
     m.route.set('/' + preprocess_id + '/' + metadataMode);
 
     resetPeek();
 
-    variables = result['data']['variables'];
+    variables = data['variables'];
 
     // load variable checkmarks
-    let variable_display = result['data']['variable_display'];
+    let variable_display = data['variable_display'];
     usedVariables = new Set(Object.keys(variable_display)
         .filter((variable) => variable_display[variable]['viewable']));
 
@@ -73,7 +95,7 @@ let reloadData = (result) => {
             .filter(stat => !omissions.has(stat) && isStatistic(variable, stat)))
     }
 
-    ({row_cnt, variable_cnt} = result['data']['dataset']);
+    ({row_cnt, variable_cnt} = data['dataset']);
 };
 
 // peek window
@@ -397,4 +419,9 @@ export let setTransposedUsedStatistic = (status, statistic) => {
             variable_updates: updates
         }
     }).then(reloadData);
+};
+
+export let setDatasetField = (field, value) => {
+    if (field === 'name') datasetName = value;
+    if (field === 'description') datasetDescription = value;
 };
