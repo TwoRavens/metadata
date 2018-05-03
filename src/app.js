@@ -8,6 +8,7 @@ export let variables = {};
 // TODO load from preprocess.json
 export let customFieldsDataset = [];
 
+export let datasetInfo;
 export let row_cnt;
 export let variable_cnt;
 export let datasetName;
@@ -75,6 +76,7 @@ export let getData = (id) => {
 
 // takes in only the preprocess.json
 let reloadData = (data) => {
+    console.log(data);
 
     preprocess_id = data['self']['preprocess_id'];
     m.route.set('/' + preprocess_id + '/' + metadataMode);
@@ -94,8 +96,15 @@ let reloadData = (data) => {
         usedStatistics[variable] = new Set(Object.keys(variables[variable])
             .filter(stat => !omissions.has(stat) && isStatistic(variable, stat)))
     }
-
-    ({row_cnt, variable_cnt} = data['dataset']);
+    datasetInfo = {
+        'Name': data['dataset']['data_source']['name'],
+        'Row Count': data['dataset']['row_cnt'],
+        'Variable Count': data['dataset']['variable_cnt'],
+        'File Size': data['dataset']['data_source']['filesize'],
+        'Type': data['dataset']['data_source']['type'],
+        'Format': data['dataset']['data_source']['format']
+    }
+    // datasetInfo = data['dataset'];
 };
 
 // peek window

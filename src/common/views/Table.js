@@ -32,8 +32,12 @@ export default class Table {
         // Interface custom attributes
         let {attrsAll, attrsRows, attrsCells, tableTags} = vnode.attrs;
 
-        showUID = showUID !== false; // Default is 'true'
+        // optionally evaluate function to get data
         if (typeof data === 'function') data = data();
+        // optionally render Objects as tables of key and value columns
+        if (!Array.isArray(data)) data = Object.keys(data).map(key => [key, data[key]]);
+
+        showUID = showUID !== false; // Default is 'true'
 
         // if abbreviation is not undefined, and string is too long, then shorten the string and add a tooltop
         let abbreviate = (item) => {
@@ -50,13 +54,18 @@ export default class Table {
                 ...(showUID ? headers : headers.slice(1)).map((header) => m('th', abbreviate(header)))
             ]) : undefined,
 
-            ...data.map((row, i) => m('tr', mergeAttributes(
-                i % 2 === 1 ? {style: {'background': '#fcfcfc'}} : {},
-                row[0] === activeRow ? {style: {'background': selVarColor}} : {},
-                attrsRows),
-                row.filter((item, j) => j !== 0 || showUID).map((item, j) =>
-                    m('td', mergeAttributes(onclick ? {onclick: () => onclick(row[0], j)} : {}, attrsCells), abbreviate(item)))
-                )
+            ...data.map((row, i) => {
+                // if a row is an Object of "header": "value" items, then convert to array with proper spacing
+                if (headers && !Array.isArray(row)) row = headers.map(header => row[header]);
+
+                return m('tr', mergeAttributes(
+                        i % 2 === 1 ? {style: {'background': '#fcfcfc'}} : {},
+                        row[0] === activeRow ? {style: {'background': selVarColor}} : {},
+                        attrsRows),
+                        row.filter((item, j) => j !== 0 || showUID).map((item, j) =>
+                            m('td', mergeAttributes(onclick ? {onclick: () => onclick(row[0], j)} : {}, attrsCells), abbreviate(item)))
+                    )
+                }
             )]
         );
     };

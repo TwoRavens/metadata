@@ -51,7 +51,7 @@ class Home {
                 app.preprocess_id && m(Table, {
                     id: 'datasetStatistics',
                     headers: ['Name', 'Value'],
-                    data: [['Row Count', app.row_cnt], ['Variable Count', app.variable_cnt]],
+                    data: app.datasetInfo,
                     attrsCells: {style: {padding: '.5em'}}
                 })
             ]),
