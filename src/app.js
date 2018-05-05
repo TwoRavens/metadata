@@ -170,32 +170,6 @@ let resetPeek = () => {
     localStorage.removeItem('peekTableData');
 };
 
-
-// window resizing
-let isResizingEditor = false;
-export let leftpanelSize = 50;
-export let resizeEditor = (e) => {
-    isResizingEditor = true;
-    document.body.classList.add('no-select');
-    resizeEditorTick(e);
-};
-
-let resizeEditorTick = (e) => {
-    leftpanelSize = (1 - e.clientX / document.getElementById('canvas').clientWidth) * 100;
-
-    document.getElementById('leftView').style.right = leftpanelSize + "%";
-    document.getElementById('rightView').style.width = leftpanelSize + "%";
-};
-
-document.onmousemove = (e) => isResizingEditor && resizeEditorTick(e);
-
-document.onmouseup = () => {
-    if (isResizingEditor) {
-        isResizingEditor = false;
-        document.body.classList.remove('no-select');
-    }
-};
-
 // overall mode: ['Home', 'Editor', 'Report']
 export let metadataMode = 'home';
 

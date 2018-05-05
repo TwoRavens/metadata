@@ -9,6 +9,7 @@ import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
 import TextField from './common/views/TextField';
 import Peek from './common/views/Peek';
+import TwoPanel from './common/views/TwoPanel';
 
 import * as app from './app';
 
@@ -21,76 +22,54 @@ class Home {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#leftView', {
-                style: {
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    right: app.leftpanelSize + '%',
-                    'overflow-y': 'auto'
-                }
-            }, [
-                m('h4#selectDatasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Select Dataset'),
-                m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
-                    m('label', {style: {'margin-right': '2em'}}, 'Preprocess ID'),
-                    m(TextField, {
-                        style: {display: 'inline', width: 'auto'},
-                        id: 'textFieldPreprocessID',
-                        value: app.preprocess_id,
-                        placeholder: 'numeric',
-                        oninput: app.getData
-                    }),
-                    // disabled because it auto-loads
-                    // m('button.btn.btn-outline-secondary', {
-                    //     style: {'margin-left': '2em'},
-                    //     onclick: () => m.route.set('/' + app.preprocess_id + '/editor'),
-                    //     disabled: app.preprocess_id === undefined
-                    // }, 'Load')
-                ]),
-                app.preprocess_id && m(Table, {
-                    id: 'datasetStatistics',
-                    headers: ['Name', 'Value'],
-                    data: app.datasetInfo,
-                    attrsCells: {style: {padding: '.5em'}}
-                })
-            ]),
-            m('div#rightView', {
-                style: {
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: app.leftpanelSize + '%',
-                    'overflow-y': 'auto',
-                    animation: 'appear .5s ease'
-                }
-            }, [
-                m('#horizontalDrag', {
-                    style: {
-                        position: 'absolute',
-                        left: '-4px',
-                        top: 0,
-                        bottom: 0,
-                        width: '12px',
-                        cursor: 'w-resize'
-                    },
-                    onmousedown: app.resizeEditor
-                }),
-                m('h4#uploadDatasetHeader', {
-                    style: {
-                        'padding-top': '.5em',
-                        'text-align': 'center'
-                    }
-                }, 'Upload Dataset'),
-                m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
-                    m('input', {
-                        type: 'file',
-                        onchange: app.uploadFile
+            }, m(TwoPanel, {
+                left: [
+                    m('h4#selectDatasetHeader', {
+                        style: {
+                            'padding-top': '.5em',
+                            'text-align': 'center'
+                        }
+                    }, 'Select Dataset'),
+                    m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
+                        m('label', {style: {'margin-right': '2em'}}, 'Preprocess ID'),
+                        m(TextField, {
+                            style: {display: 'inline', width: 'auto'},
+                            id: 'textFieldPreprocessID',
+                            value: app.preprocess_id,
+                            placeholder: 'numeric',
+                            oninput: app.getData
+                        }),
+                        // disabled because it auto-loads
+                        // m('button.btn.btn-outline-secondary', {
+                        //     style: {'margin-left': '2em'},
+                        //     onclick: () => m.route.set('/' + app.preprocess_id + '/editor'),
+                        //     disabled: app.preprocess_id === undefined
+                        // }, 'Load')
+                    ]),
+                    app.preprocess_id && m(Table, {
+                        id: 'datasetStatistics',
+                        headers: ['Name', 'Value'],
+                        data: app.datasetInfo,
+                        attrsCells: {style: {padding: '.5em'}}
                     })
-                ]),
-                m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, app.uploadStatus)
-            ]));
+                ],
+                right: [
+                    m('h4#uploadDatasetHeader', {
+                        style: {
+                            'padding-top': '.5em',
+                            'text-align': 'center'
+                        }
+                    }, 'Upload Dataset'),
+                    m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
+                        m('input', {
+                            type: 'file',
+                            onchange: app.uploadFile
+                        })
+                    ]),
+                    m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, app.uploadStatus)
+                ]
+            })
+        )
     }
 }
 
@@ -190,16 +169,8 @@ class Editor {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#leftView', {
-                style: {
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    right: app.leftpanelSize + '%',
-                    'overflow-y': 'auto'
-                }
-            }, [
+        }, m(TwoPanel, {
+            left: [
                 m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Dataset Statistics'),
                 m(Table, {
                     id: 'datasetStatistics',
@@ -230,30 +201,9 @@ class Editor {
                     onclick: app.setSelectedDatasetAttribute,
                     tableTags: colgroupAttributes(),
                     attrsCells: {style: {padding: '.5em'}}
-                }),
-            ]),
-            app.selectedStatistic && m('div#rightView', {
-                style: {
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: app.leftpanelSize + '%',
-                    'overflow-y': 'auto',
-                    animation: 'appear .5s ease'
-                }
-            }, [
-                m('#horizontalDrag', {
-                    style: {
-                        position: 'absolute',
-                        left: '-4px',
-                        top: 0,
-                        bottom: 0,
-                        width: '12px',
-                        cursor: 'w-resize'
-                    },
-                    onmousedown: app.resizeEditor
-                }),
+                })
+            ],
+            right: [
                 m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Citation"),
                 m(Table, {
                     id: 'citationTable',
@@ -263,8 +213,9 @@ class Editor {
                     onclick: app.setSelectedDatasetAttribute,
                     tableTags: colgroupAttributes(),
                     attrsCells: {style: {padding: '.5em'}}
-                }),
-            ]));
+                })
+            ]
+        }));
     }
 
 
@@ -319,88 +270,63 @@ class Editor {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m('div#leftView', {
-                style: {
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    right: app.leftpanelSize + '%',
-                    'overflow-y': 'auto'
-                }
-            }, [m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
-                m(Table, {
-                    id: 'variablesListUpper',
-                    headers: ['Name', 'Label', variableAllCheckbox],
-                    data: upper,
-                    activeRow: app.selectedVariable,
-                    onclick: app.setSelectedVariable,
-                    tableTags: colgroupVariables(),
-                    attrsCells: {style: {padding: '.5em'}}
-                }),
-                app.selectedVariable && m(Table, {
-                    id: 'variablesListCenter',
-                    headers: ['Name', 'Value', 'Description'],
-                    data: center,
-                    attrsCells: {style: {padding: '.3em'}},
-                    attrsAll: {
-                        style: {
-                            width: 'calc(100% - 2em)',
-                            'margin-left': '1em',
-                            'border-left': '1px solid #dee2e6',
-                            'box-shadow': '0 3px 6px #777',
-                            animation: 'slide-down .4s ease'
-                        }
-                    }
-                }),
-                m(Table, {
-                    id: 'variablesListLower',
-                    data: lower,
-                    activeRow: app.selectedVariable,
-                    onclick: app.setSelectedVariable,
-                    tableTags: colgroupVariables(),
-                    attrsCells: {style: {padding: '.5em'}}
-                })
-            ]),
-            app.selectedVariable && m('div#rightView', {
-                style: {
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: app.leftpanelSize + '%',
-                    'overflow-y': 'auto',
-                    animation: 'appear .5s ease'
-                }
-            }, [
-                m('#horizontalDrag', {
-                    style: {
-                        position: 'absolute',
-                        left: '-4px',
-                        top: 0,
-                        bottom: 0,
-                        width: '12px',
-                        cursor: 'w-resize'
-                    },
-                    onmousedown: app.resizeEditor
-                }),
-                m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
-                m(Table, {
-                    id: 'statisticsComputed',
-                    headers: ['Name', 'Value', 'Description', 'Replication', statisticsAllCheckbox],
-                    data: this.statisticsTable(app.selectedVariable),
-                    tableTags: colgroupStatistics(),
-                    attrsCells: {style: {padding: '.5em'}}
-                }),
-                m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
-                m(Table, {
-                    id: 'statisticsCustom',
-                    headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
-                    data: this.customStatisticsTable(app.selectedVariable),
-                    attrsCells: {style: {padding: '.5em'}},
-                    showUID: false
-                })
-            ]));
+            },
+
+           m(TwoPanel, {
+               left: [
+                   m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
+                   m(Table, {
+                       id: 'variablesListUpper',
+                       headers: ['Name', 'Label', variableAllCheckbox],
+                       data: upper,
+                       activeRow: app.selectedVariable,
+                       onclick: app.setSelectedVariable,
+                       tableTags: colgroupVariables(),
+                       attrsCells: {style: {padding: '.5em'}}
+                   }),
+                   app.selectedVariable && m(Table, {
+                       id: 'variablesListCenter',
+                       headers: ['Name', 'Value', 'Description'],
+                       data: center,
+                       attrsCells: {style: {padding: '.3em'}},
+                       attrsAll: {
+                           style: {
+                               width: 'calc(100% - 2em)',
+                               'margin-left': '1em',
+                               'border-left': '1px solid #dee2e6',
+                               'box-shadow': '0 3px 6px #777',
+                               animation: 'slide-down .4s ease'
+                           }
+                       }
+                   }),
+                   m(Table, {
+                       id: 'variablesListLower',
+                       data: lower,
+                       activeRow: app.selectedVariable,
+                       onclick: app.setSelectedVariable,
+                       tableTags: colgroupVariables(),
+                       attrsCells: {style: {padding: '.5em'}}
+                   })
+               ],
+               right: app.selectedVariable ? [
+                   m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
+                   m(Table, {
+                       id: 'statisticsComputed',
+                       headers: ['Name', 'Value', 'Description', 'Replication', statisticsAllCheckbox],
+                       data: this.statisticsTable(app.selectedVariable),
+                       tableTags: colgroupStatistics(),
+                       attrsCells: {style: {padding: '.5em'}}
+                   }),
+                   m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
+                   m(Table, {
+                       id: 'statisticsCustom',
+                       headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
+                       data: this.customStatisticsTable(app.selectedVariable),
+                       attrsCells: {style: {padding: '.5em'}},
+                       showUID: false
+                   })
+               ] : []
+           }))
     }
 
     // data within statistic table for transposed menu, located on the left panel
@@ -486,22 +412,14 @@ class Editor {
         };
 
         return m('div#editor', {
-                style: {
-                    height: '100%',
-                    width: '100%',
-                    position: 'absolute',
-                    'overflow': 'hidden'
-                }
-            }, m('div#leftView', {
-                style: {
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    right: app.leftpanelSize + '%',
-                    'overflow-y': 'auto'
-                }
-            }, [
+            style: {
+                height: '100%',
+                width: '100%',
+                position: 'absolute',
+                'overflow': 'hidden'
+            }
+        }, m(TwoPanel, {
+            left: [
                 m('h4#statisticsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Statistics'),
                 m(Table, {
                     id: 'statisticsList',
@@ -512,38 +430,22 @@ class Editor {
                     tableTags: colgroupStatistics(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-            ]),
-            app.selectedStatistic && m('div#rightView', {
-                style: {
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: app.leftpanelSize + '%',
-                    'overflow-y': 'auto',
-                    animation: 'appear .5s ease'
-                }
-            }, [
-                m('#horizontalDrag', {
+            ],
+            right: app.selectedStatistic ? [
+                m('h4#variablesHeader', {
                     style: {
-                        position: 'absolute',
-                        left: '-4px',
-                        top: 0,
-                        bottom: 0,
-                        width: '12px',
-                        cursor: 'w-resize'
-                    },
-                    onmousedown: app.resizeEditor
-                }),
-                m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedStatistic + ' for each variable'),
+                        'padding-top': '.5em',
+                        'text-align': 'center'
+                    }
+                }, app.selectedStatistic + ' for each variable'),
                 m(Table, {
                     id: 'variablesComputed',
                     headers: ['Name', 'Value', ''],
                     data: this.variablesTransTable(statistics, app.selectedStatistic),
                     tableTags: colgroupVariables(),
                     attrsCells: {style: {padding: '.5em'}}
-                }),
-            ]));
+                })] : []
+        }))
     }
 
     view() {
