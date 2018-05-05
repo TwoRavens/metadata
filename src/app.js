@@ -146,6 +146,10 @@ let updatePeek = () => {
             format: 'json'
         }
     }).then((response) => {
+
+        // TODO the API spec changed... for the worse? Not sure why response is now returned in an array
+        response = response[1];
+
         peekIsGetting = false;
         let headers = response['data']['columns'].map(header => {
             if (variables[header]['nature'] === 'nominal') {
