@@ -1,0 +1,13 @@
+@media screen and (max-width: 600px) {
+    .hideMobile {
+        display: none !important;
+    }
+
+    .showMobile {
+        display: block !important;
+    }
+
+    #menu {
+        width: auto !important;
+    }
+}

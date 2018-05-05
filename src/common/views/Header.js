@@ -5,6 +5,7 @@ import {ABOUT, mergeAttributes} from '../common';
 export default class Header {
     oninit() {
         this.about = false;
+        this.mobileHeader = false;
     }
 
     view(vnode) {
@@ -20,14 +21,31 @@ export default class Header {
                 })),
             m(`#about.card[style=display: ${this.about ? 'block' : 'none'}; top: 10px; left: 140px; position: absolute; width: 500px; z-index: 50]`,
                 m('.card-body', ABOUT)),
-            m('div', {
+
+            m('a#hamburger.showMobile', {
+                onclick: () => {
+                    console.log("TEST");
+                    this.mobileHeader = !this.mobileHeader
+                },
+                style: {display: 'none', float: 'right'}
+            }, m('div.header-icon', {
                 style: {
-                    display: 'flex',
-                    width: 'calc(100% - 158px)',
-                    'justify-content': 'flex-end',
-                    'align-items': 'center'
+                    transform: 'scale(1.75, 1.5)',
+                    'margin-right': '0.5em'
                 }
-            }, vnode.children)
+            }, m.trust('&#9776;'))),
+
+            m('div#menu', {
+                    class: !this.mobileHeader && ['hideMobile'],
+                    style: {
+                        display: 'flex',
+                        width: 'calc(100% - 158px)',
+                        'justify-content': 'flex-end',
+                        'align-items': 'center'
+                    }
+                },
+                vnode.children
+            )
         ]);
     }
 }

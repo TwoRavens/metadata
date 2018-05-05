@@ -204,21 +204,21 @@ class Editor {
                 m(Table, {
                     id: 'datasetStatistics',
                     headers: ['Name', 'Value'],
-                    data: [
-                        ['Name', m(TextField, {
-                            id: 'textFieldDatasetName',
-                            value: app.datasetName,
-                            onblur: (value) => app.setDatasetField('name', value),
-                            style: {margin: 0}
-                        })],
-                        ['Description', m(TextField, {
-                            id: 'textFieldDatasetDescription',
-                            value: app.datasetDescription,
-                            onblur: (value) => app.setDatasetField('description', value),
-                            style: {margin: 0}
-                        })],
-                        ['Row Count', app.row_cnt],
-                        ['Variable Count', app.variable_cnt]],
+                    data: Object.assign({}, app.datasetInfo,
+                        {
+                            'Name': m(TextField, {
+                                id: 'textFieldDatasetName',
+                                value: app.datasetInfo['Name'],
+                                onblur: (value) => app.setDatasetField('name', value),
+                                style: {margin: 0}
+                            }),
+                            'Description': m(TextField, {
+                                id: 'textFieldDatasetDescription',
+                                value: app.datasetInfo['Description'],
+                                onblur: (value) => app.setDatasetField('description', value),
+                                style: {margin: 0}
+                            })
+                        }),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
                 m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Dataset Statistics'),
@@ -254,7 +254,16 @@ class Editor {
                     },
                     onmousedown: app.resizeEditor
                 }),
-                m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedDatasetField),
+                m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Citation"),
+                m(Table, {
+                    id: 'citationTable',
+                    headers: ['Name', 'Description', 'Replication', ''],
+                    data: app.customFieldsDataset,
+                    activeRow: app.selectedDatasetField,
+                    onclick: app.setSelectedDatasetAttribute,
+                    tableTags: colgroupAttributes(),
+                    attrsCells: {style: {padding: '.5em'}}
+                }),
             ]));
     }
 

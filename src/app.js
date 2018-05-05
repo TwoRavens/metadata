@@ -14,7 +14,7 @@ export let variable_cnt;
 export let datasetName;
 export let datasetDescription;
 
-let data_url = 'http://localhost:8080/preprocess/api/';
+let data_url = 'http://localhost:8080/preprocess/';
 
 export let uploadStatus;
 export let uploadFile = async (e) => {
@@ -26,7 +26,7 @@ export let uploadFile = async (e) => {
     // initial upload
     let response = await m.request({
         method: "POST",
-        url: data_url + "process-single-file",
+        url: data_url + "api/process-single-file",
         data: data,
     });
 
@@ -50,28 +50,30 @@ export let uploadFile = async (e) => {
     }
 };
 
-export let getData = (id) => {
+export let getData = async (id) => {
     if (isNaN(id) || id === '') {
         preprocess_id = undefined;
         return;
     }
 
-    m.request({
+    let response = await m.request({
         method: "GET",
-        url: data_url + 'metadata/' + id
-    }).then((response) => {
-        console.log(response['message']);
-
-        if (!response['success']) {
-            if (response['message'].indexOf("PreprocessJob not found") !== -1) {
-                preprocess_id = undefined;
-                m.route.set('/');
-            }
-            console.log(response['message']);
-            return;
-        }
-        reloadData(response['data'])
+        url: data_url + 'api/metadata/' + id
     });
+
+    console.log("Data response:");
+    console.log(response);
+
+    if (!response['success']) {
+        if (response['message'].indexOf("PreprocessJob not found") !== -1) {
+            preprocess_id = undefined;
+            m.route.set('/');
+        }
+        console.log(response['message']);
+        return;
+    }
+
+    reloadData(response['data']);
 };
 
 // takes in only the preprocess.json
@@ -96,15 +98,16 @@ let reloadData = (data) => {
         usedStatistics[variable] = new Set(Object.keys(variables[variable])
             .filter(stat => !omissions.has(stat) && isStatistic(variable, stat)))
     }
+
     datasetInfo = {
-        'Name': data['dataset']['data_source']['name'],
+        'Description': data['dataset']['description'],
         'Row Count': data['dataset']['row_cnt'],
         'Variable Count': data['dataset']['variable_cnt'],
-        'File Size': data['dataset']['data_source']['filesize'],
+        'Filename': data['dataset']['data_source']['name'],
+        'Filesize': data['dataset']['data_source']['filesize'],
         'Type': data['dataset']['data_source']['type'],
         'Format': data['dataset']['data_source']['format']
     }
-    // datasetInfo = data['dataset'];
 };
 
 // peek window
@@ -135,7 +138,7 @@ let updatePeek = () => {
 
     m.request({
         method: 'POST',
-        url: data_url + 'retrieve-rows',
+        url: data_url + 'api/retrieve-rows',
         data: {
             preprocess_id: preprocess_id,
             start_row: peekSkip + 1,
@@ -178,7 +181,7 @@ export let resizeEditor = (e) => {
 };
 
 let resizeEditorTick = (e) => {
-    leftpanelSize = (1 - e.clientX / document.getElementById('editor').clientWidth) * 100;
+    leftpanelSize = (1 - e.clientX / document.getElementById('canvas').clientWidth) * 100;
 
     document.getElementById('leftView').style.right = leftpanelSize + "%";
     document.getElementById('rightView').style.width = leftpanelSize + "%";
@@ -221,7 +224,7 @@ export let setUsedVariable = (status, variable) => {
 
     m.request({
         method: 'POST',
-        url: data_url + 'update-metadata',
+        url: data_url + 'api/update-metadata',
         data: {
             preprocess_id: preprocess_id,
             variable_updates: updates
@@ -275,7 +278,7 @@ export let setCustomField = (variable, statistic, field, value) => {
 
     m.request({
         method: 'POST',
-        url: data_url + 'update-metadata',
+        url: data_url + 'api/update-metadata',
         data: {
             preprocess_id: preprocess_id,
             variable_updates: {
@@ -294,7 +297,6 @@ export let statisticUIDCount = {};
 export let customStatistics = {};
 export let setCustomStatistic = (variable, statUID, field, value) => {
     console.log(customStatistics);
-    // TODO add request
 
     // create key for variable if it does not exist
     if (!customStatistics[variable]) {
@@ -330,6 +332,24 @@ export let setCustomStatistic = (variable, statUID, field, value) => {
 
     // set value in field in statistic in variable
     customStatistics[variable][statUID][field] = value;
+
+    m.request({
+        method: "POST",
+        url: data_url + "form/custom-statistics",
+        data: {
+            preprocess_id: preprocess_id,
+            custom_statistics: [
+                Object.assign({"variables": [variable], "image": []}, customStatistics[variable][statUID])
+            ]
+        }
+    }).then((response) => console.log(response));
+
+    console.log(JSON.stringify({
+            preprocess_id: preprocess_id,
+            custom_statistics: [
+                Object.assign({"variables": [variable], "image": []}, customStatistics[variable][statUID])
+            ]
+        }));
 };
 
 let statisticalDatatypes = ['string', 'number', 'boolean'];
@@ -359,7 +379,7 @@ export let setUsedStatistic = (status, variable, statistic) => {
 
     m.request({
         method: 'POST',
-        url: data_url + 'update-metadata',
+        url: data_url + 'api/update-metadata',
         data: {
             preprocess_id: preprocess_id,
             variable_updates: {
@@ -422,7 +442,7 @@ export let setTransposedUsedStatistic = (status, statistic) => {
     }
     m.request({
         method: 'POST',
-        url: data_url + 'update-metadata',
+        url: data_url + 'api/update-metadata',
         data: {
             preprocess_id: preprocess_id,
             variable_updates: updates
@@ -431,6 +451,7 @@ export let setTransposedUsedStatistic = (status, statistic) => {
 };
 
 export let setDatasetField = (field, value) => {
+    // TODO API
     if (field === 'name') datasetName = value;
     if (field === 'description') datasetDescription = value;
 };
