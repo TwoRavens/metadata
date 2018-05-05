@@ -1,11 +1,28 @@
 import m from 'mithril'
 
+// ```
+// m(TwoPanel, {
+//     left: m(...),
+//     right: m(...),
+//     })
+// ```
+
+
 export default class TwoPanel {
+    oninit() {
+        this.focus = 'left';
+    }
+
     view(vnode) {
         let {left, right} = vnode.attrs;
 
         return [
             m('div#leftView', {
+                onclick: () => this.focus = 'left',
+                class: {
+                    'left': ['focused-left'],
+                    'right': ['unfocused-left']
+                }[this.focus],
                 style: {
                     position: 'absolute',
                     left: 0,
@@ -16,6 +33,11 @@ export default class TwoPanel {
                 }
             }, left),
             m('div#rightView', {
+                onclick: () => this.focus = 'right',
+                class: {
+                    'left': ['unfocused-right'],
+                    'right': ['focused-right']
+                }[this.focus],
                 style: {
                     position: 'absolute',
                     right: 0,

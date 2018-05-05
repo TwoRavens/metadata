@@ -22,7 +22,7 @@ export default class Header {
             m(`#about.card[style=display: ${this.about ? 'block' : 'none'}; top: 10px; left: 140px; position: absolute; width: 500px; z-index: 50]`,
                 m('.card-body', ABOUT)),
 
-            m('a#hamburger.showMobile', {
+            m('a#hamburger.show-mobile', {
                 onclick: () => {
                     console.log("TEST");
                     this.mobileHeader = !this.mobileHeader
@@ -36,7 +36,7 @@ export default class Header {
             }, m.trust('&#9776;'))),
 
             m('div#menu', {
-                    class: !this.mobileHeader && ['hideMobile'],
+                    class: !this.mobileHeader && ['hide-mobile'],
                     style: {
                         display: 'flex',
                         width: 'calc(100% - 158px)',

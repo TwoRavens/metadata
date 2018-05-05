@@ -1,13 +1,31 @@
 @media screen and (max-width: 600px) {
-    .hideMobile {
+    .hide-mobile {
         display: none !important;
     }
 
-    .showMobile {
+    .show-mobile {
         display: block !important;
     }
 
     #menu {
         width: auto !important;
+    }
+
+    /* focus is on left side */
+    .focused-left {
+        width: 90%;
+    }
+    .unfocused-right {
+        position: fixed;
+        left: 90%;
+    }
+
+    /* focus is on right side */
+    .unfocused-left {
+        margin-left: -40%;
+        right: 90% !important;
+    }
+    .focused-right {
+        width: 90% !important;
     }
 }
