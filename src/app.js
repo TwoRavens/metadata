@@ -8,7 +8,7 @@ export let variables = {};
 // TODO load from preprocess.json
 export let customFieldsDataset = [];
 
-export let datasetInfo;
+export let datasetInfo = {};
 
 let data_url = 'http://localhost:8080/preprocess/';
 
@@ -174,17 +174,14 @@ let resetPeek = () => {
 };
 
 // overall mode: ['Home', 'Editor', 'Report']
-export let metadataMode = 'home';
+export let metadataMode = 'Home';
 
 // mode for editor: ['Dataset', 'Variables', 'Statistics']
-export let editorMode = 'Variables';
+export let editorMode = 'Dataset';
 export let setEditorMode = (mode) => editorMode = mode;
 
 export let selectedDatasetField;
 export let setSelectedDatasetAttribute = (attr) => selectedDatasetField = attr;
-
-
-
 
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time', 'units'];
 export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTypes', 'units'];
@@ -353,7 +350,7 @@ export let isStatistic = (variable, stat) =>
 
 export let usedStatistics = {};
 // If statistic is undefined, all statistics are set
-export let setUsedStatistic = (status, variable, statistic) => {
+export let setUsedStatistic = async (status, variable, statistic) => {
     // create key for variable if it does not exist
     usedStatistics[variable] = usedStatistics[variable] || new Set();
     if (statistic) {
@@ -369,7 +366,7 @@ export let setUsedStatistic = (status, variable, statistic) => {
     let omissions = Object.keys(variables[variable])
         .filter(stat => !usedStatistics[variable].has(stat));
 
-    m.request({
+    let response = await m.request({
         method: 'POST',
         url: data_url + 'api/update-metadata',
         data: {
@@ -380,7 +377,10 @@ export let setUsedStatistic = (status, variable, statistic) => {
                 }
             }
         }
-    }).then(reloadData);
+    });
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 export let usedCustomStatistics = {};
@@ -416,7 +416,7 @@ export let setSelectedStatistic = (statistic) => {
 
 // Sets the state of a statistic checkbox within all variables
 // If passed variable is undefined, nothing happens
-export let setTransposedUsedStatistic = (status, statistic) => {
+export let setTransposedUsedStatistic = async (status, statistic) => {
     if (statistic === undefined) return;
 
     // format into request
@@ -432,14 +432,17 @@ export let setTransposedUsedStatistic = (status, statistic) => {
         updates[variable] = {};
         updates[variable]['omit'] = Object.keys(variables[variable]).filter(stat=>!inclusions.has(stat));
     }
-    m.request({
+    let response = await m.request({
         method: 'POST',
         url: data_url + 'api/update-metadata',
         data: {
             preprocess_id: preprocess_id,
             variable_updates: updates
         }
-    }).then(reloadData);
+    });
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 export let setDatasetField = (field, value) => {

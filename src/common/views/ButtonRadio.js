@@ -84,7 +84,8 @@ export default class ButtonRadio {
                         onmouseover: () => this.hovered = section.value,
                         onmouseout: () => this.hovered = undefined,
                         style: {width: getWidth(section.value)},
-                        onclick: () => {
+                        onclick: (e) => {
+                            e.preventDefault();
                             this.active = section.value;
                             onclick(section.value);
                         }

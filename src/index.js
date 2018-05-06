@@ -10,6 +10,7 @@ import ButtonRadio from './common/views/ButtonRadio';
 import TextField from './common/views/TextField';
 import Peek from './common/views/Peek';
 import TwoPanel from './common/views/TwoPanel';
+import Dropdown from './common/views/Dropdown';
 
 import descriptions from './descriptions';
 
@@ -82,17 +83,35 @@ class Home {
 
 class Editor {
     cellValue(data, variable, statistic, field) {
+        let showText = data[statistic] || '';
 
-        let chosenVal = data[statistic] || '';
+        if (statistic === 'numchar') {
+            return m(ButtonRadio, {
+                id: 'radioNumchar',
+                sections: [{value: 'numeric'}, {value: 'character'}],
+                activeSection: showText,
+                onclick: (value) => app.setCustomField(variable, statistic, value),
+                attrsAll: {style: {width: 'auto'}}
+            })
+        }
+
+        if (statistic === 'nature') {
+            return m(Dropdown, {
+                id: 'dropdownNature',
+                items: ['nominal', 'ordinal', 'interval', 'ratio', 'percent', 'other'],
+                onclickChild: (value) => app.setCustomField(variable, statistic, value),
+                dropWidth: '100px'
+            })
+        }
 
         if (app.editableStatistics.indexOf(statistic) === -1) return m('div', {
             'data-toggle': 'tooltip',
             title: descriptions[statistic]
-        }, chosenVal);
+        }, showText);
 
         return m(TextField, {
             id: 'textField' + statistic + field,
-            value: chosenVal,
+            value: showText,
             onblur: (value) => app.setCustomField(variable, statistic, value),
             style: {margin: 0}
         });
