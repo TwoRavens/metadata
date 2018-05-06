@@ -10,6 +10,7 @@ export let custom_statistics = {};
 export let dataset = {};
 export let variables = {};
 export let variable_display = {};
+export let citation;
 
 let data_url = 'http://localhost:8080/preprocess/';
 
@@ -85,17 +86,17 @@ let reloadData = (data) => {
     ({custom_statistics, dataset, variable_display, variables} = data);
 
     dataset = {
-        'Description': data['dataset']['description'],
-        'Row Count': data['dataset']['row_cnt'],
-        'Variable Count': data['dataset']['variable_cnt'],
-        'Filename': data['dataset']['data_source']['name'],
-        'Filesize': data['dataset']['data_source']['filesize'],
-        'Type': data['dataset']['data_source']['type'],
-        'Format': data['dataset']['data_source']['format']
+        'description': data['dataset']['description'],
+        'row count': data['dataset']['row_cnt'],
+        'variable count': data['dataset']['variable_cnt'],
+        'filename': data['dataset']['data_source']['name'],
+        'filesize': data['dataset']['data_source']['filesize'],
+        'type': data['dataset']['data_source']['type'],
+        'format': data['dataset']['data_source']['format']
     };
 
     // TODO: remove this once citationSample is implemented/tested
-    // dataset['citation'] = citationSample;
+    citation = citationSample;
 };
 
 // peek window
@@ -367,14 +368,16 @@ export let setUsed = async (status, variable, statistic) => {
         Object.keys(variables).forEach(variable => prepUpdateVariable(status, variable));
 
     // 2. set all statistics for one variable
-    else if (statistic === undefined) prepUpdateVariable(status, variable);
+    else if (statistic === undefined)
+        prepUpdateVariable(status, variable);
 
     // 3. set all variables for one statistic
     else if (variable === undefined)
         Object.keys(variables).forEach(variable => prepUpdateStatistic(status, variable, statistic));
 
     // 4. set one statistic for one variable
-    else prepUpdateStatistic(status, variable, statistic);
+    else
+        prepUpdateStatistic(status, variable, statistic);
 
     // don't bother POSTing if there are no updates
     if (Object.keys(updates).length === 0) return;

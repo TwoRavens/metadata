@@ -52,13 +52,7 @@ class Home {
                                 // otherwise attempt to fall back
                                 else if (id !== '') {alert('ID ' + id + ' was not found.'); app.getData(temp_id);}
                             }
-                        }),
-                        // disabled because it auto-loads
-                        // m('button.btn.btn-outline-secondary', {
-                        //     style: {'margin-left': '2em'},
-                        //     onclick: () => m.route.set('/' + app.preprocess_id + '/editor'),
-                        //     disabled: app.preprocess_id === undefined
-                        // }, 'Load')
+                        })
                     ]),
                     app.preprocess_id && m(Table, {
                         id: 'datasetStatistics',
@@ -215,13 +209,15 @@ class Editor {
 
     datasetMenu() {
         // Sets spacing of variable table column
-        let colgroupAttributes = () => {
-            return m('colgroup',
-                m('col', {span: 1, width: '10em'}),
-                m('col', {span: 1}),
-                m('col', {span: 1}),
-                m('col', {span: 1, width: '2em'}));
-        };
+        let colgroupAttributes = () => m('colgroup',
+            m('col', {span: 1, width: '10em'}),
+            m('col', {span: 1}),
+            m('col', {span: 1}),
+            m('col', {span: 1, width: '2em'}));
+
+        let colgroupCitation = () => m('colgroup',
+            m('col', {width: '20%'}),
+            m('col', {width: '80%'}));
 
         return m('div#editor', {
                 style: {
@@ -235,35 +231,94 @@ class Editor {
                 m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Dataset Statistics'),
                 m(Table, {
                     id: 'datasetStatistics',
-                    headers: ['Name', 'Value'],
+                    headers: ['name', 'value'],
                     data: Object.assign({}, app.dataset,
                         {
-                            'Name': m(TextField, {
+                            'name': m(TextField, {
                                 id: 'textFieldDatasetName',
-                                value: app.dataset['Name'],
+                                value: app.dataset['name'],
                                 onblur: (value) => console.log(value),
                                 style: {margin: 0}
                             }),
-                            'Description': m(TextField, {
+                            'description': m(TextField, {
                                 id: 'textFieldDatasetDescription',
-                                value: app.dataset['Description'],
+                                value: app.dataset['description'],
                                 onblur: (value) => console.log(value),
                                 style: {margin: 0}
                             })
                         }),
-                    attrsCells: {style: {padding: '.5em'}}
-                }),
-                m('h4#datasetCitationHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Citation'),
-                // TODO finish citations
-                // m(Table, {
-                //     id: 'citationTable',
-                //     headers: ['Name', 'Value'],
-                //     data: app.,
-                //     activeRow: app.selectedDatasetField,
-                //     onclick: app.setSelectedDatasetAttribute,
-                //     tableTags: colgroupAttributes(),
-                //     attrsCells: {style: {padding: '.5em'}}
-                // })
+                    attrsCells: {style: {padding: '.5em'}},
+                    tableTags: colgroupCitation()
+                }), app.citation && [
+                    m('h5#citationHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Citation'),
+                    m(Table, {
+                        id: 'citationTable',
+                        headers: ['name', 'value'],
+                        data: Object.keys(app.citation)
+                            .filter(key => typeof(app.citation[key]) === "string")
+                            .reduce((obj, key) => {obj[key] = app.citation[key]; return obj;}, {}),
+                        attrsCells: {style: {padding: '.5em'}},
+                        tableTags: colgroupCitation()
+                    }),
+                    app.citation['author'] && [
+                        m('h5#citationAuthorsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Authors'),
+                        m(Table, {
+                            id: 'citationAuthorsTable',
+                            headers: ['name', 'affiliation'],
+                            data: app.citation['author'],
+                            attrsCells: {style: {padding: '.5em'}},
+                            tableTags: colgroupCitation()
+                        })
+                    ],
+                    app.citation['keywords'] && [
+                        m('h5#citationKeywordsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Keywords'),
+                        m(Table, {
+                            id: 'citationkeywordsTable',
+                            headers: ['id', 'value'],
+                            data: app.citation['keywords'].map((key, i) => [i + 1, app.citation['keywords'][i]]),
+                            attrsCells: {style: {padding: '.5em'}},
+                            tableTags: colgroupCitation()
+                        })
+                    ],
+                    // citations for citations?
+                    app.citation['citation'] && [
+                        m('h5#citationCitationHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Citations'),
+                        m(Table, {
+                            id: 'citationCitationTable',
+                            data: app.citation['citation'].map((key, i) => [i + 1, app.citation['citation'][i]]),
+                            attrsCells: {style: {padding: '.5em'}},
+                            tableTags: colgroupCitation()
+                        })
+                    ],
+                    app.citation['license'] && [
+                        m('h5#citationLicenseHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'License'),
+                        m(Table, {
+                            id: 'citationLicenseTable',
+                            headers: ['name', 'value'],
+                            data: app.citation['license'],
+                            attrsCells: {style: {padding: '.5em'}},
+                            tableTags: colgroupCitation()
+                        }),
+                    ],
+                    app.citation['includedInDataCatalog'] && [
+                        m('h5#citationCatalogHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Catalog'),
+                        m(Table, {
+                            id: 'citationCatalogTable',
+                            data: app.citation['includedInDataCatalog'],
+                            attrsCells: {style: {padding: '.5em'}},
+                            tableTags: colgroupCitation()
+                        }),
+                    ],
+                    app.citation['provider'] && [
+                        m('h5#citationProviderHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Provider'),
+                        m(Table, {
+                            id: 'citationProviderTable',
+                            data: app.citation['provider'],
+                            attrsCells: {style: {padding: '.5em'}},
+                            tableTags: colgroupCitation()
+                        })
+                    ]
+                ]
             ],
             right: [
                 // m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
