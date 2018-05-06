@@ -10,7 +10,11 @@ export let custom_statistics = {};
 export let dataset = {};
 export let variables = {};
 export let variable_display = {};
+export let self = {};
 export let citation;
+
+// if set, then a historical version is being displayed and the menu is readonly
+export let version;
 
 let data_url = 'http://localhost:8080/preprocess/';
 
@@ -50,25 +54,24 @@ export let uploadFile = async (e) => {
     }
 };
 
-export let getData = async (id) => {
+export let getData = async (id, versionTemp) => {
     if (isNaN(id) || id === '') {
         preprocess_id = undefined;
         return false;
     }
 
+    // version is only set when the field is set manually. It is unset from any edit
+    version = versionTemp;
+
     let response = await m.request({
         method: "GET",
-        url: data_url + 'api/metadata/' + id
+        url: data_url + 'api/metadata/' + id + (version ? '/version/' + version : '')
     });
 
     console.log("Data response:");
     console.log(response);
 
     if (!response['success']) {
-        if (response['message'].indexOf("PreprocessJob not found") !== -1) {
-            preprocess_id = undefined;
-            m.route.set('/');
-        }
         console.log(response['message']);
         return false;
     }
@@ -83,7 +86,7 @@ let reloadData = (data) => {
 
     resetPeek();
 
-    ({custom_statistics, dataset, variable_display, variables} = data);
+    ({custom_statistics, dataset, self, variable_display, variables} = data);
 
     dataset = {
         'description': data['dataset']['description'],

@@ -1,5 +1,9 @@
 import m from 'mithril'
 
+// a menu with left and right components.
+// On desktop, the center is draggable
+// On mobile, can switch between left and right menus on click
+
 // ```
 // m(TwoPanel, {
 //     left: m(...),

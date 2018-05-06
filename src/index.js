@@ -13,13 +13,17 @@ import TwoPanel from './common/views/TwoPanel';
 import Dropdown from './common/views/Dropdown';
 import Canvas from "./common/views/Canvas";
 
+import Citation from './views/Citation';
+
 import descriptions from './descriptions';
 
 import * as app from './app';
 import {customStatistics} from "./app";
+import {preprocess_id} from "./app";
 
 common.heightHeader = '72px';
 common.heightFooter = '0px';
+
 class Home {
     view(vnode) {
         return m('div#home', {
@@ -29,54 +33,7 @@ class Home {
                     position: 'absolute',
                     'overflow': 'hidden'
                 }
-            }, m(TwoPanel, {
-                left: [
-                    m('h4#selectDatasetHeader', {
-                        style: {
-                            'padding-top': '.5em',
-                            'text-align': 'center'
-                        }
-                    }, 'Select Dataset'),
-                    m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
-                        m('label', {style: {'margin-right': '2em'}}, 'Preprocess ID'),
-                        m(TextField, {
-                            style: {display: 'inline', width: 'auto'},
-                            id: 'textFieldPreprocessID',
-                            value: app.preprocess_id,
-                            placeholder: 'numeric',
-                            oninput: async (id) => {
-                                let temp_id = app.preprocess_id;
-                                console.log(temp_id);
-                                // change route if loaded successfully
-                                if (await app.getData(id)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
-                                // otherwise attempt to fall back
-                                else if (id !== '') {alert('ID ' + id + ' was not found.'); app.getData(temp_id);}
-                            }
-                        })
-                    ]),
-                    app.preprocess_id && m(Table, {
-                        id: 'datasetStatistics',
-                        headers: ['Name', 'Value'],
-                        data: app.dataset,
-                        attrsCells: {style: {padding: '.5em'}}
-                    })
-                ],
-                right: [
-                    m('h4#uploadDatasetHeader', {
-                        style: {
-                            'padding-top': '.5em',
-                            'text-align': 'center'
-                        }
-                    }, 'Upload Dataset'),
-                    m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, [
-                        m('input', {
-                            type: 'file',
-                            onchange: app.uploadFile
-                        })
-                    ]),
-                    m('div', {style: {display: 'inline-block', width: '100%', 'text-align': 'center'}}, app.uploadStatus)
-                ]
-            })
+            }, 'Informative text about the metadata service'
         )
     }
 }
@@ -84,6 +41,12 @@ class Home {
 class Editor {
     cellValue(data, variable, statistic, field) {
         let showText = data[statistic] || '';
+
+        // old versions are readonly
+        if (app.version) return m('div', {
+            'data-toggle': 'tooltip',
+            title: descriptions[statistic]
+        }, showText);
 
         if (statistic === 'numchar') {
             return m(ButtonRadio, {
@@ -206,18 +169,86 @@ class Editor {
         ]);
     }
 
+    datasetTable() {
+        return [
+            [
+                'new preprocess', [
+                m('div.hide-mobile', {style: {display: 'inline-block'}}, [
+                    m('input', {type: 'file', onchange: app.uploadFile})
+                ]),
+                m('div', {style: {display: 'inline-block'}}, app.uploadStatus)]
+            ], [
+                'preprocess ID', m(TextField, {
+                    style: {display: 'inline', width: 'auto'},
+                    id: 'textFieldPreprocessID',
+                    value: app.preprocess_id,
+                    placeholder: 'numeric',
+                    oninput: async (id) => {
+                        let temp_id = app.preprocess_id;
+                        // change route if loaded successfully
+                        if (await app.getData(id)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                        // otherwise attempt to fall back
+                        else if (id !== '') {
+                            alert('ID ' + id + ' was not found.');
+                            app.getData(temp_id);
+                        }
+                        else {
+                            app.preprocess_id = undefined;
+                            m.route.set('/undefined/editor');
+                        }
+                    }
+                })
+            ], [
+                'version', [
+                    m(TextField, {
+                        style: {display: 'inline', width: 'auto'},
+                        id: 'textFieldVersionID',
+                        value: app.self['version'] || '',
+                        disabled: app.self['version'] === undefined,
+                        onblur: async (version) => {
+                            // change route if loaded successfully
+                            if (await app.getData(app.preprocess_id, version)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                            // otherwise attempt to fall back
+                            else if (version !== '') {
+                                alert('Version ' + version + ' was not found.');
+                                app.getData(app.preprocess_id);
+                            }
+                        }
+                    }),
+                    // pops up when a custom version is set
+                    app.version && [
+                        m('div', {
+                            style: {
+                                display: 'inline-block',
+                                "margin-left": '2em'
+                            }
+                        }, 'Menu is readonly.'),
+                        m("button#btnCurrent.btn.btn-outline-secondary", {
+                                title: 'Return to latest version of preprocess ID ' + app.preprocess_id,
+                                style: {"margin-left": '2em'},
+                                onclick: () => app.getData(app.preprocess_id)
+                            },
+                            'Reload'
+                        ),
+                    ]
+                ]
+            ],
+        ]
+    }
+
 
     datasetMenu() {
+
+        let colgroupDataset = () => m('colgroup',
+            m('col', {width: '20%'}),
+            m('col', {width: '80%'}));
+
         // Sets spacing of variable table column
         let colgroupAttributes = () => m('colgroup',
             m('col', {span: 1, width: '10em'}),
             m('col', {span: 1}),
             m('col', {span: 1}),
             m('col', {span: 1, width: '2em'}));
-
-        let colgroupCitation = () => m('colgroup',
-            m('col', {width: '20%'}),
-            m('col', {width: '80%'}));
 
         return m('div#editor', {
                 style: {
@@ -228,100 +259,51 @@ class Editor {
                 }
         }, m(TwoPanel, {
             left: [
-                m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Dataset Statistics'),
+                m('h4#selectDatasetHeader', {
+                    style: {
+                        'padding-top': '.5em',
+                        'text-align': 'center'
+                    }
+                }, 'Select Dataset'),
                 m(Table, {
-                    id: 'datasetStatistics',
-                    headers: ['name', 'value'],
-                    data: Object.assign({}, app.dataset,
-                        {
-                            'name': m(TextField, {
-                                id: 'textFieldDatasetName',
-                                value: app.dataset['name'],
-                                onblur: (value) => console.log(value),
-                                style: {margin: 0}
-                            }),
-                            'description': m(TextField, {
-                                id: 'textFieldDatasetDescription',
-                                value: app.dataset['description'],
-                                onblur: (value) => console.log(value),
-                                style: {margin: 0}
-                            })
-                        }),
+                    id: 'datasetTable',
+                    data: this.datasetTable(),
                     attrsCells: {style: {padding: '.5em'}},
-                    tableTags: colgroupCitation()
-                }), app.citation && [
-                    m('h5#citationHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Citation'),
+                    tableTags: colgroupDataset()
+                }),
+                app.preprocess_id && [
+                    m('h4#datasetHeader', {
+                        style: {
+                            'padding-top': '.5em',
+                            'text-align': 'center'
+                        }
+                    }, 'Dataset Statistics'),
                     m(Table, {
-                        id: 'citationTable',
+                        id: 'datasetStatistics',
                         headers: ['name', 'value'],
-                        data: Object.keys(app.citation)
-                            .filter(key => typeof(app.citation[key]) === "string")
-                            .reduce((obj, key) => {obj[key] = app.citation[key]; return obj;}, {}),
+                        data: Object.assign({}, app.dataset,
+                            !app.version && {
+                                'name': m(TextField, {
+                                    id: 'textFieldDatasetName',
+                                    value: app.dataset['name'],
+                                    onblur: (value) => console.log(value),
+                                    style: {margin: 0}
+                                }),
+                                'description': m(TextField, {
+                                    id: 'textFieldDatasetDescription',
+                                    value: app.dataset['description'],
+                                    onblur: (value) => console.log(value),
+                                    style: {margin: 0}
+                                })
+                            }),
                         attrsCells: {style: {padding: '.5em'}},
-                        tableTags: colgroupCitation()
+                        tableTags: colgroupDataset()
                     }),
-                    app.citation['author'] && [
-                        m('h5#citationAuthorsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Authors'),
-                        m(Table, {
-                            id: 'citationAuthorsTable',
-                            headers: ['name', 'affiliation'],
-                            data: app.citation['author'],
-                            attrsCells: {style: {padding: '.5em'}},
-                            tableTags: colgroupCitation()
-                        })
-                    ],
-                    app.citation['keywords'] && [
-                        m('h5#citationKeywordsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Keywords'),
-                        m(Table, {
-                            id: 'citationkeywordsTable',
-                            headers: ['id', 'value'],
-                            data: app.citation['keywords'].map((key, i) => [i + 1, app.citation['keywords'][i]]),
-                            attrsCells: {style: {padding: '.5em'}},
-                            tableTags: colgroupCitation()
-                        })
-                    ],
-                    // citations for citations?
-                    app.citation['citation'] && [
-                        m('h5#citationCitationHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Citations'),
-                        m(Table, {
-                            id: 'citationCitationTable',
-                            data: app.citation['citation'].map((key, i) => [i + 1, app.citation['citation'][i]]),
-                            attrsCells: {style: {padding: '.5em'}},
-                            tableTags: colgroupCitation()
-                        })
-                    ],
-                    app.citation['license'] && [
-                        m('h5#citationLicenseHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'License'),
-                        m(Table, {
-                            id: 'citationLicenseTable',
-                            headers: ['name', 'value'],
-                            data: app.citation['license'],
-                            attrsCells: {style: {padding: '.5em'}},
-                            tableTags: colgroupCitation()
-                        }),
-                    ],
-                    app.citation['includedInDataCatalog'] && [
-                        m('h5#citationCatalogHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Catalog'),
-                        m(Table, {
-                            id: 'citationCatalogTable',
-                            data: app.citation['includedInDataCatalog'],
-                            attrsCells: {style: {padding: '.5em'}},
-                            tableTags: colgroupCitation()
-                        }),
-                    ],
-                    app.citation['provider'] && [
-                        m('h5#citationProviderHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Provider'),
-                        m(Table, {
-                            id: 'citationProviderTable',
-                            data: app.citation['provider'],
-                            attrsCells: {style: {padding: '.5em'}},
-                            tableTags: colgroupCitation()
-                        })
-                    ]
+                    app.citation && m(Citation)
                 ]
             ],
             right: [
-                // m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
+                m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
                 // m(Table, {
                 //     id: 'customFieldsTable',
                 //     headers: ['Name', 'Description', 'Replication', ''],
@@ -616,7 +598,7 @@ class Body {
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: app.setEditorMode,
                     activeSection: app.editorMode,
-                    sections: [{value: 'Dataset'}, {value: 'Variables'}, {value: 'Statistics'}]
+                    sections: [{value: 'Dataset'}].concat(app.preprocess_id ? [{value: 'Variables'}, {value: 'Statistics'}] : []),
                 }),
                 app.preprocess_id && m("button#btnPeek.btn.btn-outline-secondary", {
                         title: 'Display a data preview',
@@ -628,9 +610,9 @@ class Body {
                 m(ButtonRadio, {
                     id: 'modeButtonBar',
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
-                    onclick: (value) => m.route.set(app.preprocess_id ? '/' + id + '/' + value.toLowerCase() : '/'),
+                    onclick: (value) => m.route.set('/' + id + '/' + value.toLowerCase()),
                     activeSection: app.metadataMode,
-                    sections: [{value: 'Home'}].concat(app.preprocess_id ? [{value: 'Editor'}, {value: 'Report'}] : [])
+                    sections: [{value: 'Home'}, {value: 'Editor'}].concat(app.preprocess_id ? [{value: 'Report'}] : [])
                 })
             ),
             m(Canvas,
