@@ -1,6 +1,6 @@
 import TRImage from '../../../static/images/TwoRavens-sm.png';
 import m from 'mithril';
-import {ABOUT, mergeAttributes} from '../common';
+import {ABOUT, heightHeader, mergeAttributes} from '../common';
 
 export default class Header {
     oninit() {
@@ -12,7 +12,7 @@ export default class Header {
         let {attrsInterface} = vnode.attrs;
 
         return m('nav.navbar.navbar-expand-lg.fixed-top.bg-light', mergeAttributes(
-            {style: {'box-shadow': '0 0 4px #888'}}, attrsInterface), [
+            {style: {'min-height': heightHeader, 'box-shadow': '0 0 4px #888'}}, attrsInterface), [
             m("a.navbar-brand",
                 m("img[alt=TwoRavens][width=100][style=margin-left: 1em]", {
                     onmouseover: _ => this.about = true,

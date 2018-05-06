@@ -4,9 +4,10 @@ import './common.css'
 
 export const ABOUT = 'TwoRavens v0.1 "Dallas" -- The Norse god Odin had two talking ravens as advisors, who would fly out into the world and report back all they observed. In the Norse, their names were "Thought" and "Memory". In our coming release, our thought-raven automatically advises on statistical model selection, while our memory-raven accumulates previous statistical models from Dataverse, to provide cummulative guidance and meta-analysis.';
 
+// TODO change to string
 export let panelMargin = 10;  // in pixels
-export let heightHeader = 72;
-export let heightFooter = 40;
+export let heightHeader = '72px';
+export let heightFooter = '40px';
 
 export let menuColor = '#f9f9f9';
 export let borderColor = '1px solid #adadad';
@@ -27,6 +28,7 @@ export let selVarColor = '#fa8072'; // d3.rgb("salmon");
 
 // Global features
 
+// TODO this is deprecated, apparently there's this thing called an event listener. LOL
 // stores all functions to be called on window resize
 export let onResize = [];
 export let callOnResize = (resize) => onResize.push(resize);

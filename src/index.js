@@ -11,11 +11,15 @@ import TextField from './common/views/TextField';
 import Peek from './common/views/Peek';
 import TwoPanel from './common/views/TwoPanel';
 import Dropdown from './common/views/Dropdown';
+import Canvas from "./common/views/Canvas";
 
 import descriptions from './descriptions';
 
 import * as app from './app';
 import {customStatistics} from "./app";
+
+common.heightHeader = '72px';
+common.heightFooter = '0px';
 
 class Home {
     view(vnode) {
@@ -551,19 +555,13 @@ class Body {
                     sections: [{value: 'Home'}].concat(app.preprocess_id ? [{value: 'Editor'}, {value: 'Report'}] : [])
                 })
             ),
-            m('div#canvas', {
-                style: {
-                    width: '100%',
-                    height: `calc(100% - ${common.heightHeader}px)`,
-                    position: 'fixed',
-                    overflow: 'auto',
-                    top: common.heightHeader + 'px'
-                }
-            }, m({
-                'home': Home,
-                'editor': Editor,
-                'report': Report
-            }[app.metadataMode]))
+            m(Canvas,
+                m({
+                    'home': Home,
+                    'editor': Editor,
+                    'report': Report
+                }[app.metadataMode])
+            )
         ];
     }
 }
