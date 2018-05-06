@@ -20,7 +20,6 @@ import {customStatistics} from "./app";
 
 common.heightHeader = '72px';
 common.heightFooter = '0px';
-
 class Home {
     view(vnode) {
         return m('div#home', {
@@ -64,7 +63,7 @@ class Home {
                     app.preprocess_id && m(Table, {
                         id: 'datasetStatistics',
                         headers: ['Name', 'Value'],
-                        data: app.datasetInfo,
+                        data: app.dataset,
                         attrsCells: {style: {padding: '.5em'}}
                     })
                 ],
@@ -102,6 +101,16 @@ class Editor {
             })
         }
 
+        if (statistic === 'identifier') {
+            return m(ButtonRadio, {
+                id: 'radioIdentifier',
+                sections: [{value: 'cross-section'}, {value: 'time'}],
+                activeSection: showText,
+                onclick: (value) => app.setCustomField(variable, statistic, value),
+                attrsAll: {style: {width: '240px'}}
+            })
+        }
+
         if (statistic === 'nature') {
             return m(Dropdown, {
                 id: 'dropdownNature',
@@ -134,9 +143,9 @@ class Editor {
                 m('input[type=checkbox]', {
                     onclick: e => {
                         e.stopPropagation();
-                        m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable))(e)
+                        m.withAttr("checked", (checked) => app.setUsed(checked, variable))(e)
                     },
-                    checked: app.usedVariables.has(variable)
+                    checked: app.variable_display[variable]['viewable']
                 })
             ]);
     }
@@ -158,6 +167,8 @@ class Editor {
     // data within statistics table
     statisticsTable(variableName) {
         let statistics = app.variables[variableName];
+
+        let omissions = new Set(app.variable_display[variableName]['omit'])
         if (statistics === undefined) return [];
         return Object.keys(statistics)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
@@ -169,8 +180,8 @@ class Editor {
                 }, stat),
                 this.cellValue(statistics, variableName, stat, 'value'),
                 m('input[type=checkbox]', {
-                    onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variableName, stat)),
-                    checked: (app.usedStatistics[variableName] || new Set()).has(stat)
+                    onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
+                    checked: !omissions.has(stat)
                 })
             ]);
     }
@@ -225,45 +236,46 @@ class Editor {
                 m(Table, {
                     id: 'datasetStatistics',
                     headers: ['Name', 'Value'],
-                    data: Object.assign({}, app.datasetInfo,
+                    data: Object.assign({}, app.dataset,
                         {
                             'Name': m(TextField, {
                                 id: 'textFieldDatasetName',
-                                value: app.datasetInfo['Name'],
-                                onblur: (value) => app.setDatasetField('name', value),
+                                value: app.dataset['Name'],
+                                onblur: (value) => console.log(value),
                                 style: {margin: 0}
                             }),
                             'Description': m(TextField, {
                                 id: 'textFieldDatasetDescription',
-                                value: app.datasetInfo['Description'],
-                                onblur: (value) => app.setDatasetField('description', value),
+                                value: app.dataset['Description'],
+                                onblur: (value) => console.log(value),
                                 style: {margin: 0}
                             })
                         }),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-                m('h4#datasetHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Dataset Statistics'),
-                m(Table, {
-                    id: 'datasetList',
-                    headers: ['Name', 'Description', 'Replication', ''],
-                    data: app.customFieldsDataset,
-                    activeRow: app.selectedDatasetField,
-                    onclick: app.setSelectedDatasetAttribute,
-                    tableTags: colgroupAttributes(),
-                    attrsCells: {style: {padding: '.5em'}}
-                })
+                m('h4#datasetCitationHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Citation'),
+                // TODO finish citations
+                // m(Table, {
+                //     id: 'citationTable',
+                //     headers: ['Name', 'Value'],
+                //     data: app.,
+                //     activeRow: app.selectedDatasetField,
+                //     onclick: app.setSelectedDatasetAttribute,
+                //     tableTags: colgroupAttributes(),
+                //     attrsCells: {style: {padding: '.5em'}}
+                // })
             ],
             right: [
-                m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Citation"),
-                m(Table, {
-                    id: 'citationTable',
-                    headers: ['Name', 'Description', 'Replication', ''],
-                    data: app.customFieldsDataset,
-                    activeRow: app.selectedDatasetField,
-                    onclick: app.setSelectedDatasetAttribute,
-                    tableTags: colgroupAttributes(),
-                    attrsCells: {style: {padding: '.5em'}}
-                })
+                // m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
+                // m(Table, {
+                //     id: 'customFieldsTable',
+                //     headers: ['Name', 'Description', 'Replication', ''],
+                //     data: app.custom_statistics,
+                //     activeRow: app.selectedDatasetField,
+                //     onclick: app.setSelectedDatasetAttribute,
+                //     tableTags: colgroupAttributes(),
+                //     attrsCells: {style: {padding: '.5em'}}
+                // })
             ]
         }));
     }
@@ -280,22 +292,17 @@ class Editor {
 
         // Checkboxes for toggling all states
         let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
-            onclick: m.withAttr("checked", (checked) => app.setUsedVariable(checked)),
-            checked: Object.keys(app.variables).length === app.usedVariables.size
+            onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
+            checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable'])
         });
 
-        let usedStats = app.usedStatistics[app.selectedVariable];
+        let omissions = app.selectedVariable && new Set(app.variable_display[app.selectedVariable]['omit'])
 
-        let statisticsAllCheckbox = m('input#statisticsAllCheck[type=checkbox]', {
-            onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, app.selectedVariable)),
-            checked: usedStats && (statisticsData.length === usedStats.size)
-        });
-
-        let usedCustStats = app.usedCustomStatistics[app.selectedVariable];
-        let customStatisticsAllCheckbox = m('input#customStatisticsAllCheck[type=checkbox]', {
-            onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, app.selectedVariable)),
-            checked: usedCustStats && usedCustStats.size !== 0 && (Object.keys(app.customStatistics[app.selectedVariable] || {}).length === usedCustStats.size)
-        });
+        // let usedCustStats = app.usedCustomStatistics[app.selectedVariable];
+        // let customStatisticsAllCheckbox = m('input#customStatisticsAllCheck[type=checkbox]', {
+        //     onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, app.selectedVariable)),
+        //     checked: usedCustStats && usedCustStats.size !== 0 && (Object.keys(app.customStatistics[app.selectedVariable] || {}).length === usedCustStats.size)
+        // });
 
         // Sets spacing of variable table column
         let colgroupVariables = () => {
@@ -356,24 +363,24 @@ class Editor {
                        attrsCells: {style: {padding: '.5em'}}
                    })
                ],
-               right: app.selectedVariable ? [
+               right: app.selectedVariable && [
                    m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
                    m(Table, {
                        id: 'statisticsComputed',
-                       headers: ['Name', 'Value', statisticsAllCheckbox],
+                       headers: ['Name', 'Value', ''],
                        data: this.statisticsTable(app.selectedVariable),
                        tableTags: colgroupStatistics(),
                        attrsCells: {style: {padding: '.5em'}}
                    }),
-                   m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
-                   m(Table, {
-                       id: 'statisticsCustom',
-                       headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
-                       data: this.customStatisticsTable(app.selectedVariable),
-                       attrsCells: {style: {padding: '.5em'}},
-                       showUID: false
-                   })
-               ] : []
+                   // m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
+                   // m(Table, {
+                   //     id: 'statisticsCustom',
+                   //     headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
+                   //     data: this.customStatisticsTable(app.selectedVariable),
+                   //     attrsCells: {style: {padding: '.5em'}},
+                   //     showUID: false
+                   // })
+               ]
            }))
     }
 
@@ -382,13 +389,21 @@ class Editor {
         if (Object.keys(app.variables).length === 0) return;
         let firstVar = Object.keys(app.variables)[0];
 
+
+
         return Object.keys(statistics)
             .filter(statistic => app.isStatistic(firstVar, statistic) || app.editableStatistics.indexOf(statistic) !== -1)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((statistic) => {
-                let inclusion = Object.keys(app.variables).map(variable => app.usedStatistics[variable].has(statistic));
 
+                // boolean for each variable, true if current statistic is not omitted
+                let inclusion = Object.keys(app.variables)
+                    .filter(variable => app.variable_display[variable])
+                    .map(variable => app.variable_display[variable]['omit'].indexOf(statistic) === -1);
+
+                // don't include checkmarks for editable statistics // TODO possibly remove?
                 let hasCheck = app.editableStatistics.indexOf(statistic) === -1;
+
                 let checked = inclusion.every(_ => _);
                 let indeterminate = !checked && inclusion.some(_ => _);
 
@@ -398,7 +413,7 @@ class Editor {
                     hasCheck && m('input[type=checkbox]', {
                         onclick: e => {
                             e.stopPropagation();
-                            m.withAttr("checked", (checked) => app.setTransposedUsedStatistic(checked, statistic))(e)
+                            m.withAttr("checked", (checked) => app.setUsed(checked, undefined, statistic))(e)
                         },
                         checked: checked,
                         indeterminate: indeterminate
@@ -421,8 +436,8 @@ class Editor {
                 variable,
                 this.cellValue(app.variables[variable], variable, selectedStatistic, 'value'),
                 hasCheck && m('input[type=checkbox]', {
-                    onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variable, selectedStatistic)),
-                    checked: (app.usedStatistics[variable] || new Set()).has(selectedStatistic)
+                    onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variable, selectedStatistic)),
+                    checked: app.variable_display[variable]['omit'].indexOf(selectedStatistic) === -1
                 })
             ]
         });
@@ -441,10 +456,6 @@ class Editor {
         // retrieve data from data source
         let statisticData = statistics[app.selectedStatistic];
         let variableData = Object.keys(statisticData || {});
-
-        // set of enabled checkboxes for right transposed menu
-        let usedVars = new Set(Object.keys(app.usedStatistics)
-            .map(variable => app.usedStatistics[variable].has(app.selectedStatistic)));
 
         // Sets spacing of variable table column
         let colgroupStatistics = () => {
