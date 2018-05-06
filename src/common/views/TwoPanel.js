@@ -49,6 +49,7 @@ export default class TwoPanel {
                 }
             }, [
                 m('#horizontalDrag', {
+                    class: ['hide-mobile'],
                     style: {
                         position: 'absolute',
                         left: '-4px',

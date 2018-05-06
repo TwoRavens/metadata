@@ -9,10 +9,6 @@ export let variables = {};
 export let customFieldsDataset = [];
 
 export let datasetInfo;
-export let row_cnt;
-export let variable_cnt;
-export let datasetName;
-export let datasetDescription;
 
 let data_url = 'http://localhost:8080/preprocess/';
 
@@ -187,9 +183,8 @@ export let setSelectedDatasetAttribute = (attr) => selectedDatasetField = attr;
 
 
 
-export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time'];
-export let ontologyStatistics = ['classification', 'units', 'note'];
-export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTypes', ...ontologyStatistics];
+export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'interval', 'time', 'units'];
+export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTypes', 'units'];
 
 export let usedVariables = new Set();
 
@@ -271,8 +266,22 @@ export let setCustomField = (variable, statistic, field, value) => {
 };
 
 
-export let statisticUIDCount = {};
+export let statisticUIDCount = 0;
 export let customStatistics = {};
+
+export let setCustomStatistic_new = (statUID, field, value) => {
+    // deletion
+    if (value === "") {
+        // TODO use API
+        delete customStatistics[statUID][field];
+    }
+
+    // insertion
+    if (statUID in customStatistics) customStatistics[statUID][field] = value;
+    else customStatistics[++statisticUIDCount] = {[field]: value};
+};
+
+
 export let setCustomStatistic = (variable, statUID, field, value) => {
     console.log(customStatistics);
 
@@ -430,6 +439,4 @@ export let setTransposedUsedStatistic = (status, statistic) => {
 
 export let setDatasetField = (field, value) => {
     // TODO API
-    if (field === 'name') datasetName = value;
-    if (field === 'description') datasetDescription = value;
 };

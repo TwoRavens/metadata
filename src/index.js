@@ -11,7 +11,10 @@ import TextField from './common/views/TextField';
 import Peek from './common/views/Peek';
 import TwoPanel from './common/views/TwoPanel';
 
+import descriptions from './descriptions';
+
 import * as app from './app';
+import {customStatistics} from "./app";
 
 class Home {
     view(vnode) {
@@ -75,10 +78,14 @@ class Home {
 
 class Editor {
     cellValue(data, variable, statistic, field) {
+
         let customVal = ((app.customFields[variable] || {})[statistic] || {})[field];
-        let defaultVal = field === 'value' ? data[statistic] : '--';  // missing from preprocess.json
+        let defaultVal = data[statistic] || '--';
         let chosenVal = customVal || defaultVal || '';
-        if (app.editableStatistics.indexOf(statistic) === -1 || field === 'description') return chosenVal;
+        if (app.editableStatistics.indexOf(statistic) === -1) return m('div', {
+            'data-toggle': 'tooltip',
+            title: descriptions[statistic]
+        }, chosenVal);
 
         return m(TextField, {
             id: 'textField' + statistic + field,
@@ -105,10 +112,12 @@ class Editor {
         let statistics = app.variables[variableName];
         statistics = statistics || [];
 
-        return [...app.accordionStatistics, ...app.ontologyStatistics].map((stat) => [
-            stat,
-            this.cellValue(statistics, variableName, stat, 'value'),
-            this.cellValue(statistics, variableName, stat, 'description')
+        return [...app.accordionStatistics].map((stat) => [
+            m('div', {
+                'data-toggle': 'tooltip',
+                'title': descriptions[stat]
+            }, stat),
+            this.cellValue(statistics, variableName, stat, 'value')
         ]);
     }
 
@@ -119,10 +128,11 @@ class Editor {
         return Object.keys(statistics)
             .filter((stat) => app.isStatistic(variableName, stat))
             .map((stat) => [
-                stat,
+                m('div', {
+                    'data-toggle': 'tooltip',
+                    title: descriptions[stat]
+                }, stat),
                 this.cellValue(statistics, variableName, stat, 'value'),
-                this.cellValue(statistics, variableName, stat, 'description'),
-                '--',
                 m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsedStatistic(checked, variableName, stat)),
                     checked: (app.usedStatistics[variableName] || new Set()).has(stat)
@@ -133,6 +143,11 @@ class Editor {
     // data within custom statistics table
     customStatisticsTable(variableName) {
         let statistics = app.customStatistics[variableName] || [];
+
+        let stat_ids = Object.keys(customStatistics).filter(key => {
+            return customStatistics[key][variables].length === 1 && customStatistics[key][variables][0] === variableName;
+        })
+
         let newUID = (app.statisticUIDCount[variableName] || 0) + 1;
 
         return [...Object.keys(statistics), newUID].map((UID) => [
@@ -286,7 +301,7 @@ class Editor {
                    }),
                    app.selectedVariable && m(Table, {
                        id: 'variablesListCenter',
-                       headers: ['Name', 'Value', 'Description'],
+                       headers: ['Name', 'Value'],
                        data: center,
                        attrsCells: {style: {padding: '.3em'}},
                        attrsAll: {
@@ -312,7 +327,7 @@ class Editor {
                    m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
                    m(Table, {
                        id: 'statisticsComputed',
-                       headers: ['Name', 'Value', 'Description', 'Replication', statisticsAllCheckbox],
+                       headers: ['Name', 'Value', statisticsAllCheckbox],
                        data: this.statisticsTable(app.selectedVariable),
                        tableTags: colgroupStatistics(),
                        attrsCells: {style: {padding: '.5em'}}
@@ -344,9 +359,10 @@ class Editor {
                 let indeterminate = !checked && inclusion.some(_ => _);
 
                 return [
-                    statistic,
-                    '--', // for description
-                    '--', // for replication
+                    m('div', {
+                        'data-toggle': 'tooltip',
+                        title: descriptions[statistic]
+                    }, statistic),
                     hasCheck && m('input[type=checkbox]', {
                         onclick: e => {
                             e.stopPropagation();
