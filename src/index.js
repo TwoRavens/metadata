@@ -40,7 +40,11 @@ class Home {
                             id: 'textFieldPreprocessID',
                             value: app.preprocess_id,
                             placeholder: 'numeric',
-                            oninput: app.getData
+                            oninput: async (id) => {
+                                // change route if loaded successfully
+                                if (await app.getData(id))
+                                    m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                            }
                         }),
                         // disabled because it auto-loads
                         // m('button.btn.btn-outline-secondary', {
@@ -79,9 +83,8 @@ class Home {
 class Editor {
     cellValue(data, variable, statistic, field) {
 
-        let customVal = ((app.customFields[variable] || {})[statistic] || {})[field];
-        let defaultVal = data[statistic] || '--';
-        let chosenVal = customVal || defaultVal || '';
+        let chosenVal = data[statistic] || '';
+
         if (app.editableStatistics.indexOf(statistic) === -1) return m('div', {
             'data-toggle': 'tooltip',
             title: descriptions[statistic]
@@ -90,7 +93,7 @@ class Editor {
         return m(TextField, {
             id: 'textField' + statistic + field,
             value: chosenVal,
-            onblur: (value) => app.setCustomField(variable, statistic, field, value),
+            onblur: (value) => app.setCustomField(variable, statistic, value),
             style: {margin: 0}
         });
     }
@@ -99,7 +102,7 @@ class Editor {
     variableTable() {
         return Object.keys(app.variables).map((variable) => [
             variable,
-            ((app.customFields[variable] || {})['labl'] || {})['value'] || app.variables[variable]['labl'] || '',
+            app.variables[variable]['labl'] || '',
             m('input[type=checkbox]', {
                 onclick: e => {e.stopPropagation(); m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable))(e)},
                 checked: app.usedVariables.has(variable)
@@ -273,8 +276,6 @@ class Editor {
             return m('colgroup',
                 m('col', {span: 1, width: '10em'}),
                 m('col', {span: 1}),
-                m('col', {span: 1}),
-                m('col', {span: 1}),
                 m('col', {span: 1, width: '2em'}));
         };
 
@@ -359,10 +360,8 @@ class Editor {
                 let indeterminate = !checked && inclusion.some(_ => _);
 
                 return [
-                    m('div', {
-                        'data-toggle': 'tooltip',
-                        title: descriptions[statistic]
-                    }, statistic),
+                    statistic,
+                    descriptions[statistic],
                     hasCheck && m('input[type=checkbox]', {
                         onclick: e => {
                             e.stopPropagation();
@@ -417,7 +416,6 @@ class Editor {
             return m('colgroup',
                 m('col', {span: 1, width: '10em'}),
                 m('col', {span: 1}),
-                m('col', {span: 1}),
                 m('col', {span: 1, width: '2em'}));
         };
         let colgroupVariables = () => {
@@ -439,7 +437,7 @@ class Editor {
                 m('h4#statisticsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Statistics'),
                 m(Table, {
                     id: 'statisticsList',
-                    headers: ['Name', 'Description', 'Replication', ''],
+                    headers: ['Name', 'Description', ''],
                     data: this.statisticsTransTable(statistics),
                     activeRow: app.selectedStatistic,
                     onclick: app.setSelectedStatistic,

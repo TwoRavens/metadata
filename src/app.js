@@ -41,7 +41,10 @@ export let uploadFile = async (e) => {
 
         if (response['data']['state'] !== "PREPROCESS_STARTED") {
             processed = true;
-            if (response['data']['state'] === "SUCCESS") reloadData(response['data']['data']);
+            if (response['data']['state'] === "SUCCESS") {
+                reloadData(response['data']['data']);
+                m.route.set('/' + preprocess_id + '/' + metadataMode);
+            }
         }
     }
 };
@@ -49,7 +52,7 @@ export let uploadFile = async (e) => {
 export let getData = async (id) => {
     if (isNaN(id) || id === '') {
         preprocess_id = undefined;
-        return;
+        return false;
     }
 
     let response = await m.request({
@@ -66,10 +69,11 @@ export let getData = async (id) => {
             m.route.set('/');
         }
         console.log(response['message']);
-        return;
+        return false;
     }
 
     reloadData(response['data']);
+    return true;
 };
 
 // takes in only the preprocess.json
@@ -77,7 +81,6 @@ let reloadData = (data) => {
     console.log(data);
 
     preprocess_id = data['self']['preprocess_id'];
-    m.route.set('/' + preprocess_id + '/' + metadataMode);
 
     resetPeek();
 
@@ -143,7 +146,7 @@ let updatePeek = () => {
         }
     }).then((response) => {
 
-        // TODO the API spec changed... for the worse? Not sure why response is now returned in an array
+        // TODO the API spec changed... was this intentional? Not sure why response is now returned in an array
         response = response[1];
 
         peekIsGetting = false;
@@ -189,20 +192,23 @@ export let editableStatistics = ['numchar', 'nature', 'time', 'labl', 'varnameTy
 export let usedVariables = new Set();
 
 // If passed variable is undefined, then all variables are set.
-export let setUsedVariable = (status, variable) => {
+export let setUsedVariable = async (status, variable) => {
     // format into request
     let updates = {};
     if (variable) updates = {[variable]: {'viewable': status}};
     else Object.keys(variables).forEach(variable => updates[variable] = {'viewable': status});
 
-    m.request({
+    let response = await m.request({
         method: 'POST',
         url: data_url + 'api/update-metadata',
         data: {
             preprocess_id: preprocess_id,
             variable_updates: updates
         }
-    }).then(reloadData);
+    });
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 export let selectedVariable;
@@ -240,16 +246,11 @@ export let partitionVariableTable = (variableTable) => {
     return {upper: upperVars, lower: lowerVars};
 };
 
-export let customFields = {};
-export let setCustomField = (variable, statistic, field, value) => {
+export let setCustomField = async (variable, statistic, value) => {
     // ignore non-edits
-    if (variables[variable][field] === value) {
-        if (customFields[variable] && customFields[variable][statistic])
-            delete customFields[variable][statistic][field];
-        return;
-    }
+    if (variables[variable][statistic] === value) return;
 
-    m.request({
+    let response = await m.request({
         method: 'POST',
         url: data_url + 'api/update-metadata',
         data: {
@@ -262,7 +263,10 @@ export let setCustomField = (variable, statistic, field, value) => {
                 }
             }
         }
-    }).then(reloadData);
+    });
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 
@@ -344,7 +348,8 @@ let statisticalDatatypes = ['string', 'number', 'boolean'];
 // Checks if an entry for a variable is a statistic
 export let isStatistic = (variable, stat) =>
     accordionStatistics.indexOf(stat) === -1 &&
-        statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1;
+        statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1 &&
+        stat !== 'varnameSumStat';
 
 export let usedStatistics = {};
 // If statistic is undefined, all statistics are set
