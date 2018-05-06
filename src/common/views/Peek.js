@@ -43,14 +43,13 @@ export default class Peek {
                 m('div', {style: {'flex-grow': 1}}),
             ]),
             m(Canvas, {
-                    contents: m(Table, {
-                        id: 'peekTable',
-                        headers: this.tableHeaders,
-                        data: this.tableData,
-                        attrsAll: {style: {overflow: 'auto'}}
-                    }),
                     attrsAll: {style: {'margin-top': heightHeader + 'px', height: `calc(100% - ${heightHeader}px)`}}
-                }
+                }, m(Table, {
+                    id: 'peekTable',
+                    headers: this.tableHeaders,
+                    data: this.tableData,
+                    attrsAll: {style: {overflow: 'auto'}}
+                })
             )
         ]
     }

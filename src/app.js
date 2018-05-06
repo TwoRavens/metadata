@@ -36,7 +36,6 @@ export let uploadFile = async (e) => {
             url: callback_url
         });
 
-        console.log(response);
         uploadStatus = response['data']['user_message'];
 
         if (response['data']['state'] !== "PREPROCESS_STARTED") {
@@ -78,8 +77,6 @@ export let getData = async (id) => {
 
 // takes in only the preprocess.json
 let reloadData = (data) => {
-    console.log(data);
-
     preprocess_id = data['self']['preprocess_id'];
 
     resetPeek();
@@ -119,7 +116,6 @@ let peekIsGetting = false;
 
 let onStorageEvent = (e) => {
     if (e.key !== 'peekMore' || peekIsGetting) return;
-
     if (localStorage.getItem('peekMore') === 'true' && !peekAllDataReceived) {
         peekIsGetting = true;
         localStorage.setItem('peekMore', 'false');
@@ -383,6 +379,7 @@ export let setUsedStatistic = async (status, variable, statistic) => {
     else console.log(response['message']);
 };
 
+// TODO roll into custom statistics edit
 export let usedCustomStatistics = {};
 // If UID is undefined, all UIDs are set
 export let setUsedCustomStatistic = (status, variable, UID) => {

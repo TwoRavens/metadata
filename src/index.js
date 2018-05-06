@@ -46,9 +46,12 @@ class Home {
                             value: app.preprocess_id,
                             placeholder: 'numeric',
                             oninput: async (id) => {
+                                let temp_id = app.preprocess_id;
+                                console.log(temp_id);
                                 // change route if loaded successfully
-                                if (await app.getData(id))
-                                    m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                                if (await app.getData(id)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                                // otherwise attempt to fall back
+                                else if (id !== '') {alert('ID ' + id + ' was not found.'); app.getData(temp_id);}
                             }
                         }),
                         // disabled because it auto-loads
@@ -123,14 +126,19 @@ class Editor {
 
     // data within variable table
     variableTable() {
-        return Object.keys(app.variables).map((variable) => [
-            variable,
-            app.variables[variable]['labl'] || '',
-            m('input[type=checkbox]', {
-                onclick: e => {e.stopPropagation(); m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable))(e)},
-                checked: app.usedVariables.has(variable)
-            })
-        ]);
+        return Object.keys(app.variables)
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+            .map((variable) => [
+                variable,
+                app.variables[variable]['labl'] || '',
+                m('input[type=checkbox]', {
+                    onclick: e => {
+                        e.stopPropagation();
+                        m.withAttr("checked", (checked) => app.setUsedVariable(checked, variable))(e)
+                    },
+                    checked: app.usedVariables.has(variable)
+                })
+            ]);
     }
 
     // data shown within accordion upon variable click
@@ -152,6 +160,7 @@ class Editor {
         let statistics = app.variables[variableName];
         if (statistics === undefined) return [];
         return Object.keys(statistics)
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .filter((stat) => app.isStatistic(variableName, stat))
             .map((stat) => [
                 m('div', {
@@ -375,6 +384,7 @@ class Editor {
 
         return Object.keys(statistics)
             .filter(statistic => app.isStatistic(firstVar, statistic) || app.editableStatistics.indexOf(statistic) !== -1)
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((statistic) => {
                 let inclusion = Object.keys(app.variables).map(variable => app.usedStatistics[variable].has(statistic));
 
@@ -404,7 +414,9 @@ class Editor {
 
         let hasCheck = app.editableStatistics.indexOf(selectedStatistic) === -1;
 
-        return Object.keys(variables).map((variable) => {
+        return Object.keys(variables)
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+            .map((variable) => {
             return [
                 variable,
                 this.cellValue(app.variables[variable], variable, selectedStatistic, 'value'),
