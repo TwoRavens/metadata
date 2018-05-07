@@ -1,7 +1,10 @@
 import m from 'mithril'
 import * as common from './common/common';
 
+// TODO: remove for production
 import citationSample from './citationSample';
+
+let data_url = 'http://localhost:8080/preprocess/';
 
 export let preprocess_id;
 
@@ -16,9 +19,9 @@ export let citation;
 // if set, then a historical version is being displayed and the menu is readonly
 export let version;
 
-let data_url = 'http://localhost:8080/preprocess/';
-
+// menu text
 export let uploadStatus;
+
 export let uploadFile = async (e) => {
     let file = e.target.files[0];
 
@@ -98,7 +101,7 @@ let reloadData = (data) => {
         'format': data['dataset']['data_source']['format']
     };
 
-    // TODO: remove this once citationSample is implemented/tested
+    // TODO: remove citationSample and read from data['dataset']['citation'] instead (production)
     citation = citationSample;
 };
 
@@ -170,10 +173,6 @@ export let metadataMode = 'Home';
 
 // mode for editor: ['Dataset', 'Variables', 'Statistics']
 export let editorMode = 'Dataset';
-export let setEditorMode = (mode) => editorMode = mode;
-
-export let selectedDatasetField;
-export let setSelectedDatasetAttribute = (attr) => selectedDatasetField = attr;
 
 export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'identifier', 'interval', 'time', 'units'];
 export let editableStatistics = ['numchar', 'nature', 'time', 'identifier', 'labl', 'varnameTypes', 'units'];
@@ -191,23 +190,21 @@ export let setSelectedVariable = (variable) => {
     }
 };
 
-export let partitionVariableTable = (variableTable) => {
-    let isUpper = true;
-    let upperVars = variableTable.filter((row) => {
-        if (row[0] === selectedVariable) { isUpper = false; return true; }
-        return isUpper;
-    });
+let statisticalDatatypes = ['string', 'number', 'boolean'];
 
-    let isLower = false;
-    let lowerVars = variableTable.filter((row) => {
-        if (row[0] === selectedVariable) { isLower = true; return false; }
-        return isLower;
-    });
+// Checks if an entry for a variable is a statistic
+export let isStatistic = (variable, stat) =>
+    accordionStatistics.indexOf(stat) === -1 &&
+        statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1 &&
+        stat !== 'varnameSumStat';
 
-    return {upper: upperVars, lower: lowerVars};
+// transposed statistics menu
+export let selectedStatistic;
+export let setSelectedStatistic = (statistic) => {
+    selectedStatistic = selectedStatistic === statistic ? undefined : statistic;
 };
 
-export let setCustomField = async (variable, statistic, value) => {
+export let setField = async (variable, statistic, value) => {
     // ignore non-edits
     if (variables[variable][statistic] === value) return;
 
@@ -228,112 +225,6 @@ export let setCustomField = async (variable, statistic, value) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
-};
-
-
-export let statisticUIDCount = 0;
-export let customStatistics = {};
-
-export let setCustomStatistic_new = (statUID, field, value) => {
-    // deletion
-    if (value === "") {
-        // TODO use API
-        delete customStatistics[statUID][field];
-    }
-
-    // insertion
-    if (statUID in customStatistics) customStatistics[statUID][field] = value;
-    else customStatistics[++statisticUIDCount] = {[field]: value};
-};
-
-
-export let setCustomStatistic = (variable, statUID, field, value) => {
-    console.log(customStatistics);
-
-    // create key for variable if it does not exist
-    if (!customStatistics[variable]) {
-        customStatistics[variable] = {};
-        statisticUIDCount[variable] = 0;
-    }
-
-    // delete empty values/statistics
-    if (value === '') {
-        // ignore adding empty field to nonexistent statistic
-        if (!customStatistics[variable][statUID]) return;
-
-        // delete the field
-        delete customStatistics[variable][statUID][field];
-
-        // attempt to delete the statistic
-        if (Object.keys(customStatistics[variable][statUID]).length === 0) {
-            delete customStatistics[variable][statUID];
-            usedCustomStatistics[variable].delete(parseInt(statUID));
-        }
-
-        return;
-    }
-
-    // create key for new statistic if UID does not exist
-    if (statUID > statisticUIDCount[variable]) {
-        customStatistics[variable][statUID] = customStatistics[variable][statUID] || {};
-
-        // enable new custom statistics by default
-        setUsedCustomStatistic(true, variable, statUID);
-        statisticUIDCount[variable]++;
-    }
-
-    // set value in field in statistic in variable
-    customStatistics[variable][statUID][field] = value;
-
-    m.request({
-        method: "POST",
-        url: data_url + "form/custom-statistics",
-        data: {
-            preprocess_id: preprocess_id,
-            custom_statistics: [
-                Object.assign({"variables": [variable], "image": []}, customStatistics[variable][statUID])
-            ]
-        }
-    }).then((response) => console.log(response));
-
-    console.log(JSON.stringify({
-            preprocess_id: preprocess_id,
-            custom_statistics: [
-                Object.assign({"variables": [variable], "image": []}, customStatistics[variable][statUID])
-            ]
-        }));
-};
-
-let statisticalDatatypes = ['string', 'number', 'boolean'];
-
-// Checks if an entry for a variable is a statistic
-export let isStatistic = (variable, stat) =>
-    accordionStatistics.indexOf(stat) === -1 &&
-        statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1 &&
-        stat !== 'varnameSumStat';
-
-// TODO roll into custom statistics edit
-export let usedCustomStatistics = {};
-// If UID is undefined, all UIDs are set
-export let setUsedCustomStatistic = (status, variable, UID) => {
-    // create key for variable if it does not exist
-    usedCustomStatistics[variable] = usedCustomStatistics[variable] || new Set();
-    if (UID) {
-        status ?
-            usedCustomStatistics[variable].add(UID) :
-            usedCustomStatistics[variable].delete(UID);
-    } else {
-        usedCustomStatistics[variable] = status ?
-            new Set(Object.keys(customStatistics[variable] || [])) :
-            new Set();
-    }
-};
-
-
-// transposed statistics menu
-export let selectedStatistic;
-export let setSelectedStatistic = (statistic) => {
-    selectedStatistic = selectedStatistic === statistic ? undefined : statistic;
 };
 
 export let setUsed = async (status, variable, statistic) => {

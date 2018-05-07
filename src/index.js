@@ -3,6 +3,7 @@ import './index.css'
 
 import m from 'mithril';
 
+// common
 import * as common from './common/common';
 import Table from './common/views/Table';
 import Header from './common/views/Header';
@@ -13,16 +14,76 @@ import TwoPanel from './common/views/TwoPanel';
 import Dropdown from './common/views/Dropdown';
 import Canvas from "./common/views/Canvas";
 
-import Citation from './views/Citation';
+// metadata
+import MenuDataset from './views/MenuDataset';
+import MenuVariables from './views/MenuVariables';
+import MenuStatistics from './views/MenuStatistics';
 
 import descriptions from './descriptions';
 
 import * as app from './app';
-import {customStatistics} from "./app";
-import {preprocess_id} from "./app";
+import {
+    customStatistics,
+    setCustomStatistic,
+    setUsedCustomStatistic,
+    statisticUIDCount,
+    usedCustomStatistics
+} from "./custom";
 
 common.heightHeader = '72px';
 common.heightFooter = '0px';
+
+// return a mithril cell - could be text, field, radio, button, dropdown, etc.
+export let cellValue = (data, variable, statistic, field) => {
+    let showText = data[statistic] || '';
+
+    // old versions are readonly
+    if (app.version) return m('div', {
+        'data-toggle': 'tooltip',
+        title: descriptions[statistic]
+    }, showText);
+
+    if (statistic === 'numchar') {
+        return m(ButtonRadio, {
+            id: 'radioNumchar',
+            sections: [{value: 'numeric'}, {value: 'character'}],
+            activeSection: showText,
+            onclick: (value) => app.setField(variable, statistic, value),
+            attrsAll: {style: {width: 'auto'}}
+        })
+    }
+
+    if (statistic === 'identifier') {
+        return m(ButtonRadio, {
+            id: 'radioIdentifier',
+            sections: [{value: 'cross-section'}, {value: 'time'}],
+            activeSection: showText,
+            onclick: (value) => app.setField(variable, statistic, value),
+            attrsAll: {style: {width: '240px'}}
+        })
+    }
+
+    if (statistic === 'nature') {
+        return m(Dropdown, {
+            id: 'dropdownNature',
+            items: ['nominal', 'ordinal', 'interval', 'ratio', 'percent', 'other'],
+            onclickChild: (value) => app.setField(variable, statistic, value),
+            dropWidth: '100px'
+        })
+    }
+
+    if (app.editableStatistics.indexOf(statistic) === -1) return m('div', {
+        'data-toggle': 'tooltip',
+        title: descriptions[statistic]
+    }, showText);
+
+    return m(TextField, {
+        id: 'textField' + statistic + field,
+        value: showText,
+        onblur: (value) => app.setField(variable, statistic, value),
+        style: {margin: 0}
+    });
+}
 
 class Home {
     view(vnode) {
@@ -39,524 +100,11 @@ class Home {
 }
 
 class Editor {
-    cellValue(data, variable, statistic, field) {
-        let showText = data[statistic] || '';
-
-        // old versions are readonly
-        if (app.version) return m('div', {
-            'data-toggle': 'tooltip',
-            title: descriptions[statistic]
-        }, showText);
-
-        if (statistic === 'numchar') {
-            return m(ButtonRadio, {
-                id: 'radioNumchar',
-                sections: [{value: 'numeric'}, {value: 'character'}],
-                activeSection: showText,
-                onclick: (value) => app.setCustomField(variable, statistic, value),
-                attrsAll: {style: {width: 'auto'}}
-            })
-        }
-
-        if (statistic === 'identifier') {
-            return m(ButtonRadio, {
-                id: 'radioIdentifier',
-                sections: [{value: 'cross-section'}, {value: 'time'}],
-                activeSection: showText,
-                onclick: (value) => app.setCustomField(variable, statistic, value),
-                attrsAll: {style: {width: '240px'}}
-            })
-        }
-
-        if (statistic === 'nature') {
-            return m(Dropdown, {
-                id: 'dropdownNature',
-                items: ['nominal', 'ordinal', 'interval', 'ratio', 'percent', 'other'],
-                onclickChild: (value) => app.setCustomField(variable, statistic, value),
-                dropWidth: '100px'
-            })
-        }
-
-        if (app.editableStatistics.indexOf(statistic) === -1) return m('div', {
-            'data-toggle': 'tooltip',
-            title: descriptions[statistic]
-        }, showText);
-
-        return m(TextField, {
-            id: 'textField' + statistic + field,
-            value: showText,
-            onblur: (value) => app.setCustomField(variable, statistic, value),
-            style: {margin: 0}
-        });
-    }
-
-    // data within variable table
-    variableTable() {
-        return Object.keys(app.variables)
-            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-            .map((variable) => [
-                variable,
-                app.variables[variable]['labl'] || '',
-                m('input[type=checkbox]', {
-                    onclick: e => {
-                        e.stopPropagation();
-                        m.withAttr("checked", (checked) => app.setUsed(checked, variable))(e)
-                    },
-                    checked: app.variable_display[variable]['viewable']
-                })
-            ]);
-    }
-
-    // data shown within accordion upon variable click
-    variableAccordionTable(variableName) {
-        let statistics = app.variables[variableName];
-        statistics = statistics || [];
-
-        return [...app.accordionStatistics].map((stat) => [
-            m('div', {
-                'data-toggle': 'tooltip',
-                'title': descriptions[stat]
-            }, stat),
-            this.cellValue(statistics, variableName, stat, 'value')
-        ]);
-    }
-
-    // data within statistics table
-    statisticsTable(variableName) {
-        let statistics = app.variables[variableName];
-
-        let omissions = new Set(app.variable_display[variableName]['omit'])
-        if (statistics === undefined) return [];
-        return Object.keys(statistics)
-            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-            .filter((stat) => app.isStatistic(variableName, stat))
-            .map((stat) => [
-                m('div', {
-                    'data-toggle': 'tooltip',
-                    title: descriptions[stat]
-                }, stat),
-                this.cellValue(statistics, variableName, stat, 'value'),
-                m('input[type=checkbox]', {
-                    onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
-                    checked: !omissions.has(stat)
-                })
-            ]);
-    }
-
-    // data within custom statistics table
-    customStatisticsTable(variableName) {
-        let statistics = app.customStatistics[variableName] || [];
-
-        let stat_ids = Object.keys(customStatistics).filter(key => {
-            return customStatistics[key][variables].length === 1 && customStatistics[key][variables][0] === variableName;
-        })
-
-        let newUID = (app.statisticUIDCount[variableName] || 0) + 1;
-
-        return [...Object.keys(statistics), newUID].map((UID) => [
-            UID,
-            ...['name', 'value', 'description', 'replication'].map((field) => m(TextField, {
-                id: 'textField' + variableName + UID + field,
-                value: statistics[UID] ? statistics[UID][field] || '' : '',
-                onblur: (value) =>
-                    app.setCustomStatistic(variableName, UID, field, value),
-                style: {margin: 0}
-            })),
-            UID === newUID ? undefined : m('input[type=checkbox]', {
-                onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, variableName, UID)),
-                checked: (app.usedCustomStatistics[variableName] || new Set()).has(parseInt(UID))
-            })
-        ]);
-    }
-
-    datasetTable() {
-        return [
-            [
-                'new preprocess', [
-                m('div.hide-mobile', {style: {display: 'inline-block'}}, [
-                    m('input', {type: 'file', onchange: app.uploadFile})
-                ]),
-                m('div', {style: {display: 'inline-block'}}, app.uploadStatus)]
-            ], [
-                'preprocess ID', m(TextField, {
-                    style: {display: 'inline', width: 'auto'},
-                    id: 'textFieldPreprocessID',
-                    value: app.preprocess_id,
-                    placeholder: 'numeric',
-                    oninput: async (id) => {
-                        let temp_id = app.preprocess_id;
-                        // change route if loaded successfully
-                        if (await app.getData(id)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
-                        // otherwise attempt to fall back
-                        else if (id !== '') {
-                            alert('ID ' + id + ' was not found.');
-                            app.getData(temp_id);
-                        }
-                        else {
-                            app.preprocess_id = undefined;
-                            m.route.set('/undefined/editor');
-                        }
-                    }
-                })
-            ], [
-                'version', [
-                    m(TextField, {
-                        style: {display: 'inline', width: 'auto'},
-                        id: 'textFieldVersionID',
-                        value: app.self['version'] || '',
-                        disabled: app.self['version'] === undefined,
-                        onblur: async (version) => {
-                            // change route if loaded successfully
-                            if (await app.getData(app.preprocess_id, version)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
-                            // otherwise attempt to fall back
-                            else if (version !== '') {
-                                alert('Version ' + version + ' was not found.');
-                                app.getData(app.preprocess_id);
-                            }
-                        }
-                    }),
-                    // pops up when a custom version is set
-                    app.version && [
-                        m('div', {
-                            style: {
-                                display: 'inline-block',
-                                "margin-left": '2em'
-                            }
-                        }, 'Menu is readonly.'),
-                        m("button#btnCurrent.btn.btn-outline-secondary", {
-                                title: 'Return to latest version of preprocess ID ' + app.preprocess_id,
-                                style: {"margin-left": '2em'},
-                                onclick: () => app.getData(app.preprocess_id)
-                            },
-                            'Reload'
-                        ),
-                    ]
-                ]
-            ],
-        ]
-    }
-
-
-    datasetMenu() {
-
-        let colgroupDataset = () => m('colgroup',
-            m('col', {width: '20%'}),
-            m('col', {width: '80%'}));
-
-        // Sets spacing of variable table column
-        let colgroupAttributes = () => m('colgroup',
-            m('col', {span: 1, width: '10em'}),
-            m('col', {span: 1}),
-            m('col', {span: 1}),
-            m('col', {span: 1, width: '2em'}));
-
-        return m('div#editor', {
-                style: {
-                    height: '100%',
-                    width: '100%',
-                    position: 'absolute',
-                    'overflow': 'hidden'
-                }
-        }, m(TwoPanel, {
-            left: [
-                m('h4#selectDatasetHeader', {
-                    style: {
-                        'padding-top': '.5em',
-                        'text-align': 'center'
-                    }
-                }, 'Select Dataset'),
-                m(Table, {
-                    id: 'datasetTable',
-                    data: this.datasetTable(),
-                    attrsCells: {style: {padding: '.5em'}},
-                    tableTags: colgroupDataset()
-                }),
-                app.preprocess_id && [
-                    m('h4#datasetHeader', {
-                        style: {
-                            'padding-top': '.5em',
-                            'text-align': 'center'
-                        }
-                    }, 'Dataset Statistics'),
-                    m(Table, {
-                        id: 'datasetStatistics',
-                        headers: ['name', 'value'],
-                        data: Object.assign({}, app.dataset,
-                            !app.version && {
-                                'name': m(TextField, {
-                                    id: 'textFieldDatasetName',
-                                    value: app.dataset['name'],
-                                    onblur: (value) => console.log(value),
-                                    style: {margin: 0}
-                                }),
-                                'description': m(TextField, {
-                                    id: 'textFieldDatasetDescription',
-                                    value: app.dataset['description'],
-                                    onblur: (value) => console.log(value),
-                                    style: {margin: 0}
-                                })
-                            }),
-                        attrsCells: {style: {padding: '.5em'}},
-                        tableTags: colgroupDataset()
-                    }),
-                    app.citation && m(Citation)
-                ]
-            ],
-            right: [
-                m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
-                // m(Table, {
-                //     id: 'customFieldsTable',
-                //     headers: ['Name', 'Description', 'Replication', ''],
-                //     data: app.custom_statistics,
-                //     activeRow: app.selectedDatasetField,
-                //     onclick: app.setSelectedDatasetAttribute,
-                //     tableTags: colgroupAttributes(),
-                //     attrsCells: {style: {padding: '.5em'}}
-                // })
-            ]
-        }));
-    }
-
-
-    variablesMenu() {
-        // retrieve data from data source
-        let variableData = app.variables[app.selectedVariable];
-        let statisticsData = Object.keys(variableData || {}).filter((stat) => app.isStatistic(app.selectedVariable, stat));
-
-        // format variable table data
-        let center = this.variableAccordionTable(app.selectedVariable);
-        let {upper, lower} = app.partitionVariableTable(this.variableTable());
-
-        // Checkboxes for toggling all states
-        let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
-            onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
-            checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable'])
-        });
-
-        let omissions = app.selectedVariable && new Set(app.variable_display[app.selectedVariable]['omit'])
-
-        // let usedCustStats = app.usedCustomStatistics[app.selectedVariable];
-        // let customStatisticsAllCheckbox = m('input#customStatisticsAllCheck[type=checkbox]', {
-        //     onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, app.selectedVariable)),
-        //     checked: usedCustStats && usedCustStats.size !== 0 && (Object.keys(app.customStatistics[app.selectedVariable] || {}).length === usedCustStats.size)
-        // });
-
-        // Sets spacing of variable table column
-        let colgroupVariables = () => {
-            return m('colgroup',
-                m('col', {span: 1, width: '10em'}),
-                m('col', {span: 1}),
-                m('col', {span: 1, width: '2em'}));
-        };
-        let colgroupStatistics = () => {
-            return m('colgroup',
-                m('col', {span: 1, width: '10em'}),
-                m('col', {span: 1}),
-                m('col', {span: 1, width: '2em'}));
-        };
-
-        return m('div#editor', {
-                style: {
-                    height: '100%',
-                    width: '100%',
-                    position: 'absolute',
-                    'overflow': 'hidden'
-                }
-            },
-
-           m(TwoPanel, {
-               left: [
-                   m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
-                   m(Table, {
-                       id: 'variablesListUpper',
-                       headers: ['Name', 'Label', variableAllCheckbox],
-                       data: upper,
-                       activeRow: app.selectedVariable,
-                       onclick: app.setSelectedVariable,
-                       tableTags: colgroupVariables(),
-                       attrsCells: {style: {padding: '.5em'}}
-                   }),
-                   app.selectedVariable && m(Table, {
-                       id: 'variablesListCenter',
-                       headers: ['Name', 'Value'],
-                       data: center,
-                       attrsCells: {style: {padding: '.3em'}},
-                       attrsAll: {
-                           style: {
-                               width: 'calc(100% - 2em)',
-                               'margin-left': '1em',
-                               'border-left': '1px solid #dee2e6',
-                               'box-shadow': '0 3px 6px #777',
-                               animation: 'slide-down .4s ease'
-                           }
-                       }
-                   }),
-                   m(Table, {
-                       id: 'variablesListLower',
-                       data: lower,
-                       activeRow: app.selectedVariable,
-                       onclick: app.setSelectedVariable,
-                       tableTags: colgroupVariables(),
-                       attrsCells: {style: {padding: '.5em'}}
-                   })
-               ],
-               right: app.selectedVariable && [
-                   m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
-                   m(Table, {
-                       id: 'statisticsComputed',
-                       headers: ['Name', 'Value', ''],
-                       data: this.statisticsTable(app.selectedVariable),
-                       tableTags: colgroupStatistics(),
-                       attrsCells: {style: {padding: '.5em'}}
-                   }),
-                   // m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
-                   // m(Table, {
-                   //     id: 'statisticsCustom',
-                   //     headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
-                   //     data: this.customStatisticsTable(app.selectedVariable),
-                   //     attrsCells: {style: {padding: '.5em'}},
-                   //     showUID: false
-                   // })
-               ]
-           }))
-    }
-
-    // data within statistic table for transposed menu, located on the left panel
-    statisticsTransTable(statistics) {
-        if (Object.keys(app.variables).length === 0) return;
-        let firstVar = Object.keys(app.variables)[0];
-
-
-
-        return Object.keys(statistics)
-            .filter(statistic => app.isStatistic(firstVar, statistic) || app.editableStatistics.indexOf(statistic) !== -1)
-            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-            .map((statistic) => {
-
-                // boolean for each variable, true if current statistic is not omitted
-                let inclusion = Object.keys(app.variables)
-                    .filter(variable => app.variable_display[variable])
-                    .map(variable => app.variable_display[variable]['omit'].indexOf(statistic) === -1);
-
-                // don't include checkmarks for editable statistics // TODO possibly remove?
-                let hasCheck = app.editableStatistics.indexOf(statistic) === -1;
-
-                let checked = inclusion.every(_ => _);
-                let indeterminate = !checked && inclusion.some(_ => _);
-
-                return [
-                    statistic,
-                    descriptions[statistic],
-                    hasCheck && m('input[type=checkbox]', {
-                        onclick: e => {
-                            e.stopPropagation();
-                            m.withAttr("checked", (checked) => app.setUsed(checked, undefined, statistic))(e)
-                        },
-                        checked: checked,
-                        indeterminate: indeterminate
-                    })
-                ]
-            });
-    }
-
-    // data within rightView variable table for transposed menu, located on the right panel
-    variablesTransTable(statistics, selectedStatistic) {
-        let variables = statistics[selectedStatistic];
-        if (variables === undefined) return [];
-
-        let hasCheck = app.editableStatistics.indexOf(selectedStatistic) === -1;
-
-        return Object.keys(variables)
-            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-            .map((variable) => {
-            return [
-                variable,
-                this.cellValue(app.variables[variable], variable, selectedStatistic, 'value'),
-                hasCheck && m('input[type=checkbox]', {
-                    onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variable, selectedStatistic)),
-                    checked: app.variable_display[variable]['omit'].indexOf(selectedStatistic) === -1
-                })
-            ]
-        });
-    }
-
-    statisticsMenu() {
-        // transpose the variables data structure
-        let statistics = {};
-
-        for (let variable of Object.keys(app.variables || {}))
-            for (let statistic of Object.keys(app.variables[variable] || {}))
-                statistics[statistic] === undefined ?
-                    statistics[statistic] = {[variable]: app.variables[variable][statistic]} :
-                    statistics[statistic][variable] = app.variables[variable][statistic];
-
-        // retrieve data from data source
-        let statisticData = statistics[app.selectedStatistic];
-        let variableData = Object.keys(statisticData || {});
-
-        // Sets spacing of variable table column
-        let colgroupStatistics = () => {
-            return m('colgroup',
-                m('col', {span: 1, width: '10em'}),
-                m('col', {span: 1}),
-                m('col', {span: 1, width: '2em'}));
-        };
-        let colgroupVariables = () => {
-            return m('colgroup',
-                m('col', {span: 1, width: '10em'}),
-                m('col', {span: 1}),
-                m('col', {span: 1, width: '2em'}));
-        };
-
-        return m('div#editor', {
-            style: {
-                height: '100%',
-                width: '100%',
-                position: 'absolute',
-                'overflow': 'hidden'
-            }
-        }, m(TwoPanel, {
-            left: [
-                m('h4#statisticsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Statistics'),
-                m(Table, {
-                    id: 'statisticsList',
-                    headers: ['Name', 'Description', ''],
-                    data: this.statisticsTransTable(statistics),
-                    activeRow: app.selectedStatistic,
-                    onclick: app.setSelectedStatistic,
-                    tableTags: colgroupStatistics(),
-                    attrsCells: {style: {padding: '.5em'}}
-                }),
-            ],
-            right: app.selectedStatistic ? [
-                m('h4#variablesHeader', {
-                    style: {
-                        'padding-top': '.5em',
-                        'text-align': 'center'
-                    }
-                }, app.selectedStatistic + ' for each variable'),
-                m(Table, {
-                    id: 'variablesComputed',
-                    headers: ['Name', 'Value', ''],
-                    data: this.variablesTransTable(statistics, app.selectedStatistic),
-                    tableTags: colgroupVariables(),
-                    attrsCells: {style: {padding: '.5em'}}
-                })] : []
-        }))
-    }
-
     view() {
-        if (app.editorMode === 'Dataset') {
-            return this.datasetMenu();
-        }
-
-        if (app.editorMode === 'Statistics') {
-            return this.statisticsMenu();
-        }
-
-        if (app.editorMode === 'Variables') {
-            return this.variablesMenu();
-        }
+        return m({
+            'Dataset': MenuDataset,
+            'Variables': MenuVariables,
+            'Statistics': MenuStatistics}[app.editorMode])
     }
 }
 
@@ -569,13 +117,6 @@ class Report {
         }, "REPORT");
     }
 }
-
-window.addEventListener('scroll', function (e) {
-    if (this.scrollY === this.scrollMaxY && m.route.get('/data')) {
-        test_data.data.slice(0, 100).forEach(x => test_data.data.push(x));
-        m.redraw();
-    }
-});
 
 class Body {
     oninit(vnode) {
@@ -596,14 +137,14 @@ class Body {
                 mode === 'editor' && m(ButtonRadio, {
                     id: 'editorButtonBar',
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
-                    onclick: app.setEditorMode,
+                    onclick: (mode) => app.editorMode = mode,
                     activeSection: app.editorMode,
                     sections: [{value: 'Dataset'}].concat(app.preprocess_id ? [{value: 'Variables'}, {value: 'Statistics'}] : []),
                 }),
                 app.preprocess_id && m("button#btnPeek.btn.btn-outline-secondary", {
                         title: 'Display a data preview',
                         style: {"margin-right": '2em'},
-                        onclick: () => window.open('/peek', 'peek')
+                        onclick: () => window.open('/data', 'data')
                     },
                     'Data'
                 ),
@@ -629,7 +170,7 @@ class Body {
 m.route.prefix('');
 m.route(document.body, '/', {
     '/': Body,
-    '/peek': Peek,
+    '/data': Peek,
     '/:id': Body,
     '/:id/:mode': Body,
 });
