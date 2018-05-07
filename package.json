@@ -6,6 +6,7 @@
   "keywords": [],
   "author": "",
   "dependencies": {
+    "js-levenshtein": "^1.1.3",
     "mithril": "^1.1.6",
     "popper.js": "^1.14.0"
   },

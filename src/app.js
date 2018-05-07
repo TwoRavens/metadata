@@ -1,11 +1,13 @@
 import m from 'mithril'
+
 import * as common from './common/common';
-// TODO: remove for production
-import citationSample from './citationSample';
-import descriptions from "./descriptions";
 import ButtonRadio from "./common/views/ButtonRadio";
 import Dropdown from "./common/views/Dropdown";
 import TextField from "./common/views/TextField";
+
+// TODO: remove for production
+import citationSample from './citationSample';
+import descriptions from "./descriptions";
 
 let data_url = 'http://localhost:8080/preprocess/';
 
@@ -293,8 +295,23 @@ export let setUsed = async (status, variable, statistic) => {
     else console.log(response['message']);
 };
 
-export let setFieldCustom = (id, field, value) => {
-    // TODO
+export let setFieldCustom = async (id, field, value) => {
+    let updates = {};
+    console.log("TEST UPDATE")
+
+    // don't bother POSTing if there are no updates
+    // if (Object.keys(updates).length === 0) return;
+    // let response = await m.request({
+    //     method: 'POST',
+    //     url: data_url + 'api/update-metadata',
+    //     data: {
+    //         preprocess_id: preprocess_id,
+    //         variable_updates: updates
+    //     }
+    // });
+    //
+    // if (response['success']) reloadData(response['data']);
+    // else console.log(response['message']);
 };
 
 export let setUsedCustom = (status, id, field)  => {

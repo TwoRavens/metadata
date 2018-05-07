@@ -7,6 +7,7 @@ import {mergeAttributes} from "../common";
 // m(Dropdown, {
 //     id: 'dropdownID' (applied to button and selectors)
 //     items: ['Item 1', 'Item 2', 'Item 3'],
+//     activeItem: 'Item 1', (optional)
 //     onclickChild: (value) => console.log(value + " was clicked.")
 //     dropWidth: 100px (sets the width of the dropdown)
 //     })
