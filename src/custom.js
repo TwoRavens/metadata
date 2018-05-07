@@ -1,23 +1,13 @@
 import m from "mithril";
 import {preprocess_id} from "./app";
 
+// TODO: this will get merged back into app.js when ready. This needs to be completely re-done
+
 export let statisticUIDCount = 0;
 export let customStatistics = {};
 
 export let selectedDatasetField;
 export let setSelectedDatasetAttribute = (attr) => selectedDatasetField = attr;
-
-export let setCustomStatistic_new = (statUID, field, value) => {
-    // deletion
-    if (value === "") {
-        // TODO use API
-        delete customStatistics[statUID][field];
-    }
-
-    // insertion
-    if (statUID in customStatistics) customStatistics[statUID][field] = value;
-    else customStatistics[++statisticUIDCount] = {[field]: value};
-};
 
 export let setCustomStatistic = (variable, statUID, field, value) => {
     console.log(customStatistics);

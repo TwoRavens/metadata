@@ -2,24 +2,16 @@ import '../static/bootstrap4/css/bootstrap.css';
 import './index.css'
 
 import m from 'mithril';
-
 // common
 import * as common from './common/common';
-import Table from './common/views/Table';
 import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
-import TextField from './common/views/TextField';
 import Peek from './common/views/Peek';
-import TwoPanel from './common/views/TwoPanel';
-import Dropdown from './common/views/Dropdown';
 import Canvas from "./common/views/Canvas";
-
 // metadata
 import MenuDataset from './views/MenuDataset';
 import MenuVariables from './views/MenuVariables';
 import MenuStatistics from './views/MenuStatistics';
-
-import descriptions from './descriptions';
 
 import * as app from './app';
 import {
@@ -32,58 +24,6 @@ import {
 
 common.heightHeader = '72px';
 common.heightFooter = '0px';
-
-// return a mithril cell - could be text, field, radio, button, dropdown, etc.
-export let cellValue = (data, variable, statistic, field) => {
-    let showText = data[statistic] || '';
-
-    // old versions are readonly
-    if (app.version) return m('div', {
-        'data-toggle': 'tooltip',
-        title: descriptions[statistic]
-    }, showText);
-
-    if (statistic === 'numchar') {
-        return m(ButtonRadio, {
-            id: 'radioNumchar',
-            sections: [{value: 'numeric'}, {value: 'character'}],
-            activeSection: showText,
-            onclick: (value) => app.setField(variable, statistic, value),
-            attrsAll: {style: {width: 'auto'}}
-        })
-    }
-
-    if (statistic === 'identifier') {
-        return m(ButtonRadio, {
-            id: 'radioIdentifier',
-            sections: [{value: 'cross-section'}, {value: 'time'}],
-            activeSection: showText,
-            onclick: (value) => app.setField(variable, statistic, value),
-            attrsAll: {style: {width: '240px'}}
-        })
-    }
-
-    if (statistic === 'nature') {
-        return m(Dropdown, {
-            id: 'dropdownNature',
-            items: ['nominal', 'ordinal', 'interval', 'ratio', 'percent', 'other'],
-            onclickChild: (value) => app.setField(variable, statistic, value),
-            dropWidth: '100px'
-        })
-    }
-
-    if (app.editableStatistics.indexOf(statistic) === -1) return m('div', {
-        'data-toggle': 'tooltip',
-        title: descriptions[statistic]
-    }, showText);
-
-    return m(TextField, {
-        id: 'textField' + statistic + field,
-        value: showText,
-        onblur: (value) => app.setField(variable, statistic, value),
-        style: {margin: 0}
-    });
-}
 
 class Home {
     view(vnode) {
@@ -104,7 +44,8 @@ class Editor {
         return m({
             'Dataset': MenuDataset,
             'Variables': MenuVariables,
-            'Statistics': MenuStatistics}[app.editorMode])
+            'Statistics': MenuStatistics
+            }[app.editorMode])
     }
 }
 

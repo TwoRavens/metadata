@@ -6,7 +6,6 @@ import TwoPanel from "../common/views/TwoPanel";
 import * as app from "../app";
 import descriptions from "../descriptions";
 
-import {cellValue} from "../index";
 
 export default class MenuStatistics {
 
@@ -58,7 +57,7 @@ export default class MenuStatistics {
             .map((variable) => {
                 return [
                     variable,
-                    cellValue(app.variables[variable], variable, selectedStatistic, 'value'),
+                    app.cellValue(variable, selectedStatistic, 'value', app.variables[variable][selectedStatistic] || ''),
                     hasCheck && m('input[type=checkbox]', {
                         onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variable, selectedStatistic)),
                         checked: app.variable_display[variable]['omit'].indexOf(selectedStatistic) === -1

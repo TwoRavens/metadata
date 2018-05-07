@@ -15,11 +15,12 @@ import {mergeAttributes} from "../common";
 export default class Dropdown {
     oninit(vnode) {
         this.isDropped = false;
-        this.activeItem = vnode.attrs.items[0]
+        this.activeItem = vnode.attrs.items[0];
     }
 
     view(vnode) {
-        let {id, items, onclickChild, dropWidth} = vnode.attrs;
+        let {id, items, activeItem, onclickChild, dropWidth} = vnode.attrs;
+        this.activeItem = activeItem || this.activeItem;
 
         return m('.dropdown[style=display: block]', [
             m('button.btn.btn-outline-secondary.dropdown-toggle',

@@ -17,9 +17,6 @@ import {
     usedCustomStatistics
 } from "../custom";
 
-import {cellValue} from "../index";
-
-
 // breaks the variable table data
 export let partitionVariableTable = (variableTable) => {
     let isUpper = true;
@@ -66,7 +63,7 @@ export default class MenuVariables {
                 'data-toggle': 'tooltip',
                 'title': descriptions[stat]
             }, stat),
-            cellValue(statistics, variableName, stat, 'value')
+            app.cellValue(variableName, stat, 'value', statistics[stat])
         ]);
     }
 
@@ -84,7 +81,7 @@ export default class MenuVariables {
                     'data-toggle': 'tooltip',
                     title: descriptions[stat]
                 }, stat),
-                cellValue(statistics, variableName, stat, 'value'),
+                app.cellValue(variableName, stat, 'value', statistics[stat]),
                 m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
                     checked: !omissions.has(stat)
@@ -205,14 +202,14 @@ export default class MenuVariables {
                         tableTags: colgroupStatistics(),
                         attrsCells: {style: {padding: '.5em'}}
                     }),
-                    // m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
-                    // m(Table, {
-                    //     id: 'statisticsCustom',
-                    //     headers: ['ID', 'Name', 'Value', 'Description', 'Replication', customStatisticsAllCheckbox],
-                    //     data: this.customStatisticsTable(app.selectedVariable),
-                    //     attrsCells: {style: {padding: '.5em'}},
-                    //     showUID: false
-                    // })
+                    m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
+                    m(Table, {
+                        id: 'statisticsCustom',
+                        headers: ['ID', 'Name', 'Value', 'Description', 'Replication', ''],
+                        data: this.customStatisticsTable(app.selectedVariable),
+                        attrsCells: {style: {padding: '.5em'}},
+                        showUID: false
+                    })
                 ]
             }))
     }

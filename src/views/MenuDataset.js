@@ -6,6 +6,7 @@ import TwoPanel from "../common/views/TwoPanel";
 
 import * as app from "../app";
 import Citation from "./Citation";
+import CustomStatistic from "./CustomStatistic";
 
 export default class MenuDataset {
 
@@ -79,7 +80,6 @@ export default class MenuDataset {
     }
 
     view() {
-
         let colgroupDataset = () => m('colgroup',
             m('col', {width: '20%'}),
             m('col', {width: '80%'}));
@@ -143,17 +143,10 @@ export default class MenuDataset {
                     m(Citation, {citation: app.citation})
                 ]
             ],
-            right: [
+            right: app.preprocess_id && [
                 m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
-                // m(Table, {
-                //     id: 'customFieldsTable',
-                //     headers: ['Name', 'Description', 'Replication', ''],
-                //     data: app.custom_statistics,
-                //     activeRow: app.selectedDatasetField,
-                //     onclick: app.setSelectedDatasetAttribute,
-                //     tableTags: colgroupAttributes(),
-                //     attrsCells: {style: {padding: '.5em'}}
-                // })
+                [...Object.keys(app.custom_statistics), 'newKey'].map((id) => m(CustomStatistic, app.custom_statistics[id])
+                )
             ]
         }));
     }

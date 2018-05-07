@@ -1,8 +1,11 @@
 import m from 'mithril'
 import * as common from './common/common';
-
 // TODO: remove for production
 import citationSample from './citationSample';
+import descriptions from "./descriptions";
+import ButtonRadio from "./common/views/ButtonRadio";
+import Dropdown from "./common/views/Dropdown";
+import TextField from "./common/views/TextField";
 
 let data_url = 'http://localhost:8080/preprocess/';
 
@@ -40,6 +43,7 @@ export let uploadFile = async (e) => {
     // get the data
     let processed = false;
     while (!processed) {
+        console.log("TEST");
         response = await m.request({
             method: "GET",
             url: callback_url
@@ -190,6 +194,7 @@ export let setSelectedVariable = (variable) => {
     }
 };
 
+// TODO render images
 let statisticalDatatypes = ['string', 'number', 'boolean'];
 
 // Checks if an entry for a variable is a statistic
@@ -286,4 +291,76 @@ export let setUsed = async (status, variable, statistic) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
+};
+
+export let setFieldCustom = (id, field, value) => {
+    // TODO
+};
+
+export let setUsedCustom = (status, id, field)  => {
+    // TODO
+};
+
+export let uploadImageStatus = {};
+
+export let setImageCustom = async (id, e) => {
+    let file = e.target.files[0];
+
+    let data = new FormData();
+    data.append("source_file", file);
+
+    // TODO API request
+};
+
+// NOTE: This really belongs in index.js, but it causes an infinite import
+// return a mithril cell - could be text, field, radio, button, dropdown, etc.
+export let cellValue = (variable, statistic, field, value = '') => {
+
+    // old versions are readonly
+    if (version) return m('div', {
+        'data-toggle': 'tooltip',
+        title: descriptions[statistic]
+    }, value);
+
+    if (statistic === 'numchar') {
+        return m(ButtonRadio, {
+            id: 'radioNumchar',
+            sections: [{value: 'numeric'}, {value: 'character'}],
+            activeSection: value,
+            onclick: (value) => setField(variable, statistic, value),
+            attrsAll: {style: {width: 'auto'}}
+        })
+    }
+
+    if (statistic === 'identifier') {
+        return m(ButtonRadio, {
+            id: 'radioIdentifier',
+            sections: [{value: 'cross-section'}, {value: 'time'}],
+            activeSection: value,
+            onclick: (value) => setField(variable, statistic, value),
+            attrsAll: {style: {width: '240px'}}
+        })
+    }
+
+    if (statistic === 'nature') {
+        return m(Dropdown, {
+            id: 'dropdownNature',
+            items: ['nominal', 'ordinal', 'interval', 'ratio', 'percent', 'other'],
+            activeItem: value,
+            onclickChild: (value) => setField(variable, statistic, value),
+            dropWidth: '100px'
+        })
+    }
+
+    if (editableStatistics.indexOf(statistic) === -1) return m('div', {
+        'data-toggle': 'tooltip',
+        title: descriptions[statistic]
+    }, value);
+
+    return m(TextField, {
+        id: 'textField' + statistic + field,
+        value: value,
+        onblur: (value) => setField(variable, statistic, value),
+        style: {margin: 0}
+    });
 };

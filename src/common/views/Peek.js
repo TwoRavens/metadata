@@ -71,7 +71,6 @@ let onStorageEvent = (peek, e) => {
     peek.tableData = JSON.parse(localStorage.getItem('peekTableData')) || [];
 
     if (peek.tableData.length === 0) localStorage.setItem('peekMore', 'true');
-
     m.redraw();
 };
 
