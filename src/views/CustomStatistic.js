@@ -10,7 +10,13 @@ import * as app from "../app";
 let allFields = ['name', 'value', 'description', 'replication', 'variables', 'image'];
 
 let customCellValue = (id, field, value) => {
-    if (app.version) return value;
+    // not editable
+    if (app.version) {
+        if (field === 'variables') {
+            return value && m(ListTags, {tags: value, readonly: true})
+        }
+        return value;
+    }
 
     if (['name', 'value'].indexOf(field) !== -1) {
         return m(TextField, {
@@ -36,6 +42,7 @@ let customCellValue = (id, field, value) => {
     }
 
     if (field === 'variables') {
+        value = value || [];
         return [
             m(TextFieldSuggestion, {
                 id: 'textFieldCustom' + field + id,
@@ -52,20 +59,26 @@ let customCellValue = (id, field, value) => {
                     title: 'record that variable is related to this statistic',
                     style: {display: 'inline-block', "margin-left": '2em'},
                     onclick: () => {
-                        // ignore if already added
-                        if (app.custom_statistics[id]['variables'].indexOf(app.queuedCustomVariable[id]) !== -1) return;
+                        // ignore if already added (redundant)
+                        if (value.indexOf(app.queuedCustomVariable[id]) !== -1) return;
 
                         // noinspection JSIgnoredPromiseFromCall
-                        app.setFieldCustom(id, field, [
-                            ...app.custom_statistics[id]['variables'],
-                            app.queuedCustomVariable[id]
-                        ]);
+                        app.setFieldCustom(id, field,  [...value, app.queuedCustomVariable[id]]);
                         app.queuedCustomVariable[id] = '';
                     }
                 },
                 'Add'
             ),
-            m(ListTags, {tags: value || []})
+            value && m('div', m(ListTags, {
+                tags: value,
+                ondelete: (variable) => {
+                    let idx = app.custom_statistics[id]['variables'].indexOf(variable);
+                    if (idx === -1) return;
+                    let changedVariables = [...app.custom_statistics[id]['variables']];
+                    changedVariables.splice(idx, 1);
+                    app.setFieldCustom(id, 'variables', changedVariables);
+                }
+            }))
         ];
     }
 
@@ -80,11 +93,7 @@ export default class CustomStatistic {
 
     view(vnode) {
         let {id} = vnode.attrs;
-
-        console.log("CUSTOM STATISTICS:");
-        console.log(app.custom_statistics);
-        console.log(id);
-
+        let statistic = app.custom_statistics[id] || {};
 
         let colgroupAttributes = () => m('colgroup',
             m('col', {width: '20%'}),
@@ -94,8 +103,8 @@ export default class CustomStatistic {
             // m('h5#customFieldHeader' + id, {style: {'padding-top': '.5em'}}, name),
             m(Table, {
                 id: 'customFieldTable' + id,
-                headers: [app.custom_statistics[id]['name'] || 'New Statistic', ''],
-                data: allFields.map(field => [field, customCellValue(id, field, app.custom_statistics[id][field])]),
+                headers: [statistic['name'] || 'New Statistic', ''],
+                data: allFields.map(field => [field, customCellValue(id, field, statistic[field])]),
                 tableTags: colgroupAttributes(),
                 attrsCells: {style: {padding: '.3em'}},
                 attrsAll: {

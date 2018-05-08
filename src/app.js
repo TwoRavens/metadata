@@ -308,9 +308,12 @@ export let setFieldCustom = (id, field, value) => {
     let update = async (updates) => {
 
         if (!IS_API_IMPLEMENTED) {
-            if (!custom_statistics[id]) custom_statistics['ID_000' + ++id_count] = {};
+            if (id === 'NEW_ID') {
+                id = 'ID_000' + ++id_count;
+                custom_statistics[id] = {};
+            }
             Object.keys(updates).map(key => custom_statistics[id][key] = value);
-            console.log("updated the thing");
+            console.log("Updated the fake API");
             return;
         }
 

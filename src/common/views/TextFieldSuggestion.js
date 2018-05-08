@@ -30,6 +30,8 @@ export default class TextFieldSuggestion {
 
     view(vnode) {
         let {id, suggestions, value, enforce, limit, dropWidth, attrsAll} = vnode.attrs;
+
+        // overwrite internal value if passed
         this.value = value === undefined ? this.value : value;
 
         // To break out of 'this' context. Redundant when value attribute is passed
@@ -40,9 +42,9 @@ export default class TextFieldSuggestion {
             m(`input#${id}.form-control`, mergeAttributes({
                     value: this.value,
                     style: {'margin': '5px 0', 'width': '100%'},
-                    onclick: function () {
+                    onfocus: function () {
                         setIsDropped(true);
-                        vnode.attrs.onclick && m.withAttr('value', vnode.attrs.onclick);
+                        m.withAttr('value', (vnode.attrs.onfocus || Function));
                     },
                     oninput: function () {
                         setValue(this.value);
@@ -50,7 +52,7 @@ export default class TextFieldSuggestion {
                     },
                     onblur: function() {
                         setTimeout(() => setIsDropped(false), 100);
-                        if (enforce) {
+                        if (enforce && this.value !== '') {
                             this.value = distanceSort(suggestions, this.value)[0];
                             setValue(this.value);
                         }
