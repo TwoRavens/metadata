@@ -96,6 +96,9 @@ let reloadData = (data) => {
 
     ({custom_statistics, dataset, self, variable_display, variables} = data);
 
+    // why is this in here? get outta hea'
+    delete variable_display['editable'];
+
     dataset = {
         'description': data['dataset']['description'],
         'row count': data['dataset']['row_cnt'],
@@ -260,7 +263,7 @@ export let setUsed = async (status, variable, statistic) => {
         };
 
         // update viewable status
-        updates[variable]['viewable'] = updates[variable]['omit'].length !== 0;
+        updates[variable]['viewable'] = updates[variable]['omit'].length !== Object.keys(variables[variable]).length;
     };
 
     // ----- UPDATE CASES -----

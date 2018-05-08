@@ -102,6 +102,13 @@ export default class MenuStatistics {
                     statistics[statistic] = {[variable]: app.variables[variable][statistic]} :
                     statistics[statistic][variable] = app.variables[variable][statistic];
 
+        // Checkbox for toggling all states
+        let statisticsAllCheckbox = m('input#statisticsAllCheck[type=checkbox]', {
+            onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
+            checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable']),
+            indeterminate: Object.keys(app.variable_display).some(key => app.variable_display[key]['omit'].length !== 0)
+        });
+
         // all custom statistics that share the current statistic name
         let relevantIDs = Object.keys(app.custom_statistics)
             .filter(key => (app.custom_statistics[key]['name']) === app.selectedCustomStatistic);
@@ -149,7 +156,7 @@ export default class MenuStatistics {
                 m('h4#statisticsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Statistics'),
                 m(Table, {
                     id: 'statisticsList',
-                    headers: ['Name', 'Description', ''],
+                    headers: ['Name', 'Description', statisticsAllCheckbox],
                     data: this.statisticsTable(statistics),
                     activeRow: app.selectedStatistic,
                     onclick: app.setSelectedStatistic,

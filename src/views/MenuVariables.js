@@ -49,7 +49,8 @@ export default class MenuVariables {
                         e.stopPropagation();
                         m.withAttr("checked", (checked) => app.setUsed(checked, variable))(e)
                     },
-                    checked: app.variable_display[variable]['viewable']
+                    checked: app.variable_display[variable]['viewable'],
+                    indeterminate: app.variable_display[variable]['viewable'] && app.variable_display[variable]['omit'].length !== 0
                 })
             ]);
     }
@@ -95,10 +96,11 @@ export default class MenuVariables {
         let center = this.variableAccordionTable(app.selectedVariable);
         let {upper, lower} = partitionVariableTable(this.variableTable());
 
-        // Checkboxes for toggling all states
+        // Checkbox for toggling all states
         let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
-            checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable'])
+            checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable']),
+            indeterminate: Object.keys(app.variable_display).some(key => app.variable_display[key]['omit'].length !== 0)
         });
 
         // all custom statistics that include the current variable
