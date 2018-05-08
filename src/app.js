@@ -97,6 +97,8 @@ let reloadData = (data) => {
     ({custom_statistics, dataset, self, variable_display, variables} = data);
 
     // why is this in here? get outta hea'
+    // TODO remove 'editable' and 'units' when API is updated to include them
+    editableStatistics = [...variable_display['editable'], 'identifier', 'units'];
     delete variable_display['editable'];
 
     dataset = {
@@ -182,8 +184,7 @@ export let metadataMode = 'Home';
 // mode for editor: ['Dataset', 'Variables', 'Statistics']
 export let editorMode = 'Dataset';
 
-export let accordionStatistics = ['labl', 'numchar', 'nature', 'binary', 'identifier', 'interval', 'time', 'units'];
-export let editableStatistics = ['numchar', 'nature', 'time', 'identifier', 'labl', 'varnameTypes', 'units'];
+export let editableStatistics;
 
 export let selectedVariable;
 export let setSelectedVariable = (variable) => {
@@ -202,10 +203,17 @@ export let setSelectedVariable = (variable) => {
 let statisticalDatatypes = ['string', 'number', 'boolean'];
 
 // Checks if an entry for a variable is a statistic
-export let isStatistic = (variable, stat) =>
-    accordionStatistics.indexOf(stat) === -1 &&
-        statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1 &&
-        stat !== 'varnameSumStat';
+export let isStatistic = (stat, variable) =>  {
+    if (variable === undefined) {
+        return Object.keys(variables).some(variable => isStatistic(stat, variable));
+    }
+
+    // don't consider the variable or accordion stats as statistics
+    if (editableStatistics.indexOf(stat) !== -1 || stat === 'varnameSumStat') return false;
+
+    // ignore plot data, etc.
+    return statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1;
+};
 
 // transposed statistics menu
 export let selectedStatistic;

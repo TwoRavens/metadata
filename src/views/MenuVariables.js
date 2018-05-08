@@ -37,7 +37,7 @@ export default class MenuVariables {
     variableTable() {
         // noinspection JSCheckFunctionSignatures
         return Object.keys(app.variables)
-            .filter(key => key.includes(variableSearch))
+            .filter(key => key.toLowerCase().includes(variableSearch.toLowerCase()))
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((variable) => [
                 variable,
@@ -58,7 +58,7 @@ export default class MenuVariables {
         let statistics = app.variables[variableName];
         statistics = statistics || [];
 
-        return [...app.accordionStatistics].map((stat) => [
+        return app.editableStatistics.map((stat) => [
             m('div', {
                 'data-toggle': 'tooltip',
                 'title': descriptions[stat]
@@ -76,8 +76,8 @@ export default class MenuVariables {
         // noinspection JSCheckFunctionSignatures
         return Object.keys(statistics)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-            .filter(stat => stat.includes(statisticSearch))
-            .filter((stat) => app.isStatistic(variableName, stat))
+            .filter(stat => stat.toLowerCase().includes(statisticSearch.toLowerCase()))
+            .filter((stat) => app.isStatistic(stat, variableName))
             .map((stat) => [
                 m('div', {
                     'data-toggle': 'tooltip',
@@ -105,7 +105,7 @@ export default class MenuVariables {
 
         // all custom statistics that include the current variable
         let relevantStatistics = Object.keys(app.custom_statistics)
-            .filter(key => app.custom_statistics[key]['name'].includes(statisticSearch))
+            .filter(key => app.custom_statistics[key]['name'].toLowerCase().includes(statisticSearch.toLowerCase()))
             .filter(key => (app.custom_statistics[key]['variables'] || []).indexOf(app.selectedVariable) !== -1);
 
         // Sets spacing of variable table column
@@ -133,17 +133,18 @@ export default class MenuVariables {
 
             m(TwoPanel, {
                 left: [
-                    m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
-                    m('label#searchVariablesLabel', {
-                        for: 'searchVariables',
-                        style: {display: 'inline-block', 'margin': '0 1em'}
-                    }, 'Search'),
                     m(TextField, {
                         id: 'searchVariables',
+                        placeholder: 'search variables',
                         value: variableSearch,
-                        oninput: value => variableSearch = value,
-                        style: {width: 'auto', display: 'inline-block'}
+                        oninput: value => {
+                            variableSearch = value;
+                            let matches = Object.keys(app.variables).filter(key => key.toLowerCase().includes(variableSearch.toLowerCase()));
+                            if (matches.length === 1) app.selectedVariable = matches[0];
+                        },
+                        style: {margin: '1em', width: 'calc(100% - 2em)', display: 'inline-block'}
                     }),
+                    m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
                     m(Table, {
                         id: 'variablesListUpper',
                         headers: ['Name', 'Label', variableAllCheckbox],
@@ -153,7 +154,9 @@ export default class MenuVariables {
                         tableTags: colgroupVariables(),
                         attrsCells: {style: {padding: '.5em'}}
                     }),
-                    (app.selectedVariable || '').includes(variableSearch) && m(Table, {
+                    // center table is only rendered if selected, and is matched in the search
+                    (app.selectedVariable || '').toLowerCase().includes(variableSearch.toLowerCase())
+                    && m(Table, {
                         id: 'variablesListCenter',
                         headers: ['Name', 'Value'],
                         data: center,
@@ -178,17 +181,14 @@ export default class MenuVariables {
                     })
                 ],
                 right: app.selectedVariable && [
-                    m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
-                    m('label#searchStatisticsLabel', {
-                        for: 'searchStatistics',
-                        style: {display: 'inline-block', 'margin': '0 1em'}
-                    }, 'Search'),
                     m(TextField, {
                         id: 'searchStatistics',
+                        placeholder: 'search statistics',
                         value: statisticSearch,
                         oninput: value => statisticSearch = value,
-                        style: {width: 'auto', display: 'inline-block'}
+                        style: {margin: '1em', width: 'calc(100% - 2em)', display: 'inline-block'}
                     }),
+                    m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
                     m(Table, {
                         id: 'statisticsComputed',
                         headers: ['Name', 'Value', ''],
