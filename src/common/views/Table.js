@@ -37,6 +37,13 @@ export default class Table {
         // optionally render Objects as tables of key and value columns
         if (!Array.isArray(data)) data = Object.keys(data).map(key => [key, data[key]]);
 
+        // deduce headers if passed an array of objects
+        if (headers === undefined && data.some(row => !Array.isArray(row))) {
+            let headersTemp = new Set();
+            data.forEach(row => Object.keys(row).forEach(key => headersTemp.add(key)))
+            headers = [...headersTemp];
+        }
+
         showUID = showUID !== false; // Default is 'true'
 
         // if abbreviation is not undefined, and string is too long, then shorten the string and add a tooltop

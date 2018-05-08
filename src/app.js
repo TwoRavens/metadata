@@ -318,36 +318,70 @@ export let setSelectedCustomStatistic = (statistic) => {
 
 // holds the value displayed in the ui when searching for variables
 export let pendingCustomVariable = {};
+export let pendingCustomStatistic = {};
 
 export let setFieldCustom = async (id, field, value) => {
 
-    let update;
+    let response;
 
+    // new id
     if (id === 'ID_NEW') {
-        if (value === '') return;
-        // name and value appear mandatory, but give them empty strings, so they save no matter what
-        update = {
-            updates: {
-                'name': '',
-                'value': '',
-                'display': {'viewable': true},
-                [field]: value
-            }
-        };
-    }
-    else update = {
-        id: id,
-        updates: {[field]: value}
-    };
+        console.log("NEW ID");
+        if (value === '' || (Array.isArray(value) && value.length === 0)) return;
 
-    let response = await m.request({
-        method: 'POST',
-        url: data_url + 'form/custom-statistics-update',
-        data: {
+        pendingCustomStatistic[field] = value;
+        if (['name', 'value', 'variables'].some(name => !(name in pendingCustomStatistic))) return;
+
+        let update = {
             preprocess_id: preprocess_id,
-            custom_statistics: [update]
-        }
-    });
+            custom_statistics: [pendingCustomStatistic]
+        };
+
+        response = await m.request({
+            method: 'POST',
+            url: data_url + 'form/custom-statistics',
+            data: update
+        });
+
+        // reset the pending stat
+        if (response['success']) pendingCustomStatistic = {};
+    }
+
+    // delete a field (but not name or value)
+    else if (field !== 'name' && field !== 'value' &&
+        (value === '' || (Array.isArray(value) && value.length === 0))) {
+
+        let update = {
+            preprocess_id: preprocess_id,
+            custom_statistics: [{
+                id: id,
+                'delete': [field]
+            }]
+        };
+
+        response = await m.request({
+            method: 'POST',
+            url: data_url + 'form/custom-statistics-delete',
+            data: update
+        });
+    }
+
+    // edit a field
+    else {
+        let update = {
+            preprocess_id: preprocess_id,
+            custom_statistics: [{
+                id: id,
+                updates: {[field]: value}
+            }]
+        };
+
+        response = await m.request({
+            method: 'POST',
+            url: data_url + 'form/custom-statistics-update',
+            data: update
+        });
+    }
 
     console.log(response);
 

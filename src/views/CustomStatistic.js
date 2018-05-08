@@ -7,7 +7,7 @@ import ListTags from "../common/views/ListTags";
 
 import * as app from "../app";
 
-let allFields = ['name', 'value', 'description', 'replication', 'variables', 'image'];
+let allFields = ['name', 'value', 'variables', 'description', 'replication', 'image'];
 
 let customCellValue = (id, field, value) => {
     // not editable
@@ -28,19 +28,6 @@ let customCellValue = (id, field, value) => {
         })
     }
 
-    if (['description', 'replication'].indexOf(field) !== -1) {
-        return m(TextField, {
-            id: 'textFieldCustom' + field + id,
-            value: value || '',
-            onblur: (value) => app.setFieldCustom(id, field, value),
-            style: {
-                width: '100%',
-                'box-sizing': 'border-box',
-                margin: 0
-            }
-        })
-    }
-
     if (field === 'variables') {
         value = value || [];
         return [
@@ -52,7 +39,10 @@ let customCellValue = (id, field, value) => {
                 suggestions: Object.keys(app.variables),
                 oninput: (value) => app.pendingCustomVariable[id] = value,
                 onblur: (value) => app.pendingCustomVariable[id] = value,
-                attrsAll: {style: {display: 'inline', width: 'auto', margin: 0}}
+                attrsAll: {
+                    class: value.length === 0 && ['is-invalid'],
+                    style: {display: 'inline', width: 'auto', margin: 0}
+                }
             }),
             app.pendingCustomVariable[id] && m(`button#btnVarAdd${id}.btn.btn-outline-secondary`, {
                     disabled: !app.pendingCustomVariable[id],
@@ -63,7 +53,7 @@ let customCellValue = (id, field, value) => {
                         if (value.indexOf(app.pendingCustomVariable[id]) !== -1) return;
 
                         // noinspection JSIgnoredPromiseFromCall
-                        app.setFieldCustom(id, field,  [...value, app.pendingCustomVariable[id]]);
+                        app.setFieldCustom(id, field, [...value, app.pendingCustomVariable[id]]);
                         app.pendingCustomVariable[id] = '';
                     }
                 },
@@ -82,9 +72,26 @@ let customCellValue = (id, field, value) => {
         ];
     }
 
+    if (['description', 'replication'].indexOf(field) !== -1) {
+        return m(TextField, {
+            id: 'textFieldCustom' + field + id,
+            disabled: id === 'ID_NEW',
+            value: value || '',
+            onblur: (value) => app.setFieldCustom(id, field, value),
+            style: {
+                width: '100%',
+                'box-sizing': 'border-box',
+                margin: 0
+            }
+        })
+    }
+
     if (field === 'image') return [
         m('div.hide-mobile', {style: {display: 'inline-block'}}, [
-            m('input', {type: 'file', onchange: (e) => app.setImageCustom(id, e)})
+            m('input', {
+                disabled: id === 'ID_NEW',
+                type: 'file',
+                onchange: (e) => app.setImageCustom(id, e)})
         ]),
         m('div', {style: {display: 'inline-block'}}, app.uploadStatus)]
 };
@@ -93,7 +100,7 @@ export default class CustomStatistic {
 
     view(vnode) {
         let {id} = vnode.attrs;
-        let statistic = app.custom_statistics[id] || {};
+        let statistic = app.custom_statistics[id] || app.pendingCustomStatistic;
 
         let colgroupAttributes = () => m('colgroup',
             m('col', {width: '20%'}),
@@ -102,7 +109,7 @@ export default class CustomStatistic {
         // Checkboxes for toggling all states
         let isUsedCheckbox = statistic['display'] && m(`input#isUsedCheck${id}[type=checkbox]`, {
             style: {float: 'right'},
-            title:  ((statistic['display'] || {})['viewable'] ? '' : 'not ') + 'used in report',
+            title: ((statistic['display'] || {})['viewable'] ? '' : 'not ') + 'used in report',
             onclick: m.withAttr("checked", (checked) => app.setUsedCustom(checked, id)),
             checked: (statistic['display'] || {})['viewable']
         });

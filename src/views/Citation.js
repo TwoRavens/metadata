@@ -24,7 +24,6 @@ export default class Citation {
                 m('h5#citationAuthorsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Authors'),
                 m(Table, {
                     id: 'citationAuthorsTable',
-                    headers: ['name', 'affiliation'],
                     data: citation['author'],
                     attrsCells: {style: {padding: '.5em'}},
                     tableTags: colgroupCitation()
@@ -54,7 +53,6 @@ export default class Citation {
                 m('h5#citationLicenseHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'License'),
                 m(Table, {
                     id: 'citationLicenseTable',
-                    headers: ['name', 'value'],
                     data: citation['license'],
                     attrsCells: {style: {padding: '.5em'}},
                     tableTags: colgroupCitation()
