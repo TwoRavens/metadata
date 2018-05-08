@@ -96,6 +96,9 @@ let reloadData = (data) => {
 
     ({custom_statistics, dataset, self, variable_display, variables} = data);
 
+    // make sure custom stats is not undefined
+    custom_statistics = custom_statistics || {};
+
     // why is this in here? get outta hea'
     // TODO remove 'editable' and 'units' when API is updated to include them
     editableStatistics = [...variable_display['editable'], 'identifier', 'units'];
@@ -203,7 +206,7 @@ export let setSelectedVariable = (variable) => {
 let statisticalDatatypes = ['string', 'number', 'boolean'];
 
 // Checks if an entry for a variable is a statistic
-export let isStatistic = (stat, variable) =>  {
+export let isStatistic = (stat, variable) => {
     if (variable === undefined) {
         return Object.keys(variables).some(variable => isStatistic(stat, variable));
     }
@@ -314,67 +317,51 @@ export let setSelectedCustomStatistic = (statistic) => {
 };
 
 // holds the value displayed in the ui when searching for variables
-export let queuedCustomVariable = {};
+export let pendingCustomVariable = {};
 
-// TODO: strip this out when the API is working
-let IS_API_IMPLEMENTED = false;
-let id_count = 0;
+export let setFieldCustom = async (id, field, value) => {
 
-export let setFieldCustom = (id, field, value) => {
-
-    let update = async (updates) => {
-
-        if (!IS_API_IMPLEMENTED) {
-            if (id === 'ID_NEW') {
-                id = 'ID_000' + ++id_count;
-                custom_statistics[id] = {};
-            }
-            Object.keys(updates).map(key => custom_statistics[id][key] = value);
-            console.log("Updated the fake API");
-            return;
-        }
-
-        let response = await m.request({
-            method: 'POST',
-            url: data_url + 'form/custom-statistics_update',
-            data: {
-                preprocess_id: preprocess_id,
-                custom_statistics: [
-                    {
-                        id: id,
-                        updates: updates
-                    }
-                ]
-            }
-        });
-
-        console.log(response);
-
-        if (response['success']) reloadData(response['data']);
-        else console.log(response['message']);
-    };
+    let update;
 
     if (id === 'ID_NEW') {
         if (value === '') return;
         // name and value appear mandatory, but give them empty strings, so they save no matter what
-        // noinspection JSIgnoredPromiseFromCall
-        update({
-            'name': '',
-            'value': '',
-            'display': {'viewable': true},
-            [field]: value
-        });
+        update = {
+            updates: {
+                'name': '',
+                'value': '',
+                'display': {'viewable': true},
+                [field]: value
+            }
+        };
     }
-    else update({[field]: value});
+    else update = {
+        id: id,
+        updates: {[field]: value}
+    };
+
+    let response = await m.request({
+        method: 'POST',
+        url: data_url + 'form/custom-statistics-update',
+        data: {
+            preprocess_id: preprocess_id,
+            custom_statistics: [update]
+        }
+    });
+
+    console.log(response);
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 // updates a custom stat with a given id
-export let setUsedCustom = (status, id)  => {
+export let setUsedCustom = (status, id) => {
     setFieldCustom(id, 'display', {'viewable': status})
 };
 
 // updates all custom stats with a given name. If no name set, then update all stats
-export let setUsedCustomName = async (status, name)  => {
+export let setUsedCustomName = async (status, name) => {
     let updates = Object.keys(custom_statistics)
         .filter(id =>
             (name === undefined || custom_statistics[id]['name'] === name) &&
@@ -399,11 +386,22 @@ export let setUsedCustomName = async (status, name)  => {
     else console.log(response['message']);
 };
 
-export let deleteCustom = (id) => {
-    // TODO call API
-    if (!IS_API_IMPLEMENTED) {
-        delete custom_statistics[id];
-    }
+export let deleteCustom = async (id) => {
+    let response = await m.request({
+        method: 'POST',
+        url: data_url + 'form/custom-statistics-update',
+        data: {
+            preprocess_id: preprocess_id,
+            custom_statistics: [
+                {id: id, 'delete': ['id']}
+            ]
+        }
+    });
+
+    console.log(response);
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 export let uploadImageStatus = {};

@@ -48,8 +48,7 @@ export default class TwoPanel {
                     top: 0,
                     bottom: 0,
                     width: leftpanelSize + '%',
-                    'overflow-y': 'auto',
-                    animation: 'appear .5s ease'
+                    'overflow-y': 'auto'
                 }
             }, [
                 m('#horizontalDrag', {

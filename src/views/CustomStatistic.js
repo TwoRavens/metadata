@@ -48,23 +48,23 @@ let customCellValue = (id, field, value) => {
                 id: 'textFieldCustom' + field + id,
                 enforce: true,
                 limit: 5,
-                value: app.queuedCustomVariable[id],
+                value: app.pendingCustomVariable[id],
                 suggestions: Object.keys(app.variables),
-                oninput: (value) => app.queuedCustomVariable[id] = value,
-                onblur: (value) => app.queuedCustomVariable[id] = value,
+                oninput: (value) => app.pendingCustomVariable[id] = value,
+                onblur: (value) => app.pendingCustomVariable[id] = value,
                 attrsAll: {style: {display: 'inline', width: 'auto', margin: 0}}
             }),
-            app.queuedCustomVariable[id] && m(`button#btnVarAdd${id}.btn.btn-outline-secondary`, {
-                    disabled: !app.queuedCustomVariable[id],
+            app.pendingCustomVariable[id] && m(`button#btnVarAdd${id}.btn.btn-outline-secondary`, {
+                    disabled: !app.pendingCustomVariable[id],
                     title: 'record that variable is related to this statistic',
                     style: {display: 'inline-block', "margin-left": '2em'},
                     onclick: () => {
                         // ignore if already added (redundant)
-                        if (value.indexOf(app.queuedCustomVariable[id]) !== -1) return;
+                        if (value.indexOf(app.pendingCustomVariable[id]) !== -1) return;
 
                         // noinspection JSIgnoredPromiseFromCall
-                        app.setFieldCustom(id, field,  [...value, app.queuedCustomVariable[id]]);
-                        app.queuedCustomVariable[id] = '';
+                        app.setFieldCustom(id, field,  [...value, app.pendingCustomVariable[id]]);
+                        app.pendingCustomVariable[id] = '';
                     }
                 },
                 'Add'
