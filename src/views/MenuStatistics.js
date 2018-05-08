@@ -110,10 +110,13 @@ export default class MenuStatistics {
                     statistics[statistic][variable] = app.variables[variable][statistic];
 
         // Checkbox for toggling all states
+        let allChecked = Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable']);
+        let allIndet = !allChecked && Object.keys(app.variable_display).some(key => app.variable_display[key]['omit'].length !== Object.keys(app.variables[key]).length);
+
         let statisticsAllCheckbox = m('input#statisticsAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
-            checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable']),
-            indeterminate: Object.keys(app.variable_display).some(key => app.variable_display[key]['omit'].length !== 0)
+            checked: allChecked,
+            indeterminate: allIndet
         });
 
         // all custom statistics that share the current statistic name
