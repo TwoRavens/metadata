@@ -14,15 +14,14 @@ import {mergeAttributes} from "../common";
 
 export default class TextField {
     view(vnode) {
-        let {id, cancellable} = vnode.attrs;
-
-        return m(`input#${id}.form-control`, mergeAttributes({
+        console.log(vnode.attrs);
+        return m(`input.form-control`, mergeAttributes({
                 style: {'margin': '5px 0', 'width': '100%'}
             },
             vnode.attrs,
             {
-                oninput: vnode.attrs.oninput ? m.withAttr('value', vnode.attrs.oninput) : undefined,
-                onblur: vnode.attrs.onblur ? m.withAttr('value', vnode.attrs.onblur) : undefined
+                oninput: m.withAttr('value', (vnode.attrs.oninput || Function)),
+                onblur: m.withAttr('value', (vnode.attrs.onblur || Function))
             })
         );
     }

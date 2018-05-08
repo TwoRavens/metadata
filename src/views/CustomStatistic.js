@@ -22,7 +22,7 @@ let customCellValue = (id, field, value) => {
         return m(TextField, {
             class: !value && ['is-invalid'],
             id: 'textFieldCustom' + field + id,
-            value: value,
+            value: value || '',
             onblur: (value) => app.setFieldCustom(id, field, value),
             style: {margin: 0}
         })
@@ -31,7 +31,7 @@ let customCellValue = (id, field, value) => {
     if (['description', 'replication'].indexOf(field) !== -1) {
         return m(TextField, {
             id: 'textFieldCustom' + field + id,
-            value: value,
+            value: value || '',
             onblur: (value) => app.setFieldCustom(id, field, value),
             style: {
                 width: '100%',
@@ -95,15 +95,37 @@ export default class CustomStatistic {
         let {id} = vnode.attrs;
         let statistic = app.custom_statistics[id] || {};
 
+        console.log(app.custom_statistics);
+
         let colgroupAttributes = () => m('colgroup',
             m('col', {width: '20%'}),
             m('col', {width: '80%'}));
+
+        // Checkboxes for toggling all states
+        let isUsedCheckbox = statistic['display'] && m(`input#isUsedCheck${id}[type=checkbox]`, {
+            style: {float: 'right'},
+            title:  ((statistic['display'] || {})['viewable'] ? '' : 'not ') + 'used in report',
+            onclick: m.withAttr("checked", (checked) => app.setUsedCustom(checked, id)),
+            checked: (statistic['display'] || {})['viewable']
+        });
+
+        let deleteIcon = m('div', {
+            onclick: () => app.deleteCustom(id),
+            style: {
+                display: 'inline-block',
+                'margin-right': '0.5em',
+                transform: 'scale(1.3, 1.3)'
+            }
+        }, '×');
 
         return [
             // m('h5#customFieldHeader' + id, {style: {'padding-top': '.5em'}}, name),
             m(Table, {
                 id: 'customFieldTable' + id,
-                headers: [statistic['name'] || 'New Statistic', ''],
+                headers: [
+                    statistic['name'] ? [deleteIcon, statistic['name']] : 'New Statistic',
+                    isUsedCheckbox
+                ],
                 data: allFields.map(field => [field, customCellValue(id, field, statistic[field])]),
                 tableTags: colgroupAttributes(),
                 attrsCells: {style: {padding: '.3em'}},

@@ -93,9 +93,9 @@ export default class MenuVariables {
     customStatisticsTable(variableName) {
         let statistics = customStatistics[variableName] || [];
 
-        let stat_ids = Object.keys(customStatistics).filter(key => {
-            return customStatistics[key][app.variables].length === 1 && customStatistics[key][variableName][0] === variableName;
-        });
+        // let stat_ids = Object.keys(customStatistics).filter(key => {
+        //     return customStatistics[key][app.variables].length === 1 && customStatistics[key][variableName][0] === variableName;
+        // });
 
         let newUID = (statisticUIDCount[variableName] || 0) + 1;
 
@@ -126,7 +126,7 @@ export default class MenuVariables {
             checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable'])
         });
 
-        let omissions = app.selectedVariable && new Set(app.variable_display[app.selectedVariable]['omit'])
+        // let omissions = app.selectedVariable && new Set(app.variable_display[app.selectedVariable]['omit'])
 
         // let usedCustStats = app.usedCustomStatistics[app.selectedVariable];
         // let customStatisticsAllCheckbox = m('input#customStatisticsAllCheck[type=checkbox]', {

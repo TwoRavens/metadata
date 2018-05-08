@@ -308,7 +308,7 @@ export let setFieldCustom = (id, field, value) => {
     let update = async (updates) => {
 
         if (!IS_API_IMPLEMENTED) {
-            if (id === 'NEW_ID') {
+            if (id === 'ID_NEW') {
                 id = 'ID_000' + ++id_count;
                 custom_statistics[id] = {};
             }
@@ -344,14 +344,23 @@ export let setFieldCustom = (id, field, value) => {
         update({
             'name': '',
             'value': '',
+            'display': {'viewable': true},
             [field]: value
         });
     }
     else update({[field]: value});
 };
 
-export let setUsedCustom = (status, id, field)  => {
-    // TODO
+export let setUsedCustom = (status, id)  => {
+    setFieldCustom(id, 'display', {'viewable': status})
+};
+
+export let deleteCustom = (id) => {
+    // TODO call API
+    if (!IS_API_IMPLEMENTED) {
+        delete custom_statistics[id];
+    }
+    console.log(custom_statistics);
 };
 
 export let uploadImageStatus = {};
