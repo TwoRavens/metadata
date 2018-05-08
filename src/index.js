@@ -80,9 +80,9 @@ class Body {
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: (mode) => app.editorMode = mode,
                     activeSection: app.editorMode,
-                    sections: [{value: 'Dataset'}].concat(app.preprocess_id ? [{value: 'Variables'}, {value: 'Statistics'}] : []),
+                    sections: [{value: 'Dataset'}].concat(app.preprocessId ? [{value: 'Variables'}, {value: 'Statistics'}] : []),
                 }),
-                app.preprocess_id && m("button#btnPeek.btn.btn-outline-secondary", {
+                app.preprocessId && m("button#btnPeek.btn.btn-outline-secondary", {
                         title: 'Display a data preview',
                         style: {"margin-right": '2em'},
                         onclick: () => window.open('/data', 'data')
@@ -94,7 +94,7 @@ class Body {
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: (value) => m.route.set('/' + id + '/' + value.toLowerCase()),
                     activeSection: app.metadataMode,
-                    sections: [{value: 'Home'}, {value: 'Editor'}].concat(app.preprocess_id ? [{value: 'Report'}] : [])
+                    sections: [{value: 'Home'}, {value: 'Editor'}].concat(app.preprocessId ? [{value: 'Report'}] : [])
                 })
             ),
             m(Canvas,

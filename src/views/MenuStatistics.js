@@ -27,8 +27,8 @@ export default class MenuStatistics {
 
                 // boolean for each variable, true if current statistic is not omitted
                 let inclusion = Object.keys(app.variables)
-                    .filter(variable => app.variable_display[variable])
-                    .map(variable => app.variable_display[variable]['omit'].indexOf(statistic) === -1);
+                    .filter(variable => app.variableDisplay[variable])
+                    .map(variable => app.variableDisplay[variable]['omit'].indexOf(statistic) === -1);
 
                 // don't include checkmarks for editable statistics // TODO possibly remove?
                 let hasCheck = app.editableStatistics.indexOf(statistic) === -1;
@@ -53,18 +53,18 @@ export default class MenuStatistics {
 
     customStatisticsTable() {
         let uniqueNames = new Set();
-        Object.keys(app.custom_statistics)
-            .filter(key => app.custom_statistics[key]['name'].toLowerCase().includes(statisticSearch.toLowerCase()))
-            .map(key => uniqueNames.add(app.custom_statistics[key]['name']));
+        Object.keys(app.customStatistics)
+            .filter(key => app.customStatistics[key]['name'].toLowerCase().includes(statisticSearch.toLowerCase()))
+            .map(key => uniqueNames.add(app.customStatistics[key]['name']));
 
         // determine state of checkboxes
-        let relevantIDs = Object.keys(app.custom_statistics)
-            .filter(id => app.custom_statistics[id]['name'] === app.selectedCustomStatistic);
+        let relevantIDs = Object.keys(app.customStatistics)
+            .filter(id => app.customStatistics[id]['name'] === app.selectedCustomStatistic);
 
         let allChecked = relevantIDs
-            .every(id => app.custom_statistics[id]['display']['viewable']);
+            .every(id => app.customStatistics[id]['display']['viewable']);
         let allIndet = !allChecked && relevantIDs
-            .some(id => app.custom_statistics[id]['display']['viewable']);
+            .some(id => app.customStatistics[id]['display']['viewable']);
 
         return [...uniqueNames].map(name => [
             name,
@@ -93,7 +93,7 @@ export default class MenuStatistics {
                     app.cellValue(variable, selectedStatistic, 'value', app.variables[variable][selectedStatistic] || ''),
                     hasCheck && m('input[type=checkbox]', {
                         onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variable, selectedStatistic)),
-                        checked: app.variable_display[variable]['omit'].indexOf(selectedStatistic) === -1
+                        checked: app.variableDisplay[variable]['omit'].indexOf(selectedStatistic) === -1
                     })
                 ]
             });
@@ -110,8 +110,8 @@ export default class MenuStatistics {
                     statistics[statistic][variable] = app.variables[variable][statistic];
 
         // Checkbox for toggling all states
-        let allChecked = Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable']);
-        let allIndet = !allChecked && Object.keys(app.variable_display).some(key => app.variable_display[key]['omit'].length !== Object.keys(app.variables[key]).length);
+        let allChecked = Object.keys(app.variableDisplay).every(key => app.variableDisplay[key]['viewable']);
+        let allIndet = !allChecked && Object.keys(app.variableDisplay).some(key => app.variableDisplay[key]['omit'].length !== Object.keys(app.variables[key]).length);
 
         let statisticsAllCheckbox = m('input#statisticsAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
@@ -120,13 +120,13 @@ export default class MenuStatistics {
         });
 
         // all custom statistics that share the current statistic name
-        let relevantIDs = Object.keys(app.custom_statistics)
-            .filter(key => (app.custom_statistics[key]['name']) === app.selectedCustomStatistic);
+        let relevantIDs = Object.keys(app.customStatistics)
+            .filter(key => (app.customStatistics[key]['name']) === app.selectedCustomStatistic);
 
-        let allCustomChecked = Object.keys(app.custom_statistics)
-            .every(id => app.custom_statistics[id]['display']['viewable']);
-        let allCustomIndet = !allCustomChecked && Object.keys(app.custom_statistics)
-            .some(id => app.custom_statistics[id]['display']['viewable']);
+        let allCustomChecked = Object.keys(app.customStatistics)
+            .every(id => app.customStatistics[id]['display']['viewable']);
+        let allCustomIndet = !allCustomChecked && Object.keys(app.customStatistics)
+            .some(id => app.customStatistics[id]['display']['viewable']);
 
         let customStatAllCheckbox = m(`input#customStatAllCheck[type=checkbox]`, {
             style: {float: 'right'},
@@ -173,8 +173,8 @@ export default class MenuStatistics {
                         let matches = Object.keys(statistics)
                             .filter(stat => app.isStatistic(stat))
                             .filter(stat => stat.toLowerCase().includes(statisticSearch.toLowerCase()));
-                        let matchesCustom = Object.keys(app.custom_statistics)
-                            .filter(id => app.custom_statistics[id]['name']
+                        let matchesCustom = Object.keys(app.customStatistics)
+                            .filter(id => app.customStatistics[id]['name']
                                 .toLowerCase().includes(statisticSearch.toLowerCase()));
 
                         if (matches.length === 1 && matchesCustom.length === 0) {
@@ -198,7 +198,7 @@ export default class MenuStatistics {
                     tableTags: colgroupStatistics(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
-                Object.keys(app.custom_statistics).length !== 0 && [
+                Object.keys(app.customStatistics).length !== 0 && [
                     m('h4#customStatisticsHeader', {
                         style: {
                             'padding-top': '.5em',

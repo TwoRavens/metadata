@@ -62,9 +62,9 @@ let customCellValue = (id, field, value) => {
             value && m('div', m(ListTags, {
                 tags: value,
                 ondelete: (variable) => {
-                    let idx = app.custom_statistics[id]['variables'].indexOf(variable);
+                    let idx = app.customStatistics[id]['variables'].indexOf(variable);
                     if (idx === -1) return;
-                    let changedVariables = [...app.custom_statistics[id]['variables']];
+                    let changedVariables = [...app.customStatistics[id]['variables']];
                     changedVariables.splice(idx, 1);
                     app.setFieldCustom(id, 'variables', changedVariables);
                 }
@@ -87,12 +87,13 @@ let customCellValue = (id, field, value) => {
     }
 
     if (field === 'image') return [
-        m('div.hide-mobile', {style: {display: 'inline-block'}}, [
+        m('label.btn.btn-outline-secondary.hide-mobile', {style: {display: 'inline-block'}}, [
             m('input', {
+                hidden: true,
                 disabled: id === 'ID_NEW',
                 type: 'file',
                 onchange: (e) => app.setImageCustom(id, e)})
-        ]),
+        ], 'Browse'),
         m('div', {style: {display: 'inline-block'}}, app.uploadStatus)]
 };
 
@@ -100,7 +101,7 @@ export default class CustomStatistic {
 
     view(vnode) {
         let {id} = vnode.attrs;
-        let statistic = app.custom_statistics[id] || app.pendingCustomStatistic;
+        let statistic = app.customStatistics[id] || app.pendingCustomStatistic;
 
         let colgroupAttributes = () => m('colgroup',
             m('col', {width: '20%'}),

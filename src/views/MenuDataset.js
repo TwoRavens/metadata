@@ -14,28 +14,32 @@ export default class MenuDataset {
         return [
             [
                 'new preprocess', [
-                m('div.hide-mobile', {style: {display: 'inline-block'}}, [
-                    m('input', {type: 'file', onchange: app.uploadFile})
-                ]),
+                m('label.btn.btn-outline-secondary.hide-mobile', {style: {display: 'inline-block'}}, [
+                    m('input', {
+                        hidden: true,
+                        type: 'file',
+                        onchange: app.uploadFile
+                    })
+                ], 'Browse'),
                 m('div', {style: {display: 'inline-block'}}, app.uploadStatus)]
             ], [
                 'preprocess ID', m(TextField, {
                     style: {display: 'inline', width: 'auto'},
                     id: 'textFieldPreprocessID',
-                    value: app.preprocess_id,
+                    value: app.preprocessId,
                     placeholder: 'numeric',
                     oninput: async (id) => {
-                        let temp_id = app.preprocess_id;
+                        let tempId = app.preprocessId;
                         // change route if loaded successfully
-                        if (await app.getData(id)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                        if (await app.getData(id)) m.route.set('/' + app.preprocessId + '/' + app.metadataMode);
                         // otherwise attempt to fall back
                         else if (id !== '') {
                             alert('ID ' + id + ' was not found.');
                             // noinspection JSIgnoredPromiseFromCall
-                            app.getData(temp_id);
+                            app.getData(tempId);
                         }
                         else {
-                            app.preprocess_id = undefined;
+                            app.preprocessId = undefined;
                             m.route.set('/undefined/editor');
                         }
                     }
@@ -49,12 +53,12 @@ export default class MenuDataset {
                         disabled: app.self['version'] === undefined,
                         onblur: async (version) => {
                             // change route if loaded successfully
-                            if (await app.getData(app.preprocess_id, version)) m.route.set('/' + app.preprocess_id + '/' + app.metadataMode);
+                            if (await app.getData(app.preprocessId, version)) m.route.set('/' + app.preprocessId + '/' + app.metadataMode);
                             // otherwise attempt to fall back
                             else if (version !== '') {
                                 alert('Version ' + version + ' was not found.');
                                 // noinspection JSIgnoredPromiseFromCall
-                                app.getData(app.preprocess_id);
+                                app.getData(app.preprocessId);
                             }
                         }
                     }),
@@ -67,9 +71,9 @@ export default class MenuDataset {
                             }
                         }, 'Menu is readonly.'),
                         m("button#btnCurrent.btn.btn-outline-secondary", {
-                                title: 'Return to latest version of preprocess ID ' + app.preprocess_id,
+                                title: 'Return to latest version of preprocess ID ' + app.preprocessId,
                                 style: {"margin-left": '2em'},
-                                onclick: () => app.getData(app.preprocess_id)
+                                onclick: () => app.getData(app.preprocessId)
                             },
                             'Reload'
                         ),
@@ -106,7 +110,7 @@ export default class MenuDataset {
                     attrsCells: {style: {padding: '.5em'}},
                     tableTags: colgroupDataset()
                 }),
-                app.preprocess_id && [
+                app.preprocessId && [
                     m('h4#datasetHeader', {
                         style: {
                             'padding-top': '.5em',
@@ -138,9 +142,10 @@ export default class MenuDataset {
                     m(Citation, {citation: app.citation})
                 ]
             ],
-            right: app.preprocess_id && [
+            right: app.preprocessId && [
                 m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
-                [...Object.keys(app.custom_statistics), 'ID_NEW'].map((id) => m(CustomStatistic, {id})
+                Object.keys(app.customStatistics).concat(app.version ? [] : ['ID_NEW'])
+                    .map((id) => m(CustomStatistic, {id})
                 )
             ]
         }));

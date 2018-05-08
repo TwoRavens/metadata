@@ -9,15 +9,15 @@ import TextField from "./common/views/TextField";
 import citationSample from './citationSample';
 import descriptions from "./descriptions";
 
-let data_url = 'http://localhost:8080/preprocess/';
+let dataUrl = 'http://localhost:8080/preprocess/';
 
-export let preprocess_id;
+export let preprocessId;
 
 // preprocess info
-export let custom_statistics = {};
+export let customStatistics = {};
 export let dataset = {};
 export let variables = {};
-export let variable_display = {};
+export let variableDisplay = {};
 export let self = {};
 export let citation;
 
@@ -36,27 +36,28 @@ export let uploadFile = async (e) => {
     // initial upload
     let response = await m.request({
         method: "POST",
-        url: data_url + "api/process-single-file",
+        url: dataUrl + "api/process-single-file",
         data: data,
     });
 
-    let callback_url = response['callback_url'];
+    let callbackUrl = response['callbackUrl'];
 
     // get the data
     let processed = false;
     while (!processed) {
         response = await m.request({
             method: "GET",
-            url: callback_url
+            url: callbackUrl
         });
+        console.log(response);
 
-        uploadStatus = response['data']['user_message'];
+        uploadStatus = response['data']['userMessage'];
 
         if (response['data']['state'] !== "PREPROCESS_STARTED") {
             processed = true;
             if (response['data']['state'] === "SUCCESS") {
                 reloadData(response['data']['data']);
-                m.route.set('/' + preprocess_id + '/' + metadataMode);
+                m.route.set('/' + preprocessId + '/' + metadataMode);
             }
         }
     }
@@ -64,7 +65,7 @@ export let uploadFile = async (e) => {
 
 export let getData = async (id, versionTemp) => {
     if (isNaN(id) || id === '') {
-        preprocess_id = undefined;
+        preprocessId = undefined;
         return false;
     }
 
@@ -73,7 +74,7 @@ export let getData = async (id, versionTemp) => {
 
     let response = await m.request({
         method: "GET",
-        url: data_url + 'api/metadata/' + id + (version ? '/version/' + version : '')
+        url: dataUrl + 'api/metadata/' + id + (version ? '/version/' + version : '')
     });
 
     console.log("Data response:");
@@ -90,28 +91,28 @@ export let getData = async (id, versionTemp) => {
 
 // takes in only the preprocess.json
 let reloadData = (data) => {
-    preprocess_id = data['self']['preprocess_id'];
+    preprocessId = data['self']['preprocessId'];
 
     resetPeek();
 
-    ({custom_statistics, dataset, self, variable_display, variables} = data);
+    ({customStatistics, dataset, self, variableDisplay, variables} = data);
 
     // make sure custom stats is not undefined
-    custom_statistics = custom_statistics || {};
+    customStatistics = customStatistics || {};
 
     // why is this in here? get outta hea'
     // TODO remove 'editable' and 'units' when API is updated to include them
-    editableStatistics = [...variable_display['editable'], 'identifier', 'units'];
-    delete variable_display['editable'];
+    editableStatistics = [...variableDisplay['editable'], 'identifier', 'units'];
+    delete variableDisplay['editable'];
 
     dataset = {
         'description': data['dataset']['description'],
-        'row count': data['dataset']['row_cnt'],
-        'variable count': data['dataset']['variable_cnt'],
-        'filename': data['dataset']['data_source']['name'],
-        'filesize': data['dataset']['data_source']['filesize'],
-        'type': data['dataset']['data_source']['type'],
-        'format': data['dataset']['data_source']['format']
+        'row count': data['dataset']['rowCount'],
+        'variable count': data['dataset']['variableCount'],
+        'filename': data['dataset']['dataSource']['name'],
+        'filesize': data['dataset']['dataSource']['filesize'],
+        'type': data['dataset']['dataSource']['type'],
+        'format': data['dataset']['dataSource']['format']
     };
 
     // TODO: remove citationSample and read from data['dataset']['citation'] instead (production)
@@ -138,18 +139,18 @@ window.addEventListener('storage', onStorageEvent);
 
 let updatePeek = () => {
     // peekAllDataReceived = true;
-    if (preprocess_id === undefined) {
+    if (preprocessId === undefined) {
         peekAllDataReceived = true;
         return;
     }
 
     m.request({
         method: 'POST',
-        url: data_url + 'api/retrieve-rows',
+        url: dataUrl + 'api/retrieve-rows',
         data: {
-            preprocess_id: preprocess_id,
-            start_row: peekSkip + 1,
-            num_rows: peekBatchSize,
+            preprocessId: preprocessId,
+            startRow: peekSkip + 1,
+            numberRows: peekBatchSize,
             format: 'json'
         }
     }).then((response) => {
@@ -212,7 +213,7 @@ export let isStatistic = (stat, variable) => {
     }
 
     // don't consider the variable or accordion stats as statistics
-    if (editableStatistics.indexOf(stat) !== -1 || stat === 'varnameSumStat') return false;
+    if (editableStatistics.indexOf(stat) !== -1 || stat === 'variableName') return false;
 
     // ignore plot data, etc.
     return statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1;
@@ -231,12 +232,12 @@ export let setField = async (variable, statistic, value) => {
 
     let response = await m.request({
         method: 'POST',
-        url: data_url + 'api/update-metadata',
+        url: dataUrl + 'api/update-metadata',
         data: {
-            preprocess_id: preprocess_id,
-            variable_updates: {
+            preprocessId: preprocessId,
+            variableUpdates: {
                 [variable]: {
-                    value_updates: {
+                    valueUpdates: {
                         [statistic]: value
                     }
                 }
@@ -254,7 +255,7 @@ export let setUsed = async (status, variable, statistic) => {
     let updates = {};
 
     let prepUpdateVariable = (status, variable) => {
-        if (variable_display[variable]['viewable'] === status) return;
+        if (variableDisplay[variable]['viewable'] === status) return;
         updates[variable] = {
             'viewable': status,
             'omit': status ? [] : Object.keys(variables[variable])
@@ -263,14 +264,14 @@ export let setUsed = async (status, variable, statistic) => {
 
     let prepUpdateStatistic = (status, variable, statistic) => {
         // check if no change is necessary
-        let isIncluded = variable_display[variable]['omit'].indexOf(statistic) === -1;
+        let isIncluded = variableDisplay[variable]['omit'].indexOf(statistic) === -1;
         if (isIncluded === status) return;
 
         // update omissions
         updates[variable] = status ? {
-            'omit': variable_display[variable]['omit'].filter(key => key !== statistic)
+            'omit': variableDisplay[variable]['omit'].filter(key => key !== statistic)
         } : {
-            'omit': [statistic, ...variable_display[variable]['omit']]
+            'omit': [statistic, ...variableDisplay[variable]['omit']]
         };
 
         // update viewable status
@@ -298,10 +299,10 @@ export let setUsed = async (status, variable, statistic) => {
     if (Object.keys(updates).length === 0) return;
     let response = await m.request({
         method: 'POST',
-        url: data_url + 'api/update-metadata',
+        url: dataUrl + 'api/update-metadata',
         data: {
-            preprocess_id: preprocess_id,
-            variable_updates: updates
+            preprocessId: preprocessId,
+            variableUpdates: updates
         }
     });
 
@@ -326,20 +327,19 @@ export let setFieldCustom = async (id, field, value) => {
 
     // new id
     if (id === 'ID_NEW') {
-        console.log("NEW ID");
         if (value === '' || (Array.isArray(value) && value.length === 0)) return;
 
         pendingCustomStatistic[field] = value;
         if (['name', 'value', 'variables'].some(name => !(name in pendingCustomStatistic))) return;
 
         let update = {
-            preprocess_id: preprocess_id,
-            custom_statistics: [pendingCustomStatistic]
+            preprocessId: preprocessId,
+            customStatistics: [pendingCustomStatistic]
         };
 
         response = await m.request({
             method: 'POST',
-            url: data_url + 'form/custom-statistics',
+            url: dataUrl + 'form/custom-statistics',
             data: update
         });
 
@@ -352,8 +352,8 @@ export let setFieldCustom = async (id, field, value) => {
         (value === '' || (Array.isArray(value) && value.length === 0))) {
 
         let update = {
-            preprocess_id: preprocess_id,
-            custom_statistics: [{
+            preprocessId: preprocessId,
+            customStatistics: [{
                 id: id,
                 'delete': [field]
             }]
@@ -361,7 +361,7 @@ export let setFieldCustom = async (id, field, value) => {
 
         response = await m.request({
             method: 'POST',
-            url: data_url + 'form/custom-statistics-delete',
+            url: dataUrl + 'form/custom-statistics-delete',
             data: update
         });
     }
@@ -369,8 +369,8 @@ export let setFieldCustom = async (id, field, value) => {
     // edit a field
     else {
         let update = {
-            preprocess_id: preprocess_id,
-            custom_statistics: [{
+            preprocessId: preprocessId,
+            customStatistics: [{
                 id: id,
                 updates: {[field]: value}
             }]
@@ -378,7 +378,7 @@ export let setFieldCustom = async (id, field, value) => {
 
         response = await m.request({
             method: 'POST',
-            url: data_url + 'form/custom-statistics-update',
+            url: dataUrl + 'form/custom-statistics-update',
             data: update
         });
     }
@@ -396,10 +396,10 @@ export let setUsedCustom = (status, id) => {
 
 // updates all custom stats with a given name. If no name set, then update all stats
 export let setUsedCustomName = async (status, name) => {
-    let updates = Object.keys(custom_statistics)
+    let updates = Object.keys(customStatistics)
         .filter(id =>
-            (name === undefined || custom_statistics[id]['name'] === name) &&
-            custom_statistics[id]['display']['viewable'] !== status)
+            (name === undefined || customStatistics[id]['name'] === name) &&
+            customStatistics[id]['display']['viewable'] !== status)
         .map(id => Object({
             id: id,
             updates: {'display': {'viewable': status}}
@@ -407,10 +407,10 @@ export let setUsedCustomName = async (status, name) => {
 
     let response = await m.request({
         method: 'POST',
-        url: data_url + 'form/custom-statistics_update',
+        url: dataUrl + 'form/custom-statistics-update',
         data: {
-            preprocess_id: preprocess_id,
-            custom_statistics: updates
+            preprocessId: preprocessId,
+            customStatistics: updates
         }
     });
 
@@ -423,10 +423,10 @@ export let setUsedCustomName = async (status, name) => {
 export let deleteCustom = async (id) => {
     let response = await m.request({
         method: 'POST',
-        url: data_url + 'form/custom-statistics-update',
+        url: dataUrl + 'form/custom-statistics-update',
         data: {
-            preprocess_id: preprocess_id,
-            custom_statistics: [
+            preprocessId: preprocessId,
+            customStatistics: [
                 {id: id, 'delete': ['id']}
             ]
         }

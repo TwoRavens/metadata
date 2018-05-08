@@ -41,14 +41,14 @@ export default class MenuVariables {
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((variable) => [
                 variable,
-                app.variables[variable]['labl'] || '',
+                app.variables[variable]['description'] || '',
                 m('input[type=checkbox]', {
                     onclick: e => {
                         e.stopPropagation();
                         m.withAttr("checked", (checked) => app.setUsed(checked, variable))(e)
                     },
-                    checked: app.variable_display[variable]['viewable'],
-                    indeterminate: app.variable_display[variable]['viewable'] && app.variable_display[variable]['omit'].length !== 0
+                    checked: app.variableDisplay[variable]['viewable'],
+                    indeterminate: app.variableDisplay[variable]['viewable'] && app.variableDisplay[variable]['omit'].length !== 0
                 })
             ]);
     }
@@ -71,7 +71,7 @@ export default class MenuVariables {
     statisticsTable(variableName) {
         let statistics = app.variables[variableName];
 
-        let omissions = new Set(app.variable_display[variableName]['omit']);
+        let omissions = new Set(app.variableDisplay[variableName]['omit']);
         if (statistics === undefined) return [];
         // noinspection JSCheckFunctionSignatures
         return Object.keys(statistics)
@@ -97,8 +97,8 @@ export default class MenuVariables {
         let {upper, lower} = partitionVariableTable(this.variableTable());
 
         // Checkbox for toggling all states
-        let allChecked = Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable']);
-        let allIndet = !allChecked && Object.keys(app.variable_display).some(key => app.variable_display[key]['omit'].length !== Object.keys(app.variables[key]).length);
+        let allChecked = Object.keys(app.variableDisplay).every(key => app.variableDisplay[key]['viewable']);
+        let allIndet = !allChecked && Object.keys(app.variableDisplay).some(key => app.variableDisplay[key]['omit'].length !== Object.keys(app.variables[key]).length);
 
         let variableAllCheckbox = m('input#variableAllCheck[type=checkbox]', {
             onclick: m.withAttr("checked", (checked) => app.setUsed(checked)),
@@ -107,9 +107,9 @@ export default class MenuVariables {
         });
 
         // all custom statistics that include the current variable
-        let relevantStatistics = Object.keys(app.custom_statistics)
-            .filter(key => app.custom_statistics[key]['name'].toLowerCase().includes(statisticSearch.toLowerCase()))
-            .filter(key => (app.custom_statistics[key]['variables'] || []).indexOf(app.selectedVariable) !== -1);
+        let relevantStatistics = Object.keys(app.customStatistics)
+            .filter(key => app.customStatistics[key]['name'].toLowerCase().includes(statisticSearch.toLowerCase()))
+            .filter(key => (app.customStatistics[key]['variables'] || []).indexOf(app.selectedVariable) !== -1);
 
         // Sets spacing of variable table column
         let colgroupVariables = () => {
