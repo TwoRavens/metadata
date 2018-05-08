@@ -208,6 +208,7 @@ export let isStatistic = (variable, stat) =>
 export let selectedStatistic;
 export let setSelectedStatistic = (statistic) => {
     selectedStatistic = selectedStatistic === statistic ? undefined : statistic;
+    selectedCustomStatistic = undefined;
 };
 
 export let setField = async (variable, statistic, value) => {
@@ -294,6 +295,13 @@ export let setUsed = async (status, variable, statistic) => {
     else console.log(response['message']);
 };
 
+export let selectedCustomStatistic;
+export let setSelectedCustomStatistic = (statistic) => {
+    selectedStatistic = undefined;
+    selectedCustomStatistic =
+        selectedCustomStatistic === statistic ? undefined : statistic;
+};
+
 // holds the value displayed in the ui when searching for variables
 export let queuedCustomVariable = {};
 
@@ -349,8 +357,35 @@ export let setFieldCustom = (id, field, value) => {
     else update({[field]: value});
 };
 
+// updates a custom stat with a given id
 export let setUsedCustom = (status, id)  => {
     setFieldCustom(id, 'display', {'viewable': status})
+};
+
+// updates all custom stats with a given name. If no name set, then update all stats
+export let setUsedCustomName = async (status, name)  => {
+    let updates = Object.keys(custom_statistics)
+        .filter(id =>
+            (name === undefined || custom_statistics[id]['name'] === name) &&
+            custom_statistics[id]['display']['viewable'] !== status)
+        .map(id => Object({
+            id: id,
+            updates: {'display': {'viewable': status}}
+        }));
+
+    let response = await m.request({
+        method: 'POST',
+        url: data_url + 'form/custom-statistics_update',
+        data: {
+            preprocess_id: preprocess_id,
+            custom_statistics: updates
+        }
+    });
+
+    console.log(response);
+
+    if (response['success']) reloadData(response['data']);
+    else console.log(response['message']);
 };
 
 export let deleteCustom = (id) => {

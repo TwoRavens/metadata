@@ -5,6 +5,7 @@ import TwoPanel from "../common/views/TwoPanel";
 
 import * as app from "../app";
 import descriptions from "../descriptions";
+import CustomStatistic from "./CustomStatistic";
 
 
 export default class MenuStatistics {
@@ -45,6 +46,31 @@ export default class MenuStatistics {
             });
     }
 
+    customStatisticsTable() {
+        let uniqueNames = new Set();
+        Object.keys(app.custom_statistics).map(key =>
+            uniqueNames.add(app.custom_statistics[key]['name']));
+
+        // determine state of checkboxes
+        let relevantIDs = Object.keys(app.custom_statistics)
+            .filter(id => app.custom_statistics[id]['name'] === app.selectedCustomStatistic);
+
+        let allChecked = relevantIDs
+            .every(id => app.custom_statistics[id]['display']['viewable']);
+        let allIndet = !allChecked && relevantIDs
+            .some(id => app.custom_statistics[id]['display']['viewable']);
+
+        return [...uniqueNames].map(name => [
+            name,
+            m(`input#customStatCheck${name}[type=checkbox]`, {
+                style: {float: 'right'},
+                onclick: m.withAttr("checked", (checked) => app.setUsedCustomName(checked, id)),
+                checked: allChecked,
+                indeterminate: allIndet
+            })
+        ])
+    }
+
     // data within rightView variable table for transposed menu, located on the right panel
     variablesTable(statistics, selectedStatistic) {
         let variables = statistics[selectedStatistic];
@@ -76,10 +102,31 @@ export default class MenuStatistics {
                     statistics[statistic] = {[variable]: app.variables[variable][statistic]} :
                     statistics[statistic][variable] = app.variables[variable][statistic];
 
-        // Sets spacing of variable table column
+        // all custom statistics that share the current statistic name
+        let relevantIDs = Object.keys(app.custom_statistics)
+            .filter(key => (app.custom_statistics[key]['name']) === app.selectedCustomStatistic);
+
+        let allCustomChecked = Object.keys(app.custom_statistics)
+            .every(id => app.custom_statistics[id]['display']['viewable']);
+        let allCustomIndet = !allCustomChecked && Object.keys(app.custom_statistics)
+            .some(id => app.custom_statistics[id]['display']['viewable'])
+
+        let customStatAllCheckbox = m(`input#customStatAllCheck[type=checkbox]`, {
+            style: {float: 'right'},
+            onclick: m.withAttr("checked", (checked) => app.setUsedCustomName(checked)),
+            checked: allCustomChecked,
+            indeterminate: allCustomIndet
+        });
+
+        // Sets spacing of variable table columns
         let colgroupStatistics = () => {
             return m('colgroup',
                 m('col', {span: 1, width: '10em'}),
+                m('col', {span: 1}),
+                m('col', {span: 1, width: '2em'}));
+        };
+        let colgroupCustomStatistics = () => {
+            return m('colgroup',
                 m('col', {span: 1}),
                 m('col', {span: 1, width: '2em'}));
         };
@@ -109,21 +156,49 @@ export default class MenuStatistics {
                     tableTags: colgroupStatistics(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
+                Object.keys(app.custom_statistics).length !== 0 && [
+                    m('h4#customStatisticsHeader', {
+                        style: {
+                            'padding-top': '.5em',
+                            'text-align': 'center'
+                        }
+                    }, 'Custom Statistics'),
+                    m(Table, {
+                        id: 'customStatisticsList',
+                        headers: ['Name', customStatAllCheckbox],
+                        data: this.customStatisticsTable(statistics),
+                        activeRow: app.selectedCustomStatistic,
+                        onclick: app.setSelectedCustomStatistic,
+                        tableTags: colgroupCustomStatistics(),
+                        attrsCells: {style: {padding: '.5em'}}
+                    }),
+                ]
             ],
-            right: app.selectedStatistic && [
-                m('h4#variablesHeader', {
-                    style: {
-                        'padding-top': '.5em',
-                        'text-align': 'center'
-                    }
-                }, app.selectedStatistic + ' for each variable'),
-                m(Table, {
-                    id: 'variablesComputed',
-                    headers: ['Name', 'Value', ''],
-                    data: this.variablesTable(statistics, app.selectedStatistic),
-                    tableTags: colgroupVariables(),
-                    attrsCells: {style: {padding: '.5em'}}
-                })]
+            right: [
+                app.selectedStatistic && [
+                    m('h4#variablesHeader', {
+                        style: {
+                            'padding-top': '.5em',
+                            'text-align': 'center'
+                        }
+                    }, app.selectedStatistic + ' for each variable'),
+                    m(Table, {
+                        id: 'variablesComputed',
+                        headers: ['Name', 'Value', ''],
+                        data: this.variablesTable(statistics, app.selectedStatistic),
+                        tableTags: colgroupVariables(),
+                        attrsCells: {style: {padding: '.5em'}}
+                    })],
+                app.selectedCustomStatistic && [
+                    m('h4#customStatisticsHeader', {
+                        style: {
+                            'padding-top': '.5em',
+                            'text-align': 'center'
+                        }
+                    }, 'Custom Statistics with name: ' + app.selectedCustomStatistic),
+                    relevantIDs.map((id) => m(CustomStatistic, {id}))
+                ]
+            ]
         }))
     }
 }
