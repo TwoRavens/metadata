@@ -14,14 +14,13 @@ import {mergeAttributes} from "../common";
 
 export default class TextField {
     view(vnode) {
-        console.log(vnode.attrs);
         return m(`input.form-control`, mergeAttributes({
                 style: {'margin': '5px 0', 'width': '100%'}
             },
             vnode.attrs,
             {
-                oninput: m.withAttr('value', (vnode.attrs.oninput || Function)),
-                onblur: m.withAttr('value', (vnode.attrs.onblur || Function))
+                oninput: vnode.attrs.oninput && m.withAttr('value', vnode.attrs.oninput),
+                onblur: vnode.attrs.onblur && m.withAttr('value', vnode.attrs.onblur)
             })
         );
     }

@@ -127,6 +127,7 @@ export default class MenuDataset {
                                 'name': m(TextField, {
                                     id: 'textFieldDatasetName',
                                     value: app.dataset['name'],
+                                    // TODO edit dataset attributes
                                     onblur: (value) => console.log(value),
                                     style: {margin: 0}
                                 }),

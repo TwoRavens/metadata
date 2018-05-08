@@ -16,6 +16,7 @@ import {
     statisticUIDCount,
     usedCustomStatistics
 } from "../custom";
+import CustomStatistic from "./CustomStatistic";
 
 // breaks the variable table data
 export let partitionVariableTable = (variableTable) => {
@@ -89,32 +90,6 @@ export default class MenuVariables {
             ]);
     }
 
-    // data within custom statistics table
-    customStatisticsTable(variableName) {
-        let statistics = customStatistics[variableName] || [];
-
-        // let stat_ids = Object.keys(customStatistics).filter(key => {
-        //     return customStatistics[key][app.variables].length === 1 && customStatistics[key][variableName][0] === variableName;
-        // });
-
-        let newUID = (statisticUIDCount[variableName] || 0) + 1;
-
-        return [...Object.keys(statistics), newUID].map((UID) => [
-            UID,
-            ...['name', 'value', 'description', 'replication'].map((field) => m(TextField, {
-                id: 'textField' + variableName + UID + field,
-                value: statistics[UID] ? statistics[UID][field] || '' : '',
-                onblur: (value) =>
-                    setCustomStatistic(variableName, UID, field, value),
-                style: {margin: 0}
-            })),
-            UID === newUID ? undefined : m('input[type=checkbox]', {
-                onclick: m.withAttr("checked", (checked) => setUsedCustomStatistic(checked, variableName, UID)),
-                checked: (usedCustomStatistics[variableName] || new Set()).has(parseInt(UID))
-            })
-        ]);
-    }
-
     view() {
         // format variable table data
         let center = this.variableAccordionTable(app.selectedVariable);
@@ -126,13 +101,9 @@ export default class MenuVariables {
             checked: Object.keys(app.variable_display).every(key => app.variable_display[key]['viewable'])
         });
 
-        // let omissions = app.selectedVariable && new Set(app.variable_display[app.selectedVariable]['omit'])
-
-        // let usedCustStats = app.usedCustomStatistics[app.selectedVariable];
-        // let customStatisticsAllCheckbox = m('input#customStatisticsAllCheck[type=checkbox]', {
-        //     onclick: m.withAttr("checked", (checked) => app.setUsedCustomStatistic(checked, app.selectedVariable)),
-        //     checked: usedCustStats && usedCustStats.size !== 0 && (Object.keys(app.customStatistics[app.selectedVariable] || {}).length === usedCustStats.size)
-        // });
+        // all custom statistics that include the current variable
+        let relevantStatistics = Object.keys(app.custom_statistics)
+            .filter(key => (app.custom_statistics[key]['variables'] || []).indexOf(app.selectedVariable) !== -1);
 
         // Sets spacing of variable table column
         let colgroupVariables = () => {
@@ -202,14 +173,10 @@ export default class MenuVariables {
                         tableTags: colgroupStatistics(),
                         attrsCells: {style: {padding: '.5em'}}
                     }),
-                    m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
-                    m(Table, {
-                        id: 'statisticsCustom',
-                        headers: ['ID', 'Name', 'Value', 'Description', 'Replication', ''],
-                        data: this.customStatisticsTable(app.selectedVariable),
-                        attrsCells: {style: {padding: '.5em'}},
-                        showUID: false
-                    })
+                    relevantStatistics.length !== 0 && [
+                        m('h4#statisticsCustomHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Custom Statistics'),
+                        relevantStatistics.map((id) => m(CustomStatistic, {id}))
+                    ]
                 ]
             }))
     }

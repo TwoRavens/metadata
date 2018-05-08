@@ -45,7 +45,6 @@ export let uploadFile = async (e) => {
     // get the data
     let processed = false;
     while (!processed) {
-        console.log("TEST");
         response = await m.request({
             method: "GET",
             url: callback_url
@@ -303,7 +302,6 @@ let IS_API_IMPLEMENTED = false;
 let id_count = 0;
 
 export let setFieldCustom = (id, field, value) => {
-    console.log(id);
 
     let update = async (updates) => {
 
@@ -360,7 +358,6 @@ export let deleteCustom = (id) => {
     if (!IS_API_IMPLEMENTED) {
         delete custom_statistics[id];
     }
-    console.log(custom_statistics);
 };
 
 export let uploadImageStatus = {};

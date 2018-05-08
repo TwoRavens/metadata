@@ -95,8 +95,6 @@ export default class CustomStatistic {
         let {id} = vnode.attrs;
         let statistic = app.custom_statistics[id] || {};
 
-        console.log(app.custom_statistics);
-
         let colgroupAttributes = () => m('colgroup',
             m('col', {width: '20%'}),
             m('col', {width: '80%'}));
