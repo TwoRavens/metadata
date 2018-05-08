@@ -29,12 +29,14 @@ export default class TextFieldSuggestion {
     }
 
     view(vnode) {
-        let {id, suggestions, enforce, limit, dropWidth, attrsAll} = vnode.attrs;
+        let {id, suggestions, value, enforce, limit, dropWidth, attrsAll} = vnode.attrs;
+        this.value = value === undefined ? this.value : value;
 
+        // To break out of 'this' context. Redundant when value attribute is passed
         let setValue = (val) => this.value = val;
         let setIsDropped = (state) => this.isDropped = state;
 
-        return m('div', [
+        return [
             m(`input#${id}.form-control`, mergeAttributes({
                     value: this.value,
                     style: {'margin': '5px 0', 'width': '100%'},
@@ -48,7 +50,10 @@ export default class TextFieldSuggestion {
                     },
                     onblur: function() {
                         setTimeout(() => setIsDropped(false), 100);
-                        if (enforce) setValue(distanceSort(suggestions, this.value)[0]);
+                        if (enforce) {
+                            this.value = distanceSort(suggestions, this.value)[0];
+                            setValue(this.value);
+                        }
                         (vnode.attrs.onblur || Function)(this.value);
                     }
                 }, attrsAll)
@@ -73,6 +78,6 @@ export default class TextFieldSuggestion {
                         style: {'padding-left': '10px', 'z-index': 200}
                     }, item))
             )
-        ]);
+        ];
     }
 }

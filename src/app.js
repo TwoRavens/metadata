@@ -295,23 +295,56 @@ export let setUsed = async (status, variable, statistic) => {
     else console.log(response['message']);
 };
 
-export let setFieldCustom = async (id, field, value) => {
-    let updates = {};
-    console.log("TEST UPDATE")
+// holds the value displayed in the ui when searching for variables
+export let queuedCustomVariable = {};
 
-    // don't bother POSTing if there are no updates
-    // if (Object.keys(updates).length === 0) return;
-    // let response = await m.request({
-    //     method: 'POST',
-    //     url: data_url + 'api/update-metadata',
-    //     data: {
-    //         preprocess_id: preprocess_id,
-    //         variable_updates: updates
-    //     }
-    // });
-    //
-    // if (response['success']) reloadData(response['data']);
-    // else console.log(response['message']);
+// TODO: strip this out when the API is working
+let IS_API_IMPLEMENTED = false;
+let id_count = 0;
+
+export let setFieldCustom = (id, field, value) => {
+    console.log(id);
+
+    let update = async (updates) => {
+
+        if (!IS_API_IMPLEMENTED) {
+            if (!custom_statistics[id]) custom_statistics['ID_000' + ++id_count] = {};
+            Object.keys(updates).map(key => custom_statistics[id][key] = value);
+            console.log("updated the thing");
+            return;
+        }
+
+        let response = await m.request({
+            method: 'POST',
+            url: data_url + 'form/custom-statistics_update',
+            data: {
+                preprocess_id: preprocess_id,
+                custom_statistics: [
+                    {
+                        id: id,
+                        updates: updates
+                    }
+                ]
+            }
+        });
+
+        console.log(response);
+
+        if (response['success']) reloadData(response['data']);
+        else console.log(response['message']);
+    };
+
+    if (id === 'ID_NEW') {
+        if (value === '') return;
+        // name and value appear mandatory, but give them empty strings, so they save no matter what
+        // noinspection JSIgnoredPromiseFromCall
+        update({
+            'name': '',
+            'value': '',
+            [field]: value
+        });
+    }
+    else update({[field]: value});
 };
 
 export let setUsedCustom = (status, id, field)  => {

@@ -145,7 +145,7 @@ export default class MenuDataset {
             ],
             right: app.preprocess_id && [
                 m('h4#datasetFieldHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, "Custom Statistics"),
-                [...Object.keys(app.custom_statistics)].map((id) => m(CustomStatistic, {id}, app.custom_statistics[id])
+                [...Object.keys(app.custom_statistics)].map((id) => m(CustomStatistic, {id})
                 )
             ]
         }));
