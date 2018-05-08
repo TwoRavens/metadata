@@ -4,8 +4,13 @@ import Table from "../common/views/Table";
 import TwoPanel from "../common/views/TwoPanel";
 
 import * as app from "../app";
-import descriptions from "../descriptions";
 import CustomStatistic from "./CustomStatistic";
+
+import descriptions from "../descriptions";
+import TextField from "../common/views/TextField";
+
+let variableSearch = '';
+let statisticSearch = '';
 
 
 export default class MenuStatistics {
@@ -16,6 +21,7 @@ export default class MenuStatistics {
         let firstVar = Object.keys(app.variables)[0];
 
         return Object.keys(statistics)
+            .filter(statistic => statistic.includes(statisticSearch))
             .filter(statistic => app.isStatistic(firstVar, statistic) || app.editableStatistics.indexOf(statistic) !== -1)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((statistic) => {
@@ -48,8 +54,9 @@ export default class MenuStatistics {
 
     customStatisticsTable() {
         let uniqueNames = new Set();
-        Object.keys(app.custom_statistics).map(key =>
-            uniqueNames.add(app.custom_statistics[key]['name']));
+        Object.keys(app.custom_statistics)
+            .filter(key => app.custom_statistics[key]['name'].includes(statisticSearch))
+            .map(key => uniqueNames.add(app.custom_statistics[key]['name']));
 
         // determine state of checkboxes
         let relevantIDs = Object.keys(app.custom_statistics)
@@ -79,6 +86,7 @@ export default class MenuStatistics {
         let hasCheck = app.editableStatistics.indexOf(selectedStatistic) === -1;
 
         return Object.keys(variables)
+            .filter(variable => variable.includes(variableSearch))
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((variable) => {
                 return [
@@ -116,7 +124,7 @@ export default class MenuStatistics {
         let allCustomChecked = Object.keys(app.custom_statistics)
             .every(id => app.custom_statistics[id]['display']['viewable']);
         let allCustomIndet = !allCustomChecked && Object.keys(app.custom_statistics)
-            .some(id => app.custom_statistics[id]['display']['viewable'])
+            .some(id => app.custom_statistics[id]['display']['viewable']);
 
         let customStatAllCheckbox = m(`input#customStatAllCheck[type=checkbox]`, {
             style: {float: 'right'},
@@ -154,6 +162,16 @@ export default class MenuStatistics {
         }, m(TwoPanel, {
             left: [
                 m('h4#statisticsHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Statistics'),
+                m('label#searchStatisticsLabel', {
+                    for: 'searchStatistics',
+                    style: {display: 'inline-block', 'margin': '0 1em'}
+                }, 'Search'),
+                m(TextField, {
+                    id: 'searchStatistics',
+                    value: statisticSearch,
+                    oninput: value => statisticSearch = value,
+                    style: {width: 'auto', display: 'inline-block'}
+                }),
                 m(Table, {
                     id: 'statisticsList',
                     headers: ['Name', 'Description', statisticsAllCheckbox],
@@ -189,6 +207,16 @@ export default class MenuStatistics {
                             'text-align': 'center'
                         }
                     }, app.selectedStatistic + ' for each variable'),
+                    m('label#searchVariablesLabel', {
+                        for: 'searchVariables',
+                        style: {display: 'inline-block', 'margin': '0 1em'}
+                    }, 'Search'),
+                    m(TextField, {
+                        id: 'searchVariables',
+                        value: variableSearch,
+                        oninput: value => variableSearch = value,
+                        style: {width: 'auto', display: 'inline-block'}
+                    }),
                     m(Table, {
                         id: 'variablesComputed',
                         headers: ['Name', 'Value', ''],

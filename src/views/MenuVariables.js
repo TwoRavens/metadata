@@ -9,14 +9,10 @@ import * as app from "../app";
 // TODO: possibly load description from API call?
 import descriptions from "../descriptions";
 
-import {
-    customStatistics,
-    setCustomStatistic,
-    setUsedCustomStatistic,
-    statisticUIDCount,
-    usedCustomStatistics
-} from "../custom";
 import CustomStatistic from "./CustomStatistic";
+
+let variableSearch = '';
+let statisticSearch = '';
 
 // breaks the variable table data
 export let partitionVariableTable = (variableTable) => {
@@ -39,7 +35,9 @@ export default class MenuVariables {
 
     // data within variable table
     variableTable() {
+        // noinspection JSCheckFunctionSignatures
         return Object.keys(app.variables)
+            .filter(key => key.includes(variableSearch))
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((variable) => [
                 variable,
@@ -75,8 +73,10 @@ export default class MenuVariables {
 
         let omissions = new Set(app.variable_display[variableName]['omit']);
         if (statistics === undefined) return [];
+        // noinspection JSCheckFunctionSignatures
         return Object.keys(statistics)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+            .filter(stat => stat.includes(statisticSearch))
             .filter((stat) => app.isStatistic(variableName, stat))
             .map((stat) => [
                 m('div', {
@@ -105,6 +105,7 @@ export default class MenuVariables {
 
         // all custom statistics that include the current variable
         let relevantStatistics = Object.keys(app.custom_statistics)
+            .filter(key => app.custom_statistics[key]['name'].includes(statisticSearch))
             .filter(key => (app.custom_statistics[key]['variables'] || []).indexOf(app.selectedVariable) !== -1);
 
         // Sets spacing of variable table column
@@ -133,6 +134,16 @@ export default class MenuVariables {
             m(TwoPanel, {
                 left: [
                     m('h4#variablesHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, 'Variables'),
+                    m('label#searchVariablesLabel', {
+                        for: 'searchVariables',
+                        style: {display: 'inline-block', 'margin': '0 1em'}
+                    }, 'Search'),
+                    m(TextField, {
+                        id: 'searchVariables',
+                        value: variableSearch,
+                        oninput: value => variableSearch = value,
+                        style: {width: 'auto', display: 'inline-block'}
+                    }),
                     m(Table, {
                         id: 'variablesListUpper',
                         headers: ['Name', 'Label', variableAllCheckbox],
@@ -142,7 +153,7 @@ export default class MenuVariables {
                         tableTags: colgroupVariables(),
                         attrsCells: {style: {padding: '.5em'}}
                     }),
-                    app.selectedVariable && m(Table, {
+                    (app.selectedVariable || '').includes(variableSearch) && m(Table, {
                         id: 'variablesListCenter',
                         headers: ['Name', 'Value'],
                         data: center,
@@ -168,6 +179,16 @@ export default class MenuVariables {
                 ],
                 right: app.selectedVariable && [
                     m('h4#statisticsComputedHeader', {style: {'padding-top': '.5em', 'text-align': 'center'}}, app.selectedVariable +' Computed Statistics'),
+                    m('label#searchStatisticsLabel', {
+                        for: 'searchStatistics',
+                        style: {display: 'inline-block', 'margin': '0 1em'}
+                    }, 'Search'),
+                    m(TextField, {
+                        id: 'searchStatistics',
+                        value: statisticSearch,
+                        oninput: value => statisticSearch = value,
+                        style: {width: 'auto', display: 'inline-block'}
+                    }),
                     m(Table, {
                         id: 'statisticsComputed',
                         headers: ['Name', 'Value', ''],

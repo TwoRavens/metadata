@@ -85,12 +85,6 @@ export default class MenuDataset {
             m('col', {width: '80%'}));
 
         // Sets spacing of variable table column
-        let colgroupAttributes = () => m('colgroup',
-            m('col', {span: 1, width: '10em'}),
-            m('col', {span: 1}),
-            m('col', {span: 1}),
-            m('col', {span: 1, width: '2em'}));
-
         return m('div#editor', {
             style: {
                 height: '100%',
