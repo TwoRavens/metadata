@@ -90,7 +90,6 @@ export let getData = async (id, versionTemp) => {
 
 // takes in only the preprocess.json
 let reloadData = (data) => {
-    console.log(data);
     preprocess_id = data['self']['preprocess_id'];
 
     resetPeek();

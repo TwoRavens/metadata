@@ -29,6 +29,9 @@ export default class Dropdown {
                     onclick: () => {
                         this.isDropped = !this.isDropped;
                     },
+                    onblur: () => {
+                        setTimeout(() => this.isDropped = false, 100);
+                    },
                     'data-toggle': 'dropdown'
                 }), [
                     this.activeItem,
