@@ -9,6 +9,7 @@ import Header from './common/views/Header';
 import ButtonRadio from './common/views/ButtonRadio';
 import Peek from './common/views/Peek';
 import Canvas from "./common/views/Canvas";
+
 // metadata
 import MenuDataset from './views/MenuDataset';
 import MenuVariables from './views/MenuVariables';
@@ -35,11 +36,11 @@ class Home {
 
 class Editor {
     view() {
-        return m({
+        return m('div#editor', m({
             'Dataset': MenuDataset,
             'Variables': MenuVariables,
             'Statistics': MenuStatistics
-            }[app.editorMode])
+        }[app.editorMode]))
     }
 }
 

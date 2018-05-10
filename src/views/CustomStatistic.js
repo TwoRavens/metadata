@@ -89,8 +89,8 @@ let customCellValue = (id, field, value) => {
     if (field === 'image') return [
         m('label.btn.btn-outline-secondary.hide-mobile', {style: {display: 'inline-block'}}, [
             m('input', {
-                hidden: true,
                 disabled: id === 'ID_NEW',
+                hidden: true,
                 type: 'file',
                 onchange: (e) => app.setImageCustom(id, e)})
         ], 'Browse'),

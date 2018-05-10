@@ -5,13 +5,15 @@ import ButtonRadio from "./common/views/ButtonRadio";
 import Dropdown from "./common/views/Dropdown";
 import TextField from "./common/views/TextField";
 
-// TODO: remove for production
-import citationSample from './citationSample';
-import descriptions from "./descriptions";
-
 let dataUrl = 'http://localhost:8080/preprocess/';
 
 export let preprocessId;
+
+// schema info
+let schema;
+export let getDataSchema = () => schema['properties']['dataset']['properties'];
+export let getStatSchema = (statistic) =>
+    schema['properties']['variables']['patternProperties']['^[_a-zA-Z0-9]+$']['properties'][statistic] || {};
 
 // preprocess info
 export let customStatistics = {};
@@ -69,6 +71,14 @@ export async function getData(id, versionTemp) {
         return false;
     }
 
+    if (schema === undefined) {
+        schema = await m.request({
+            method: 'GET',
+            url: dataUrl + 'api/schema/metadata/latest'
+        });
+        console.log(schema);
+    }
+
     // version is only set when the field is set manually. It is unset from any edit
     version = versionTemp;
 
@@ -101,8 +111,7 @@ function reloadData(data) {
     customStatistics = customStatistics || {};
 
     // why is this in here? get outta hea'
-    // TODO remove 'editable' and 'units' when API is updated to include them
-    editableStatistics = [...variableDisplay['editable'], 'identifier', 'units'];
+    editableStatistics = variableDisplay['editable'];
     delete variableDisplay['editable'];
 
     dataset = {
@@ -115,8 +124,7 @@ function reloadData(data) {
         'format': data['dataset']['dataSource']['format']
     };
 
-    // TODO: remove citationSample and read from data['dataset']['citation'] instead (production)
-    citation = citationSample;
+    citation = data['dataset']['citation'];
 }
 
 // peek window
@@ -219,10 +227,7 @@ export function isStatistic (stat, variable) {
 
 // transposed statistics menu
 export let selectedStatistic;
-export function setSelectedStatistic (statistic) {
-    selectedStatistic = selectedStatistic === statistic ? undefined : statistic;
-    selectedCustomStatistic = undefined;
-}
+export let selectedCustomStatistic;
 
 export async function setField(variable, statistic, value) {
     // ignore non-edits
@@ -309,15 +314,10 @@ export async function setUsed(status, variable, statistic) {
     else console.log(response['message']);
 }
 
-export let selectedCustomStatistic;
-export function setSelectedCustomStatistic(statistic) {
-    selectedStatistic = undefined;
-    selectedCustomStatistic =
-        selectedCustomStatistic === statistic ? undefined : statistic;
-}
-
-// holds the value displayed in the ui when searching for variables
+// holds the value displayed in the ui when searching for variables, before adding. key is statistic
 export let pendingCustomVariable = {};
+
+// holds the new statistic that has not been saved yet
 export let pendingCustomStatistic = {};
 
 export async function setFieldCustom(id, field, value) {
@@ -453,53 +453,50 @@ export async function setImageCustom(id, e) {
     // TODO API request
 }
 
-// NOTE: This really belongs in index.js, but it causes an infinite import
 // return a mithril cell - could be text, field, radio, button, dropdown, etc.
-export function cellValue (variable, statistic, field, value = '') {
+export function cellValue(variable, statistic, value = '') {
 
-    // old versions are readonly
-    if (version) return m('div', {
-        'data-toggle': 'tooltip',
-        title: descriptions[statistic]
-    }, value);
+    let statSchema = getStatSchema(statistic);
 
-    if (statistic === 'numchar') {
+    // old versions and non-editable stats are readonly
+    if (version || editableStatistics.indexOf(statistic) === -1)
+        return m('div', {
+            'data-toggle': 'tooltip',
+            title: (statSchema || {})['description']
+        }, value);
+
+    if (statSchema['type'] === 'boolean')
         return m(ButtonRadio, {
-            id: 'radioNumchar',
-            sections: [{value: 'numeric'}, {value: 'character'}],
-            activeSection: value,
-            onclick: (value) => setField(variable, statistic, value),
+            id: 'radio' + statistic,
+            sections: [{value: 'true'} , {value: 'false'}],
+            activeSection: {1: 'true', 0: 'false'}[value],
+            onclick: (value) => setField(variable, statistic, {'true': 1, 'false': 0}[value]),
             attrsAll: {style: {width: 'auto'}}
-        })
-    }
+        });
 
-    if (statistic === 'identifier') {
-        return m(ButtonRadio, {
-            id: 'radioIdentifier',
-            sections: [{value: 'cross-section'}, {value: 'time'}],
-            activeSection: value,
-            onclick: (value) => setField(variable, statistic, value),
-            attrsAll: {style: {width: '240px'}}
-        })
-    }
+    // if it can only take certain values
+    if (statSchema['enum']) {
+        if (statSchema['enum'].length > 3)
+            return m(Dropdown, {
+                id: 'dropdown' + statistic,
+                items: statSchema['enum'],
+                activeItem: value,
+                onclickChild: (value) => setField(variable, statistic, value),
+                dropWidth: '100px'
+            });
 
-    if (statistic === 'nature') {
-        return m(Dropdown, {
-            id: 'dropdownNature',
-            items: ['nominal', 'ordinal', 'interval', 'ratio', 'percent', 'other'],
-            activeItem: value,
-            onclickChild: (value) => setField(variable, statistic, value),
-            dropWidth: '100px'
-        })
+        else
+            return m(ButtonRadio, {
+                id: 'radio' + statistic,
+                sections: statSchema['enum'].map(item => Object({value: item})),
+                activeSection: value,
+                onclick: (value) => setField(variable, statistic, value),
+                attrsAll: {style: {width: 'auto'}}
+            })
     }
-
-    if (editableStatistics.indexOf(statistic) === -1) return m('div', {
-        'data-toggle': 'tooltip',
-        title: descriptions[statistic]
-    }, value);
 
     return m(TextField, {
-        id: 'textField' + statistic + field,
+        id: 'textField' + statistic,
         value: value,
         onblur: (value) => setField(variable, statistic, value),
         style: {margin: 0}

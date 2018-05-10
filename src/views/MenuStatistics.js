@@ -2,12 +2,10 @@ import m from 'mithril'
 
 import Table from "../common/views/Table";
 import TwoPanel from "../common/views/TwoPanel";
+import TextField from "../common/views/TextField";
 
 import * as app from "../app";
 import CustomStatistic from "./CustomStatistic";
-
-import descriptions from "../descriptions";
-import TextField from "../common/views/TextField";
 
 let variableSearch = '';
 let statisticSearch = '';
@@ -38,7 +36,7 @@ export default class MenuStatistics {
 
                 return [
                     statistic,
-                    descriptions[statistic],
+                    app.getStatSchema(statistic)['description'],
                     hasCheck && m('input[type=checkbox]', {
                         onclick: e => {
                             e.stopPropagation();
@@ -90,7 +88,7 @@ export default class MenuStatistics {
             .map((variable) => {
                 return [
                     variable,
-                    app.cellValue(variable, selectedStatistic, 'value', app.variables[variable][selectedStatistic] || ''),
+                    app.cellValue(variable, selectedStatistic, app.variables[variable][selectedStatistic] || ''),
                     hasCheck && m('input[type=checkbox]', {
                         onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variable, selectedStatistic)),
                         checked: app.variableDisplay[variable]['omit'].indexOf(selectedStatistic) === -1
@@ -154,14 +152,7 @@ export default class MenuStatistics {
                 m('col', {span: 1, width: '2em'}));
         };
 
-        return m('div#editor', {
-            style: {
-                height: '100%',
-                width: '100%',
-                position: 'absolute',
-                'overflow': 'hidden'
-            }
-        }, m(TwoPanel, {
+        return m(TwoPanel, {
             left: [
                 m(TextField, {
                     id: 'searchStatistics',
@@ -194,7 +185,10 @@ export default class MenuStatistics {
                     headers: ['Name', 'Description', statisticsAllCheckbox],
                     data: this.statisticsTable(statistics),
                     activeRow: app.selectedStatistic,
-                    onclick: app.setSelectedStatistic,
+                    onclick: (statistic) => {
+                        app.selectedStatistic = app.selectedStatistic === statistic ? undefined : statistic;
+                        app.selectedCustomStatistic = undefined;
+                    },
                     tableTags: colgroupStatistics(),
                     attrsCells: {style: {padding: '.5em'}}
                 }),
@@ -210,7 +204,11 @@ export default class MenuStatistics {
                         headers: ['Name', customStatAllCheckbox],
                         data: this.customStatisticsTable(statistics),
                         activeRow: app.selectedCustomStatistic,
-                        onclick: app.setSelectedCustomStatistic,
+                        onclick: (statistic) => {
+                            app.selectedStatistic = undefined;
+                            app.selectedCustomStatistic =
+                                app.selectedCustomStatistic === statistic ? undefined : statistic;
+                        },
                         tableTags: colgroupCustomStatistics(),
                         attrsCells: {style: {padding: '.5em'}}
                     }),
@@ -248,6 +246,6 @@ export default class MenuStatistics {
                     relevantIDs.map((id) => m(CustomStatistic, {id}))
                 ]
             ]
-        }))
+        })
     }
 }

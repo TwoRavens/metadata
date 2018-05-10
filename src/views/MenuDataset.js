@@ -121,21 +121,21 @@ export default class MenuDataset {
                         id: 'datasetStatistics',
                         headers: ['name', 'value'],
                         data: Object.assign({}, app.dataset,
-                            !app.version && {
-                                'name': m(TextField, {
-                                    id: 'textFieldDatasetName',
-                                    value: app.dataset['name'],
-                                    // TODO edit dataset attributes
-                                    onblur: (value) => console.log(value),
-                                    style: {margin: 0}
-                                }),
-                                'description': m(TextField, {
-                                    id: 'textFieldDatasetDescription',
-                                    value: app.dataset['description'],
-                                    onblur: (value) => console.log(value),
-                                    style: {margin: 0}
-                                })
-                            }),
+                            // TODO edit dataset attributes
+                            // !app.version && {
+                            //     'name': m(TextField, {
+                            //         id: 'textFieldDatasetName',
+                            //         value: app.dataset['name'],
+                            //         onblur: (value) => console.log(value),
+                            //         style: {margin: 0}
+                            //     }),
+                            //     'description': m(TextField, {
+                            //         id: 'textFieldDatasetDescription',
+                            //         value: app.dataset['description'],
+                            //         onblur: (value) => console.log(value),
+                            //         style: {margin: 0}
+                            //     })}
+                            ),
                         attrsCells: {style: {padding: '.5em'}},
                         tableTags: colgroupDataset()
                     }),

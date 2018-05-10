@@ -5,10 +5,6 @@ import TextField from "../common/views/TextField";
 import TwoPanel from "../common/views/TwoPanel";
 
 import * as app from "../app";
-
-// TODO: possibly load description from API call?
-import descriptions from "../descriptions";
-
 import CustomStatistic from "./CustomStatistic";
 
 let variableSearch = '';
@@ -61,9 +57,9 @@ export default class MenuVariables {
         return app.editableStatistics.map((stat) => [
             m('div', {
                 'data-toggle': 'tooltip',
-                'title': descriptions[stat]
+                'title': app.getStatSchema(stat)['description']
             }, stat),
-            app.cellValue(variableName, stat, 'value', statistics[stat])
+            app.cellValue(variableName, stat, statistics[stat])
         ]);
     }
 
@@ -81,9 +77,9 @@ export default class MenuVariables {
             .map((stat) => [
                 m('div', {
                     'data-toggle': 'tooltip',
-                    title: descriptions[stat]
+                    title: app.getStatSchema(stat)['description']
                 }, stat),
-                app.cellValue(variableName, stat, 'value', statistics[stat]),
+                app.cellValue(variableName, stat, statistics[stat]),
                 m('input[type=checkbox]', {
                     onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
                     checked: !omissions.has(stat)
@@ -125,16 +121,7 @@ export default class MenuVariables {
                 m('col', {span: 1, width: '2em'}));
         };
 
-        return m('div#editor', {
-                style: {
-                    height: '100%',
-                    width: '100%',
-                    position: 'absolute',
-                    'overflow': 'hidden'
-                }
-            },
-
-            m(TwoPanel, {
+        return m(TwoPanel, {
                 left: [
                     m(TextField, {
                         id: 'searchVariables',
@@ -204,6 +191,6 @@ export default class MenuVariables {
                         relevantStatistics.map((id) => m(CustomStatistic, {id}))
                     ]
                 ]
-            }))
+            })
     }
 }
