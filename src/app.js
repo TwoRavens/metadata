@@ -248,6 +248,7 @@ export async function setField(variable, statistic, value) {
 }
 
 export async function setUsed(status, variable, statistic) {
+    if (version) return;
 
     // format into request
     let updates = {};
@@ -320,6 +321,7 @@ export let pendingCustomVariable = {};
 export let pendingCustomStatistic = {};
 
 export async function setFieldCustom(id, field, value) {
+    if (version) return;
 
     let response;
 
@@ -394,6 +396,8 @@ export function setUsedCustom(status, id) {
 
 // updates all custom stats with a given name. If no name set, then update all stats
 export async function setUsedCustomName(status, name) {
+    if (version) return;
+
     let updates = Object.keys(customStatistics)
         .filter(id =>
             (name === undefined || customStatistics[id]['name'] === name) &&
@@ -439,6 +443,8 @@ export async function deleteCustom (id) {
 export let uploadImageStatus = {};
 
 export async function setImageCustom(id, e) {
+    if (version) return;
+
     let file = e.target.files[0];
 
     let data = new FormData();
