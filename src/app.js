@@ -27,7 +27,7 @@ export let version;
 // menu text
 export let uploadStatus;
 
-export let uploadFile = async (e) => {
+export async function uploadFile(e) {
     let file = e.target.files[0];
 
     let data = new FormData();
@@ -61,9 +61,9 @@ export let uploadFile = async (e) => {
             }
         }
     }
-};
+}
 
-export let getData = async (id, versionTemp) => {
+export async function getData(id, versionTemp) {
     if (isNaN(id) || id === '') {
         preprocessId = undefined;
         return false;
@@ -87,10 +87,10 @@ export let getData = async (id, versionTemp) => {
 
     reloadData(response['data']);
     return true;
-};
+}
 
 // takes in only the preprocess.json
-let reloadData = (data) => {
+function reloadData(data) {
     preprocessId = data['self']['preprocessId'];
 
     resetPeek();
@@ -117,7 +117,7 @@ let reloadData = (data) => {
 
     // TODO: remove citationSample and read from data['dataset']['citation'] instead (production)
     citation = citationSample;
-};
+}
 
 // peek window
 let peekBatchSize = 100;
@@ -127,17 +127,17 @@ let peekData = [];
 let peekAllDataReceived = false;
 let peekIsGetting = false;
 
-let onStorageEvent = (e) => {
+function onStorageEvent(e) {
     if (e.key !== 'peekMore' || peekIsGetting) return;
     if (localStorage.getItem('peekMore') === 'true' && !peekAllDataReceived) {
         peekIsGetting = true;
         localStorage.setItem('peekMore', 'false');
         updatePeek();
     }
-};
+}
 window.addEventListener('storage', onStorageEvent);
 
-let updatePeek = () => {
+function updatePeek() {
     // peekAllDataReceived = true;
     if (preprocessId === undefined) {
         peekAllDataReceived = true;
@@ -169,9 +169,9 @@ let updatePeek = () => {
         peekData = peekData.concat(response['data']['data']);
         localStorage.setItem('peekTableData', JSON.stringify(peekData));
     });
-};
+}
 
-let resetPeek = () => {
+function resetPeek() {
     peekSkip = 0;
     peekData = [];
 
@@ -180,7 +180,7 @@ let resetPeek = () => {
 
     // this will cause a redraw in the peek menu
     localStorage.removeItem('peekTableData');
-};
+}
 
 // overall mode: ['Home', 'Editor', 'Report']
 export let metadataMode = 'Home';
@@ -191,7 +191,7 @@ export let editorMode = 'Dataset';
 export let editableStatistics;
 
 export let selectedVariable;
-export let setSelectedVariable = (variable) => {
+export function setSelectedVariable (variable) {
     selectedVariable = selectedVariable === variable ? undefined : variable;
 
     // ugly hack to make the css animation play
@@ -201,13 +201,13 @@ export let setSelectedVariable = (variable) => {
         void varlist.offsetWidth; // re-flow
         varlist.style.animation = 'slide-down .3s ease';
     }
-};
+}
 
 // TODO render images
 let statisticalDatatypes = ['string', 'number', 'boolean'];
 
 // Checks if an entry for a variable is a statistic
-export let isStatistic = (stat, variable) => {
+export function isStatistic (stat, variable) {
     if (variable === undefined) {
         return Object.keys(variables).some(variable => isStatistic(stat, variable));
     }
@@ -217,16 +217,16 @@ export let isStatistic = (stat, variable) => {
 
     // ignore plot data, etc.
     return statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1;
-};
+}
 
 // transposed statistics menu
 export let selectedStatistic;
-export let setSelectedStatistic = (statistic) => {
+export function setSelectedStatistic (statistic) {
     selectedStatistic = selectedStatistic === statistic ? undefined : statistic;
     selectedCustomStatistic = undefined;
-};
+}
 
-export let setField = async (variable, statistic, value) => {
+export async function setField(variable, statistic, value) {
     // ignore non-edits
     if (variables[variable][statistic] === value) return;
 
@@ -247,9 +247,9 @@ export let setField = async (variable, statistic, value) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
-};
+}
 
-export let setUsed = async (status, variable, statistic) => {
+export async function setUsed(status, variable, statistic) {
 
     // format into request
     let updates = {};
@@ -308,20 +308,20 @@ export let setUsed = async (status, variable, statistic) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
-};
+}
 
 export let selectedCustomStatistic;
-export let setSelectedCustomStatistic = (statistic) => {
+export function setSelectedCustomStatistic(statistic) {
     selectedStatistic = undefined;
     selectedCustomStatistic =
         selectedCustomStatistic === statistic ? undefined : statistic;
-};
+}
 
 // holds the value displayed in the ui when searching for variables
 export let pendingCustomVariable = {};
 export let pendingCustomStatistic = {};
 
-export let setFieldCustom = async (id, field, value) => {
+export async function setFieldCustom(id, field, value) {
 
     let response;
 
@@ -387,15 +387,15 @@ export let setFieldCustom = async (id, field, value) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
-};
+}
 
 // updates a custom stat with a given id
-export let setUsedCustom = (status, id) => {
+export function setUsedCustom(status, id) {
     setFieldCustom(id, 'display', {'viewable': status})
-};
+}
 
 // updates all custom stats with a given name. If no name set, then update all stats
-export let setUsedCustomName = async (status, name) => {
+export async function setUsedCustomName(status, name) {
     let updates = Object.keys(customStatistics)
         .filter(id =>
             (name === undefined || customStatistics[id]['name'] === name) &&
@@ -418,9 +418,9 @@ export let setUsedCustomName = async (status, name) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
-};
+}
 
-export let deleteCustom = async (id) => {
+export async function deleteCustom (id) {
     let response = await m.request({
         method: 'POST',
         url: dataUrl + 'form/custom-statistics-update',
@@ -436,22 +436,22 @@ export let deleteCustom = async (id) => {
 
     if (response['success']) reloadData(response['data']);
     else console.log(response['message']);
-};
+}
 
 export let uploadImageStatus = {};
 
-export let setImageCustom = async (id, e) => {
+export async function setImageCustom(id, e) {
     let file = e.target.files[0];
 
     let data = new FormData();
     data.append("source_file", file);
 
     // TODO API request
-};
+}
 
 // NOTE: This really belongs in index.js, but it causes an infinite import
 // return a mithril cell - could be text, field, radio, button, dropdown, etc.
-export let cellValue = (variable, statistic, field, value = '') => {
+export function cellValue (variable, statistic, field, value = '') {
 
     // old versions are readonly
     if (version) return m('div', {
@@ -500,4 +500,4 @@ export let cellValue = (variable, statistic, field, value = '') => {
         onblur: (value) => setField(variable, statistic, value),
         style: {margin: 0}
     });
-};
+}

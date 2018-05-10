@@ -2,6 +2,7 @@ import '../static/bootstrap4/css/bootstrap.css';
 import './index.css'
 
 import m from 'mithril';
+
 // common
 import * as common from './common/common';
 import Header from './common/views/Header';
@@ -14,13 +15,6 @@ import MenuVariables from './views/MenuVariables';
 import MenuStatistics from './views/MenuStatistics';
 
 import * as app from './app';
-import {
-    customStatistics,
-    setCustomStatistic,
-    setUsedCustomStatistic,
-    statisticUIDCount,
-    usedCustomStatistics
-} from "./custom";
 
 common.heightHeader = '72px';
 common.heightFooter = '0px';
