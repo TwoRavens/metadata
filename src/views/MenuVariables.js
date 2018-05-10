@@ -59,7 +59,12 @@ export default class MenuVariables {
                 'data-toggle': 'tooltip',
                 'title': app.getStatSchema(stat)['description']
             }, stat),
-            app.cellValue(variableName, stat, statistics[stat])
+            app.cellValue(variableName, stat, statistics[stat]),
+            m('input[type=checkbox]', {
+                style: {float: 'left', 'margin-right': '.25em'},
+                onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
+                checked: app.variableDisplay[variableName]['omit'].indexOf(stat) === -1
+            })
         ]);
     }
 
@@ -74,22 +79,25 @@ export default class MenuVariables {
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .filter(stat => stat.toLowerCase().includes(statisticSearch.toLowerCase()))
             .filter((stat) => app.isStatistic(stat, variableName))
-            .map((stat) => [
-                m('div', {
-                    'data-toggle': 'tooltip',
-                    title: app.getStatSchema(stat)['description']
-                }, stat),
-                app.cellValue(variableName, stat, statistics[stat]),
-                m('input[type=checkbox]', {
-                    onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
-                    checked: !omissions.has(stat)
-                })
-            ]);
+            .map((stat) => {
+                console.log(stat);
+                return [
+                    m('div', {
+                        'data-toggle': 'tooltip',
+                        title: app.getStatSchema(stat)['description']
+                    }, stat),
+                    app.cellValue(variableName, stat, statistics[stat]),
+                    m('input[type=checkbox]', {
+                        onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variableName, stat)),
+                        checked: !omissions.has(stat)
+                    })
+                ]
+            });
     }
 
     view() {
         // format variable table data
-        let center = this.variableAccordionTable(app.selectedVariable);
+        let center = app.selectedVariable && this.variableAccordionTable(app.selectedVariable);
         let {upper, lower} = partitionVariableTable(this.variableTable());
 
         // Checkbox for toggling all states
@@ -145,10 +153,10 @@ export default class MenuVariables {
                         attrsCells: {style: {padding: '.5em'}}
                     }),
                     // center table is only rendered if selected, and is matched in the search
-                    (app.selectedVariable || '').toLowerCase().includes(variableSearch.toLowerCase())
+                    app.selectedVariable && app.selectedVariable.toLowerCase().includes(variableSearch.toLowerCase())
                     && m(Table, {
                         id: 'variablesListCenter',
-                        headers: ['Name', 'Value'],
+                        headers: ['Name', 'Value', ''],
                         data: center,
                         attrsCells: {style: {padding: '.3em'}},
                         attrsAll: {
@@ -159,7 +167,8 @@ export default class MenuVariables {
                                 'box-shadow': '0 3px 6px #777',
                                 animation: 'slide-down .4s ease'
                             }
-                        }
+                        },
+                        tableTags: colgroupVariables(),
                     }),
                     m(Table, {
                         id: 'variablesListLower',

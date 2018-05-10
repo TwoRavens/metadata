@@ -1,12 +1,13 @@
 import m from 'mithril';
 
 import * as common from '../common';
+import {mergeAttributes} from "../common";
 
 export default class ListTags {
     view(vnode) {
-        let {tags, ondelete, readonly} = vnode.attrs;
+        let {tags, attrsTags, ondelete, readonly} = vnode.attrs;
 
-        return tags.map((tag) => m('div', {
+        return tags.map((tag) => m('div', mergeAttributes({
                 style: {
                     display: 'inline-block',
                     margin: '5px',
@@ -14,7 +15,7 @@ export default class ListTags {
                     padding: '4px 8px',
                     background: common.grayColor
                 }
-            }, [
+            }, attrsTags), [
                 !readonly && m('div', {
                     onclick: () => ondelete(tag),
                     style: {

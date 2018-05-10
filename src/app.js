@@ -4,6 +4,8 @@ import * as common from './common/common';
 import ButtonRadio from "./common/views/ButtonRadio";
 import Dropdown from "./common/views/Dropdown";
 import TextField from "./common/views/TextField";
+import ListTags from "./common/views/ListTags";
+import Table from "./common/views/Table";
 
 let dataUrl = 'http://localhost:8080/preprocess/';
 
@@ -113,7 +115,7 @@ function reloadData(data) {
     // why is this in here? get outta hea'
     editableStatistics = variableDisplay['editable'];
     delete variableDisplay['editable'];
-
+    //
     dataset = {
         'description': data['dataset']['description'],
         'row count': data['dataset']['rowCount'],
@@ -222,7 +224,7 @@ export function isStatistic (stat, variable) {
     if (editableStatistics.indexOf(stat) !== -1 || stat === 'variableName') return false;
 
     // ignore plot data, etc.
-    return statisticalDatatypes.indexOf(typeof(variables[variable][stat])) !== -1;
+    return true;
 }
 
 // transposed statistics menu
@@ -259,6 +261,7 @@ export async function setUsed(status, variable, statistic) {
     let updates = {};
 
     let prepUpdateVariable = (status, variable) => {
+        console.log(variables[variable]);
         if (variableDisplay[variable]['viewable'] === status) return;
         updates[variable] = {
             'viewable': status,
@@ -459,11 +462,22 @@ export function cellValue(variable, statistic, value = '') {
     let statSchema = getStatSchema(statistic);
 
     // old versions and non-editable stats are readonly
-    if (version || editableStatistics.indexOf(statistic) === -1)
+    if (version || editableStatistics.indexOf(statistic) === -1) {
+        if (Array.isArray(value))
+            return m(ListTags, {tags: value, attrsTags: {style: {background: common.menuColor}}, readonly: true});
+        
+        if (typeof value === 'object' && value)
+            return m(Table, {
+                id: 'statisticsList',
+                data: value,
+                attrsCells: {style: {padding: '.5em'}}
+            });
+
         return m('div', {
             'data-toggle': 'tooltip',
             title: (statSchema || {})['description']
         }, value);
+    }
 
     if (statSchema['type'] === 'boolean')
         return m(ButtonRadio, {

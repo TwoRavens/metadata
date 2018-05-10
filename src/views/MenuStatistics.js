@@ -19,7 +19,7 @@ export default class MenuStatistics {
 
         return Object.keys(statistics)
             .filter(statistic => statistic.toLowerCase().includes(statisticSearch.toLowerCase()))
-            .filter(statistic => app.isStatistic(statistic) || app.editableStatistics.indexOf(statistic) !== -1)
+            .filter(statistic => app.isStatistic(statistic))
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((statistic) => {
 
@@ -28,16 +28,13 @@ export default class MenuStatistics {
                     .filter(variable => app.variableDisplay[variable])
                     .map(variable => app.variableDisplay[variable]['omit'].indexOf(statistic) === -1);
 
-                // don't include checkmarks for editable statistics // TODO possibly remove?
-                let hasCheck = app.editableStatistics.indexOf(statistic) === -1;
-
                 let checked = inclusion.every(_ => _);
                 let indeterminate = !checked && inclusion.some(_ => _);
 
                 return [
                     statistic,
                     app.getStatSchema(statistic)['description'],
-                    hasCheck && m('input[type=checkbox]', {
+                    m('input[type=checkbox]', {
                         onclick: e => {
                             e.stopPropagation();
                             m.withAttr("checked", (checked) => app.setUsed(checked, undefined, statistic))(e)
@@ -80,8 +77,6 @@ export default class MenuStatistics {
         let variables = statistics[selectedStatistic];
         if (variables === undefined) return [];
 
-        let hasCheck = app.editableStatistics.indexOf(selectedStatistic) === -1;
-
         return Object.keys(variables)
             .filter(variable => variable.toLowerCase().includes(variableSearch.toLowerCase()))
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
@@ -89,7 +84,7 @@ export default class MenuStatistics {
                 return [
                     variable,
                     app.cellValue(variable, selectedStatistic, app.variables[variable][selectedStatistic] || ''),
-                    hasCheck && m('input[type=checkbox]', {
+                    m('input[type=checkbox]', {
                         onclick: m.withAttr("checked", (checked) => app.setUsed(checked, variable, selectedStatistic)),
                         checked: app.variableDisplay[variable]['omit'].indexOf(selectedStatistic) === -1
                     })
