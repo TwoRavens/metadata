@@ -138,7 +138,6 @@ function onStorageEvent(e) {
 window.addEventListener('storage', onStorageEvent);
 
 function updatePeek() {
-    // peekAllDataReceived = true;
     if (preprocessId === undefined) {
         peekAllDataReceived = true;
         return;
@@ -155,8 +154,7 @@ function updatePeek() {
         }
     }).then((response) => {
 
-        // TODO the API spec changed... was this intentional? Not sure why response is now returned in an array
-        response = response[1];
+        console.log(response);
 
         peekIsGetting = false;
         let headers = response['data']['columns'].map(header => {

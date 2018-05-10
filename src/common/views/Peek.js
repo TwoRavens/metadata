@@ -43,7 +43,7 @@ export default class Peek {
                 m('div', {style: {'flex-grow': 1}}),
             ]),
             m(Canvas, {
-                    attrsAll: {style: {'margin-top': heightHeader + 'px', height: `calc(100% - ${heightHeader}px)`}}
+                    attrsAll: {style: {'margin-top': heightHeader + 'px', height: `calc(100% - ${heightHeader})`}}
                 }, m(Table, {
                     id: 'peekTable',
                     headers: this.tableHeaders,
