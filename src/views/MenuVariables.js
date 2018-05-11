@@ -79,9 +79,7 @@ export default class MenuVariables {
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .filter(stat => stat.toLowerCase().includes(statisticSearch.toLowerCase()))
             .filter((stat) => app.isStatistic(stat, variableName))
-            .map((stat) => {
-                console.log(stat);
-                return [
+            .map((stat) => [
                     m('div', {
                         'data-toggle': 'tooltip',
                         title: app.getStatSchema(stat)['description']
@@ -92,7 +90,7 @@ export default class MenuVariables {
                         checked: !omissions.has(stat)
                     })
                 ]
-            });
+            );
     }
 
     view() {

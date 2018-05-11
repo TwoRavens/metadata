@@ -89,7 +89,7 @@ class Body {
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
                     onclick: (value) => m.route.set('/' + id + '/' + value.toLowerCase()),
                     activeSection: app.metadataMode,
-                    sections: [{value: 'Home'}, {value: 'Editor'}].concat(app.preprocessId ? [{value: 'Report'}] : [])
+                    sections: [/*{value: 'Home'},*/ {value: 'Editor'}].concat(app.preprocessId ? [{value: 'Report'}] : [])
                 })
             ),
             m(Canvas,

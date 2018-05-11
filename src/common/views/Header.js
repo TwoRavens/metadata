@@ -23,10 +23,7 @@ export default class Header {
                 m('.card-body', ABOUT)),
 
             m('a#hamburger.show-mobile', {
-                onclick: () => {
-                    console.log("TEST");
-                    this.mobileHeader = !this.mobileHeader
-                },
+                onclick: () => this.mobileHeader = !this.mobileHeader,
                 style: {display: 'none', float: 'right'}
             }, m('div.header-icon', {
                 style: {

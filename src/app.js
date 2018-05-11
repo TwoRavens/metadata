@@ -78,7 +78,6 @@ export async function getData(id, versionTemp) {
             method: 'GET',
             url: dataUrl + 'api/schema/metadata/latest'
         });
-        console.log(schema);
     }
 
     // version is only set when the field is set manually. It is unset from any edit
@@ -163,7 +162,7 @@ function updatePeek() {
             format: 'json'
         }
     }).then((response) => {
-
+        console.log('Peek response:');
         console.log(response);
 
         peekIsGetting = false;
@@ -250,7 +249,8 @@ export async function setField(variable, statistic, value) {
         }
     });
 
-    if (response['success']) reloadData(response['data']);
+    if (response['success'])
+        variables[variable][statistic] = value;  // reloadData(response['data']);
     else console.log(response['message']);
 }
 
@@ -261,7 +261,6 @@ export async function setUsed(status, variable, statistic) {
     let updates = {};
 
     let prepUpdateVariable = (status, variable) => {
-        console.log(variables[variable]);
         if (variableDisplay[variable]['viewable'] === status) return;
         updates[variable] = {
             'viewable': status,
@@ -465,11 +464,13 @@ export function cellValue(variable, statistic, value = '') {
     if (version || editableStatistics.indexOf(statistic) === -1) {
         if (Array.isArray(value))
             return m(ListTags, {tags: value, attrsTags: {style: {background: common.menuColor}}, readonly: true});
-        
+
         if (typeof value === 'object' && value)
             return m(Table, {
-                id: 'statisticsList',
+                id: 'table' + statistic,
+                headers: ['bucket', 'frequency'],
                 data: value,
+                attrsAll: {style: {'box-shadow': '0 3px 6px #777'}},
                 attrsCells: {style: {padding: '.5em'}}
             });
 
