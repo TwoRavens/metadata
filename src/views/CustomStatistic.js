@@ -24,7 +24,7 @@ let customCellValue = (id, field, value) => {
             id: 'textFieldCustom' + field + id,
             value: value || '',
             onblur: (value) => app.setFieldCustom(id, field, value),
-            style: {margin: 0}
+            style: {margin: 0, width: '100%'}
         })
     }
 
@@ -41,7 +41,7 @@ let customCellValue = (id, field, value) => {
                 onblur: (value) => app.pendingCustomVariable[id] = value,
                 attrsAll: {
                     class: value.length === 0 && ['is-invalid'],
-                    style: {display: 'inline', width: 'auto', margin: 0}
+                    style: {display: 'inline', width: '100%', 'max-width': '200px', margin: 0}
                 }
             }),
             app.pendingCustomVariable[id] && m(`button#btnVarAdd${id}.btn.btn-outline-secondary`, {
@@ -105,7 +105,7 @@ export default class CustomStatistic {
 
         let colgroupAttributes = () => m('colgroup',
             m('col', {width: '20%'}),
-            m('col', {width: '80%'}));
+            m('col'));
 
         // Checkboxes for toggling all states
         let isUsedCheckbox = statistic['display'] && m(`input#isUsedCheck${id}[type=checkbox]`, {

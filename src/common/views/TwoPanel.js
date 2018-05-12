@@ -1,4 +1,5 @@
 import m from 'mithril'
+import {mergeAttributes, borderColor} from "../common";
 
 // a menu with left and right components.
 // On desktop, the center is draggable
@@ -15,28 +16,34 @@ import m from 'mithril'
 export default class TwoPanel {
     oninit() {
         this.focus = 'left';
+        this.previous = this.focus;
     }
 
     view(vnode) {
         let {left, right} = vnode.attrs;
 
+        let animate = this.focus !== this.previous;
+        this.previous = this.focus;
+
         return [
-            m('div#leftView', {
+            m('div#leftView', mergeAttributes({
                 onclick: () => this.focus = 'left',
                 class: {
                     'left': ['focused-left'],
                     'right': ['unfocused-left']
                 }[this.focus],
                 style: {
+                    'border-right': borderColor,
                     position: 'absolute',
                     left: 0,
                     top: 0,
                     bottom: 0,
                     right: leftpanelSize + '%',
-                    'overflow-y': 'auto'
+                    'overflow-y': 'auto',
+                    'animation-duration': '.4s'
                 }
-            }, left),
-            m('div#rightView', {
+            }, animate && {style: {'animation-name': 'twopanel-' + this.focus}}), left),
+            m('div#rightView', mergeAttributes({
                 onclick: () => this.focus = 'right',
                 class: {
                     'left': ['unfocused-right'],
@@ -48,9 +55,10 @@ export default class TwoPanel {
                     top: 0,
                     bottom: 0,
                     width: leftpanelSize + '%',
-                    'overflow-y': 'auto'
+                    'overflow-y': 'auto',
+                    'animation-duration': '.4s'
                 }
-            }, [
+            }, animate && {style: {'animation-name': 'twopanel-' + this.focus}}), [
                 m('#horizontalDrag', {
                     class: ['hide-mobile'],
                     style: {

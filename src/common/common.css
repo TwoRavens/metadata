@@ -1,4 +1,15 @@
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 800px) {
+
+    @keyframes twopanel-right {
+        0% {transform: translateX(100%);}
+        100% {transform: translateX(0);}
+    }
+
+    @keyframes twopanel-left {
+        0% {transform: translateX(-40%);}
+        100% {transform: translateX(0);}
+    }
+
     .hide-mobile {
         display: none !important;
     }
@@ -7,8 +18,10 @@
         display: block !important;
     }
 
-    #menu {
-        width: auto !important;
+    #headerContent {
+        width: 100% !important;
+        flex-flow: column !important;
+        align-items: start !important;
     }
 
     /* focus is on left side */

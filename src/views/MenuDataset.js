@@ -24,7 +24,7 @@ export default class MenuDataset {
                 m('div', {style: {display: 'inline-block'}}, app.uploadStatus)]
             ], [
                 'preprocess ID', m(TextField, {
-                    style: {display: 'inline', width: 'auto'},
+                    style: {display: 'inline', width: '100%', 'max-width': '200px'},
                     id: 'textFieldPreprocessID',
                     value: app.preprocessId,
                     placeholder: 'numeric',
@@ -47,7 +47,7 @@ export default class MenuDataset {
             ], [
                 'version', [
                     m(TextField, {
-                        style: {display: 'inline', width: 'auto'},
+                        style: {display: 'inline', width: '100%', 'max-width': '200px'},
                         id: 'textFieldVersionID',
                         value: app.self['version'] || '',
                         disabled: app.self['version'] === undefined,
@@ -86,7 +86,7 @@ export default class MenuDataset {
     view() {
         let colgroupDataset = () => m('colgroup',
             m('col', {width: '20%'}),
-            m('col', {width: '80%'}));
+            m('col'));
 
         // Sets spacing of variable table column
         return m('div#editor', {

@@ -22,7 +22,7 @@ export default class Header {
             m(`#about.card[style=display: ${this.about ? 'block' : 'none'}; top: 10px; left: 140px; position: absolute; width: 500px; z-index: 50]`,
                 m('.card-body', ABOUT)),
 
-            m('a#hamburger.show-mobile', {
+            m('div#hamburger.show-mobile', {
                 onclick: () => this.mobileHeader = !this.mobileHeader,
                 style: {display: 'none', float: 'right'}
             }, m('div.header-icon', {
@@ -32,17 +32,19 @@ export default class Header {
                 }
             }, m.trust('&#9776;'))),
 
-            m('div#menu', {
+            m('div#headerMenu', {
                     class: !this.mobileHeader && ['hide-mobile'],
-                    style: {
-                        display: 'flex',
-                        width: 'calc(100% - 158px)',
-                        'justify-content': 'flex-end',
-                        'align-items': 'center'
-                    }
+                    style: {width: 'calc(100% - 136px)'}
                 },
+                m('div#headerContent', {
+                        style: {
+                            display: 'flex',
+                            'justify-content': 'flex-end',
+                            'align-items': 'center'
+                        }
+                    },
                 vnode.children
-            )
+            ))
         ]);
     }
 }
