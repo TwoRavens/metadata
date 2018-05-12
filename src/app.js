@@ -1,4 +1,6 @@
-import m from 'mithril'
+import m from 'mithril';
+
+import html2pdf from '../node_modules/html2pdf.js/dist/html2pdf';
 
 import * as common from './common/common';
 import ButtonRadio from "./common/views/ButtonRadio";
@@ -516,4 +518,32 @@ export function cellValue(variable, statistic, value = '') {
         onblur: (value) => setField(variable, statistic, value),
         style: {margin: 0}
     });
+}
+
+let dpiRange = {
+    0: 300,
+    2: 300,
+    4: 300,
+    8: 240,
+    16: 140,
+    32: 92,
+    64: 40  // too low!
+};
+
+export function getPrintProfile() {
+    let pages = 0;
+    Object.keys(variables).forEach(variable => pages += variableDisplay[variable]['viewable']);
+    let range = Math.pow(2, Math.floor(Math.log(pages) / Math.log(2)));
+    return {pages: pages, dpi: dpiRange[range]};
+}
+
+export function saveReport() {
+
+    html2pdf(document.getElementById('report'), {
+        filename: 'TwoRavens.pdf',
+        html2canvas: {dpi: getPrintProfile()['dpi'], letterRendering: true},
+        margin: 1,
+        jsPDF: {unit: 'in'}
+    });
+    console.log("test");
 }

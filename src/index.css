@@ -30,3 +30,8 @@
         opacity: 1;
     }
 }
+
+/* font must be overwritten to fix kerning */
+#report {
+    font-family: Helvetica, sans-serif;
+}
