@@ -457,6 +457,20 @@ export async function setImageCustom(id, e) {
     // TODO API request
 }
 
+export let precision = 4;
+export let setPrecision = (value) => precision = value;
+
+export function formatPrecision(value) {
+    if (isNaN(value)) return value;
+
+    // convert to integer
+    value *= 1;
+    // determine number of digits in value
+    let digits = Math.max(Math.floor(Math.log10(Math.abs(Number(String(value).replace(/[^0-9]/g, ''))))), 0) + 1;
+    if (digits <= precision || precision === 0) return value;
+    return value.toPrecision(precision);
+}
+
 // return a mithril cell - could be text, field, radio, button, dropdown, etc.
 export function cellValue(variable, statistic, value = '') {
 
@@ -464,8 +478,13 @@ export function cellValue(variable, statistic, value = '') {
 
     // old versions and non-editable stats are readonly
     if (version || editableStatistics.indexOf(statistic) === -1) {
-        if (Array.isArray(value))
-            return m(ListTags, {tags: value, attrsTags: {style: {background: common.menuColor}}, readonly: true});
+        if (Array.isArray(value)) {
+            return m(ListTags, {
+                tags: value.map(val => formatPrecision(val)),
+                attrsTags: {style: {background: common.menuColor}},
+                readonly: true
+            });
+        }
 
         if (typeof value === 'object' && value)
             return m(Table, {
@@ -479,7 +498,7 @@ export function cellValue(variable, statistic, value = '') {
         return m('div', {
             'data-toggle': 'tooltip',
             title: (statSchema || {})['description']
-        }, value);
+        }, formatPrecision(value));
     }
 
     if (statSchema['type'] === 'boolean')

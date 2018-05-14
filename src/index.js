@@ -15,6 +15,7 @@ import MenuStatistics from './views/MenuStatistics';
 
 import * as app from './app';
 import Table from "./common/views/Table";
+import TextField from "./common/views/TextField";
 
 common.heightHeader = '72px';
 common.heightFooter = '0px';
@@ -75,7 +76,7 @@ class Report {
                             data: Object.keys(app.variables[variable])
                                 .filter(key => typeof app.variables[variable][key] === 'string')
                                 .filter(key => app.variableDisplay[variable]['omit'].indexOf(key) === -1)
-                                .map(key => [key, app.variables[variable][key]]),
+                                .map(key => [key, app.formatPrecision(app.variables[variable][key])]),
                             attrsAll: {
                                 style: {
                                     display: 'inline-block',
@@ -110,6 +111,25 @@ class Body {
 
         return [
             m(Header,
+
+                app.mode !== 'home' && m('div#precision', {style: {'margin-right': '2em'}}, [
+                    m('label#labelTextFieldPrecision', {
+                        for: 'textFieldPrecision',
+                        style: {'margin-right': '1em'}
+                    }, 'Precision: '),
+                    m(TextField, {
+                        id: 'textFieldPrecision',
+                        value: app.precision || '',
+                        style: {width: '50px', display: 'inline-block'},
+                        oninput: (value) => {
+                            value = value || 0;
+                            if (isNaN(value)) return;
+                            value *= 1;
+                            if (value >= 0 && Number.isInteger(value))
+                                app.setPrecision(value * 1);
+                        }
+                    }),
+                ]),
                 mode === 'editor' && m(ButtonRadio, {
                     id: 'editorButtonBar',
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
