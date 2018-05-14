@@ -12,6 +12,7 @@ import Table from "./common/views/Table";
 let dataUrl = 'http://localhost:8080/preprocess/';
 
 export let preprocessId;
+export function setPreprocessId(id) {preprocessId = id}
 
 // schema info
 let schema;
@@ -193,9 +194,12 @@ function resetPeek() {
 
 // overall mode: ['Home', 'Editor', 'Report']
 export let metadataMode = 'Home';
+export function setMetadataMode(mode) {metadataMode = mode}
+
 
 // mode for editor: ['Dataset', 'Variables', 'Statistics']
 export let editorMode = 'Dataset';
+export function setEditorMode(mode) {editorMode = mode}
 
 export let editableStatistics;
 
@@ -211,9 +215,6 @@ export function setSelectedVariable (variable) {
         varlist.style.animation = 'slide-down .3s ease';
     }
 }
-
-// TODO render images
-let statisticalDatatypes = ['string', 'number', 'boolean'];
 
 // Checks if an entry for a variable is a statistic
 export function isStatistic (stat, variable) {
@@ -231,6 +232,8 @@ export function isStatistic (stat, variable) {
 // transposed statistics menu
 export let selectedStatistic;
 export let selectedCustomStatistic;
+export function setSelectedStatistic(stat) {selectedStatistic = stat};
+export function setSelectedCustomStatistic(stat) {selectedCustomStatistic = stat};
 
 export async function setField(variable, statistic, value) {
     // ignore non-edits
@@ -463,10 +466,11 @@ export let setPrecision = (value) => precision = value;
 export function formatPrecision(value) {
     if (isNaN(value)) return value;
 
-    // convert to integer
+    // convert to Number
     value *= 1;
     // determine number of digits in value
     let digits = Math.max(Math.floor(Math.log10(Math.abs(Number(String(value).replace(/[^0-9]/g, ''))))), 0) + 1;
+
     if (digits <= precision || precision === 0) return value;
     return value.toPrecision(precision);
 }
@@ -477,11 +481,11 @@ export function cellValue(variable, statistic, value = '') {
     let statSchema = getStatSchema(statistic);
 
     // old versions and non-editable stats are readonly
-    if (version || editableStatistics.indexOf(statistic) === -1) {
+    if (version || editableStatistics.indexOf(statistic) === -1 || metadataMode === 'report') {
         if (Array.isArray(value)) {
             return m(ListTags, {
                 tags: value.map(val => formatPrecision(val)),
-                attrsTags: {style: {background: common.menuColor}},
+                attrsTags: {style: {margin: '0.1em', padding: '0.2em', background: common.menuColor}},
                 readonly: true
             });
         }

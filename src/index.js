@@ -69,23 +69,45 @@ class Report {
                 .filter(variable => app.variableDisplay[variable]['viewable'])
                 .map(variable => [
                     m('h6', {style: {width: '100%', 'font-weight': 'bold', 'margin': '1em 2em 0 2em'}}, variable),
+                    m('div', app.variables[variable]['description']),
                     m('div', [
                         m(Table, {
                             id: 'table' + variable,
                             headers: ['name', 'value'],
                             data: Object.keys(app.variables[variable])
-                                .filter(key => typeof app.variables[variable][key] === 'string')
+                                .filter(key => ['description', 'plotValues', 'pdfPlotType', 'pdfPlotX', 'pdfPlotY', 'cdfPlotType', 'cdfPlotX', 'cdfPlotY'].indexOf(key) === -1)
                                 .filter(key => app.variableDisplay[variable]['omit'].indexOf(key) === -1)
-                                .map(key => [key, app.formatPrecision(app.variables[variable][key])]),
+                                .map(key => [key, app.cellValue(variable, key, app.variables[variable][key])]),
                             attrsAll: {
                                 style: {
-                                    display: 'inline-block',
-                                    margin: '1em 2em 2em 2em',
-                                    width: `auto`,
+                                    display: 'inline-table',
+                                    margin: '1em 1em 2em 0',
+                                    width: 'auto',
+                                    'max-width': 'calc(50% - 3em)',
+                                    'font-size': '11pt',
                                     'box-shadow': '0 3px 6px #777'
                                 }
                             },
-                            attrsCells: {style: {padding: '.5em'}}
+                            attrsCells: {style: {padding: '0.1em 1em'}}
+                        }),
+                        app.variableDisplay[variable]['omit'].indexOf('plotValues') === -1 && m(Table, {
+                            id: 'table' + variable + 'plotValues',
+                            headers: ['bucket', 'frequency'],
+                            data: Object.keys(app.variables[variable]['plotValues'])
+                                .sort((a, b) => app.variables[variable]['plotValues'][b] - app.variables[variable]['plotValues'][a])
+                                .slice(0, 25)
+                                .map(key => [key, app.variables[variable]['plotValues'][key]]),
+                            attrsAll: {
+                                style: {
+                                    display: 'inline-table',
+                                    margin: '1em 1em 2em 0',
+                                    width: 'auto',
+                                    'max-width': 'calc(50% - 3em)',
+                                    'font-size': '11pt',
+                                    'box-shadow': '0 3px 6px #777'
+                                }
+                            },
+                            attrsCells: {style: {padding: '0.1em 1em'}}
                         })
                     ]),
                     m('div.html2pdf__page-break')
@@ -105,7 +127,7 @@ class Body {
 
     view(vnode) {
         let {id, mode} = vnode.attrs;
-        app.metadataMode = mode || 'home';
+        app.setMetadataMode(mode || 'home');
 
         let {pages, dpi} = app.getPrintProfile();
 
@@ -133,7 +155,7 @@ class Body {
                 mode === 'editor' && m(ButtonRadio, {
                     id: 'editorButtonBar',
                     attrsAll: {style: {width: 'auto', 'margin-top': '8px', 'margin-right': '2em'}},
-                    onclick: (mode) => app.editorMode = mode,
+                    onclick: app.setEditorMode,
                     activeSection: app.editorMode,
                     sections: [{value: 'Dataset'}].concat(app.preprocessId ? [{value: 'Variables'}, {value: 'Statistics'}] : []),
                 }),

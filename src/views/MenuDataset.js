@@ -39,7 +39,7 @@ export default class MenuDataset {
                             app.getData(tempId);
                         }
                         else {
-                            app.preprocessId = undefined;
+                            app.setPreprocessId(undefined);
                             m.route.set('/undefined/editor');
                         }
                     }

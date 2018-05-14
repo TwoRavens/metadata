@@ -136,7 +136,7 @@ export default class MenuVariables {
                         oninput: value => {
                             variableSearch = value;
                             let matches = Object.keys(app.variables).filter(key => key.toLowerCase().includes(variableSearch.toLowerCase()));
-                            if (matches.length === 1) app.selectedVariable = matches[0];
+                            if (matches.length === 1) app.setSelectedVariable(matches[0]);
                         },
                         style: {margin: '1em', width: 'calc(100% - 2em)', display: 'inline-block'}
                     }),

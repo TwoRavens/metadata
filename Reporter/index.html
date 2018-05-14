@@ -1,11 +1,11 @@
 <!doctype html>
 <html>
 <head>
-<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-<script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="style.css" />
-<title>Data Exploration Report</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <title>Data Exploration Report</title>
 </head>
 
 <body>
@@ -14,148 +14,148 @@
 
 <div id="html-2-pdfwrapper">
     <div id="row">
-    <center><h1>Data Exploration Report</h1></center>  <!-- document title --><center>
-    <b>Results by TwoRavens: </b> <a href="http://2ra.vn/">Project Link</a></center>
+        <center><h1>Data Exploration Report</h1></center>  <!-- document title -->
+        <center>
+            <b>Results by TwoRavens: </b> <a href="http://2ra.vn/">Project Link</a></center>
 
-    <!-- Date(s) -->
-    <center><p id="date"></p></center>
-    <script> var today = new Date(); document.getElementById("date").innerHTML = Date(); </script>
-    <center><p><b>
-    Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in the dataset. </b></p></center> 
-    <button onclick="javascript: generate()">Generate PDF</button>
-    
+        <!-- Date(s) -->
+        <center><p id="date"></p></center>
+        <script> var today = new Date();
+        document.getElementById("date").innerHTML = Date(); </script>
+        <center><p><b>
+            Data Exploration is useful for understanding data. This report gives a quick summary of all the variables in
+            the dataset. </b></p></center>
+        <button onclick="javascript: generate()">Generate PDF</button>
+
 
     </div>
     <div id="row">
-    <h1 id="table_of_contents">Table of Content</h1>
-    <center><h4 id="toc"></h4></center>    
+        <h1 id="table_of_contents">Table of Content</h1>
+        <center><h4 id="toc"></h4></center>
     </div>
     <center><h4 id="headers"></h4></center>
 </div>
 
 
-
 <script>
 
-var content = [];
-toc = [];
-d3.json("/PreprocessedFiles/fearonLaitin.json", function(error, data) {
-    
+    var content = [];
+    toc = [];
+    d3.json("/PreprocessedFiles/fearonLaitin.json", function (error, data) {
+
 // Make some strings to include in our output.
-var tableHeader1 = "";
-var tableContent1 = "";
-var tableFooter1 = "</table><br>";
-var tableHeader2 = "";
-var tableContent2 = "";
-var tableFooter2 = "</table><br>";
-var tableHeader3 = "";
-var tableContent3 = "";
-var tableFooter3 = "</table></section></div>";
-i = 1;
-    
-toc += "<ul id ='hlist'>";
+        var tableHeader1 = "";
+        var tableContent1 = "";
+        var tableFooter1 = "</table><br>";
+        var tableHeader2 = "";
+        var tableContent2 = "";
+        var tableFooter2 = "</table><br>";
+        var tableHeader3 = "";
+        var tableContent3 = "";
+        var tableFooter3 = "</table></section></div>";
+        i = 1;
 
-for (let variable in data['variables']) 
-{
-    varData = data['variables'][variable];
-    toc += "<button class = 'buttonhlist'><li><a href='#" + variable + "'>" + capitalizeFirstLetter(variable) + "</a></li></button>"
-}
-toc += "</ul>";    
-document.getElementById("toc").innerHTML = toc;
+        toc += "<ul id ='hlist'>";
 
-var tableHeader1 = "<table id='table'><tr><th>Valid</th><th>Invalid</th><th>Median</th><th>Mean</th><th>Mode</th><th>Max</th><th>Min</th></tr>";
+        for (let variable in data['variables']) {
+            varData = data['variables'][variable];
+            toc += "<button class = 'buttonhlist'><li><a href='#" + variable + "'>" + capitalizeFirstLetter(variable) + "</a></li></button>"
+        }
+        toc += "</ul>";
+        document.getElementById("toc").innerHTML = toc;
 
-var tableHeader2 = "<table id='table'><tr><th>Unique</th><th>Freqmode</th><th>Fewest</th><th>Mid</th><th>Freqmid</th><th>Std. Deviation</th><th>Herfindahl Index</th></tr>"; 
+        var tableHeader1 = "<table id='table'><tr><th>Valid</th><th>Invalid</th><th>Median</th><th>Mean</th><th>Mode</th><th>Max</th><th>Min</th></tr>";
 
-var tableHeader3 = "<table id='table'><tr><th>Numchar</th><th>Nature</th><th>Binary</th><th>Interval</th><th>Time</th></tr>"; 
-    
-for (let variable in data['variables']) 
-{   
-    varData = data['variables'][variable];
-    // Variables
-    // Multiplied each varible by 1 to convert it to a numeric value, otherwise toFixed does not work
-    var median = (varData.median == null)? null : (varData.median*1).toFixed(2);
-    var mean = (varData.mean != null)? (varData.mean*1).toFixed(4) : null;
-    var mode = (varData.mode != null)? (varData.mode*1).toFixed(2) : null;
-    var herfindahl = (varData.herfindahl != null)? (varData.herfindahl*1).toFixed(6) : null; 
-    var sd = (varData.sd != null)? (varData.sd*1).toFixed(6) : null; 
-    
-    var containerModule = "<div id='modal' style='text-transform: capitalize'><header><h1 id='" + variable+ "'><b>" +i + ". "+variable+"</b></h1></header><section>"  
-    
-    tableContent1 = "<tr><td>" + varData.valid + "</td><td>" + varData.invalid + "</td><td>" + median+ "</td><td>" + mean + "</td><td>" + mode + "</td><td>" + varData.max + "</td><td>" + varData.min + "</tr>";
-    
-    tableContent2 = "<tr><td>" + varData.uniques + "</td><td>" + varData.freqmode + "</td><td>" + varData.fewest + "</td><td>" + (varData.mid) + "</td><td>" + varData.freqmid + "</td><td>" + sd + "</td><td>" + herfindahl+ "</tr>";
-    
-    tableContent3 = "<tr><td>" + varData.numchar + "</td><td>" + varData.nature + "</td><td>" + varData.binary + "</td><td>" + (varData.interval) + "</td><td>" + varData.time + "</tr>";
-    
-    content +=  containerModule;
-    var label = (varData.labl != "")? content += "<h2><u>Description</u></h2><br>" + "<h3>" + varData.labl + "</h3><br>" : null; 
-    
-    content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'><img  src=img/" + variable + "CDF.png" + "></div>" + "<div class='inner_block'><img  src=img/" + variable + "PDF.png" + "></div></div>"+ "<h2><u>Numeric Summary</u></h2><br>" ;
-    // content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'></div>" + "<div class='inner_block'></div></div>"+ "<h2><u>Numeric Summary</u></h2><br>" ;
-    
-    content += tableHeader1 + tableContent1 + tableFooter1 + tableHeader2 + tableContent2 + tableFooter2 + "<h2><u>Non-Numeric Summary</u></h2><br>" + tableHeader3 + tableContent3 + tableFooter3 ;
-    
-    document.getElementById("headers").innerHTML = content;
-    i++; 
-}   
-})   
-    
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}  
-$(document).ready(function() {
- 
- //Generate PDF
- function generatePDF() {
-     window.scrollTo(0, 0);
+        var tableHeader2 = "<table id='table'><tr><th>Unique</th><th>Freqmode</th><th>Fewest</th><th>Mid</th><th>Freqmid</th><th>Std. Deviation</th><th>Herfindahl Index</th></tr>";
 
-     var pdf = new jsPDF('p', 'pt', [580, 630]);
+        var tableHeader3 = "<table id='table'><tr><th>Numchar</th><th>Nature</th><th>Binary</th><th>Interval</th><th>Time</th></tr>";
 
-     html2canvas($("#html-2-pdfwrapper")[0], {
-         onrendered: function(canvas) {
-             document.body.appendChild(canvas);
-             var ctx = canvas.getContext('2d');
-             var imgData = canvas.toDataURL("image/png", 1.0);
-             var width = canvas.width;
-             var height = canvas.clientHeight;
-             pdf.addImage(imgData);
+        for (let variable in data['variables']) {
+            varData = data['variables'][variable];
+            // Variables
+            // Multiplied each varible by 1 to convert it to a numeric value, otherwise toFixed does not work
+            var median = (varData.median == null) ? null : (varData.median * 1).toFixed(2);
+            var mean = (varData.mean != null) ? (varData.mean * 1).toFixed(4) : null;
+            var mode = (varData.mode != null) ? (varData.mode * 1).toFixed(2) : null;
+            var herfindahl = (varData.herfindahl != null) ? (varData.herfindahl * 1).toFixed(6) : null;
+            var sd = (varData.sd != null) ? (varData.sd * 1).toFixed(6) : null;
 
-         }
-     });
-     setTimeout(function() {
+            var containerModule = "<div id='modal' style='text-transform: capitalize'><header><h1 id='" + variable + "'><b>" + i + ". " + variable + "</b></h1></header><section>"
 
-         //jsPDF code to save file
-         pdf.save('sample.pdf');
-     }, 2000);
- };
+            tableContent1 = "<tr><td>" + varData.valid + "</td><td>" + varData.invalid + "</td><td>" + median + "</td><td>" + mean + "</td><td>" + mode + "</td><td>" + varData.max + "</td><td>" + varData.min + "</tr>";
 
-});
-$('#cmd').click(function() {
-  var options = {
-  };
-  var pdf = new jsPDF('p', 'pt', 'a4');
-  pdf.addHTML($("#html-2-pdfwrapper")[0], 15, 15, options, function() {
-    pdf.save('pageContent.pdf');
-  });
-});
-function generate()
-{
-    
-    // Only way to Get the CSS in the PDF file
-    window.print();
-    
-	// var pdf = new jsPDF('p', 'pt', 'a4');
-	// pdf.setFontSize(18);
-	// pdf.fromHTML(document.getElementById('html-2-pdfwrapper'));
-    // var win = window.open();
-	// var iframe = document.createElement('iframe');
-	// iframe.setAttribute('style','position:absolute; height:100%; width:100%;');
-	// win.document.body.appendChild(iframe);
-    // iframe.title = 'report'; 
-	// iframe.src = pdf.output('datauristring');
-    
-};
+            tableContent2 = "<tr><td>" + varData.uniques + "</td><td>" + varData.freqmode + "</td><td>" + varData.fewest + "</td><td>" + (varData.mid) + "</td><td>" + varData.freqmid + "</td><td>" + sd + "</td><td>" + herfindahl + "</tr>";
+
+            tableContent3 = "<tr><td>" + varData.numchar + "</td><td>" + varData.nature + "</td><td>" + varData.binary + "</td><td>" + (varData.interval) + "</td><td>" + varData.time + "</tr>";
+
+            content += containerModule;
+            var label = (varData.labl != "") ? content += "<h2><u>Description</u></h2><br>" + "<h3>" + varData.labl + "</h3><br>" : null;
+
+            content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'><img  src=img/" + variable + "CDF.png" + "></div>" + "<div class='inner_block'><img  src=img/" + variable + "PDF.png" + "></div></div>" + "<h2><u>Numeric Summary</u></h2><br>";
+            // content += "<h2><u>Distribution Plots</u></h2><br>" + "<div class='main_block'><div class='inner_block'></div>" + "<div class='inner_block'></div></div>"+ "<h2><u>Numeric Summary</u></h2><br>" ;
+
+            content += tableHeader1 + tableContent1 + tableFooter1 + tableHeader2 + tableContent2 + tableFooter2 + "<h2><u>Non-Numeric Summary</u></h2><br>" + tableHeader3 + tableContent3 + tableFooter3;
+
+            document.getElementById("headers").innerHTML = content;
+            i++;
+        }
+    })
+
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    $(document).ready(function () {
+
+        //Generate PDF
+        function generatePDF() {
+            window.scrollTo(0, 0);
+
+            var pdf = new jsPDF('p', 'pt', [580, 630]);
+
+            html2canvas($("#html-2-pdfwrapper")[0], {
+                onrendered: function (canvas) {
+                    document.body.appendChild(canvas);
+                    var ctx = canvas.getContext('2d');
+                    var imgData = canvas.toDataURL("image/png", 1.0);
+                    var width = canvas.width;
+                    var height = canvas.clientHeight;
+                    pdf.addImage(imgData);
+
+                }
+            });
+            setTimeout(function () {
+
+                //jsPDF code to save file
+                pdf.save('sample.pdf');
+            }, 2000);
+        };
+
+    });
+    $('#cmd').click(function () {
+        var options = {};
+        var pdf = new jsPDF('p', 'pt', 'a4');
+        pdf.addHTML($("#html-2-pdfwrapper")[0], 15, 15, options, function () {
+            pdf.save('pageContent.pdf');
+        });
+    });
+
+    function generate() {
+
+        // Only way to Get the CSS in the PDF file
+        window.print();
+
+        // var pdf = new jsPDF('p', 'pt', 'a4');
+        // pdf.setFontSize(18);
+        // pdf.fromHTML(document.getElementById('html-2-pdfwrapper'));
+        // var win = window.open();
+        // var iframe = document.createElement('iframe');
+        // iframe.setAttribute('style','position:absolute; height:100%; width:100%;');
+        // win.document.body.appendChild(iframe);
+        // iframe.title = 'report';
+        // iframe.src = pdf.output('datauristring');
+
+    };
 </script>
 </body>
 </html>

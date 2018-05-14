@@ -164,12 +164,12 @@ export default class MenuStatistics {
                                 .toLowerCase().includes(statisticSearch.toLowerCase()));
 
                         if (matches.length === 1 && matchesCustom.length === 0) {
-                            app.selectedStatistic = matches[0];
-                            app.selectedCustomStatistic = undefined;
+                            app.setSelectedStatistic(matches[0]);
+                            app.setSelectedCustomStatistic(undefined);
                         }
                         if (matches.length === 0 && matchesCustom.length === 1) {
-                            app.selectedStatistic = undefined;
-                            app.selectedCustomStatistic = matches[0];
+                            app.setSelectedStatistic(undefined);
+                            app.setSelectedCustomStatistic(matches[0]);
                         }
                     },
                     style: {margin: '1em', width: 'calc(100% - 2em)', display: 'inline-block'}
@@ -181,8 +181,8 @@ export default class MenuStatistics {
                     data: this.statisticsTable(statistics),
                     activeRow: app.selectedStatistic,
                     onclick: (statistic) => {
-                        app.selectedStatistic = app.selectedStatistic === statistic ? undefined : statistic;
-                        app.selectedCustomStatistic = undefined;
+                        app.setSelectedStatistic(app.selectedStatistic === statistic ? undefined : statistic);
+                        app.setSelectedCustomStatistic(undefined);
                     },
                     tableTags: colgroupStatistics(),
                     attrsCells: {style: {padding: '.5em'}}
@@ -200,9 +200,9 @@ export default class MenuStatistics {
                         data: this.customStatisticsTable(statistics),
                         activeRow: app.selectedCustomStatistic,
                         onclick: (statistic) => {
-                            app.selectedStatistic = undefined;
-                            app.selectedCustomStatistic =
-                                app.selectedCustomStatistic === statistic ? undefined : statistic;
+                            app.setSelectedStatistic(undefined);
+                            app.setSelectedCustomStatistic(
+                                app.selectedCustomStatistic === statistic ? undefined : statistic);
                         },
                         tableTags: colgroupCustomStatistics(),
                         attrsCells: {style: {padding: '.5em'}}
