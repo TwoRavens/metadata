@@ -432,7 +432,7 @@ export async function setUsedCustomName(status, name) {
 export async function deleteCustom (id) {
     let response = await m.request({
         method: 'POST',
-        url: dataUrl + 'form/custom-statistics-update',
+        url: dataUrl + 'form/custom-statistics-delete',
         data: {
             preprocessId: preprocessId,
             customStatistics: [
@@ -561,12 +561,10 @@ export function getPrintProfile() {
 }
 
 export function saveReport() {
-
     html2pdf(document.getElementById('report'), {
         filename: 'TwoRavens.pdf',
         html2canvas: {dpi: getPrintProfile()['dpi'], letterRendering: true},
         margin: 1,
         jsPDF: {unit: 'in'}
     });
-    console.log("test");
 }
