@@ -9,7 +9,8 @@ import TextField from "./common/views/TextField";
 import ListTags from "./common/views/ListTags";
 import Table from "./common/views/Table";
 
-let dataUrl = 'http://localhost:8080/preprocess/';
+let dataUrl = 'http://localhost:8080/';
+let preprocessUrl = dataUrl + 'preprocess/';
 
 export let preprocessId;
 export function setPreprocessId(id) {preprocessId = id}
@@ -43,11 +44,11 @@ export async function uploadFile(e) {
     // initial upload
     let response = await m.request({
         method: "POST",
-        url: dataUrl + "api/process-single-file",
+        url: preprocessUrl + "api/process-single-file",
         data: data,
     });
 
-    let callbackUrl = response['callbackUrl'];
+    let callbackUrl = response['callback_url'];
 
     // get the data
     let processed = false;
@@ -56,11 +57,10 @@ export async function uploadFile(e) {
             method: "GET",
             url: callbackUrl
         });
-        console.log(response);
 
         uploadStatus = response['data']['userMessage'];
 
-        if (response['data']['state'] !== "PREPROCESS_STARTED") {
+        if (response['data']['state'] !== "PENDING") {
             processed = true;
             if (response['data']['state'] === "SUCCESS") {
                 reloadData(response['data']['data']);
@@ -79,7 +79,7 @@ export async function getData(id, versionTemp) {
     if (schema === undefined) {
         schema = await m.request({
             method: 'GET',
-            url: dataUrl + 'api/schema/metadata/latest'
+            url: preprocessUrl + 'api/schema/metadata/latest'
         });
     }
 
@@ -88,7 +88,7 @@ export async function getData(id, versionTemp) {
 
     let response = await m.request({
         method: "GET",
-        url: dataUrl + 'api/metadata/' + id + (version ? '/version/' + version : '')
+        url: preprocessUrl + 'api/metadata/' + id + (version ? '/version/' + version : '')
     });
 
     console.log("Data response:");
@@ -157,7 +157,7 @@ function updatePeek() {
 
     m.request({
         method: 'POST',
-        url: dataUrl + 'api/retrieve-rows',
+        url: preprocessUrl + 'api/retrieve-rows',
         data: {
             preprocessId: preprocessId,
             startRow: peekSkip + 1,
@@ -241,7 +241,7 @@ export async function setField(variable, statistic, value) {
 
     let response = await m.request({
         method: 'POST',
-        url: dataUrl + 'api/update-metadata',
+        url: preprocessUrl + 'api/update-metadata',
         data: {
             preprocessId: preprocessId,
             variableUpdates: {
@@ -310,7 +310,7 @@ export async function setUsed(status, variable, statistic) {
     if (Object.keys(updates).length === 0) return;
     let response = await m.request({
         method: 'POST',
-        url: dataUrl + 'api/update-metadata',
+        url: preprocessUrl + 'api/update-metadata',
         data: {
             preprocessId: preprocessId,
             variableUpdates: updates
@@ -346,7 +346,7 @@ export async function setFieldCustom(id, field, value) {
 
         response = await m.request({
             method: 'POST',
-            url: dataUrl + 'form/custom-statistics',
+            url: preprocessUrl + 'form/custom-statistics',
             data: update
         });
 
@@ -368,7 +368,7 @@ export async function setFieldCustom(id, field, value) {
 
         response = await m.request({
             method: 'POST',
-            url: dataUrl + 'form/custom-statistics-delete',
+            url: preprocessUrl + 'form/custom-statistics-delete',
             data: update
         });
     }
@@ -385,7 +385,7 @@ export async function setFieldCustom(id, field, value) {
 
         response = await m.request({
             method: 'POST',
-            url: dataUrl + 'form/custom-statistics-update',
+            url: preprocessUrl + 'form/custom-statistics-update',
             data: update
         });
     }
@@ -416,7 +416,7 @@ export async function setUsedCustomName(status, name) {
 
     let response = await m.request({
         method: 'POST',
-        url: dataUrl + 'form/custom-statistics-update',
+        url: preprocessUrl + 'form/custom-statistics-update',
         data: {
             preprocessId: preprocessId,
             customStatistics: updates
@@ -432,7 +432,7 @@ export async function setUsedCustomName(status, name) {
 export async function deleteCustom (id) {
     let response = await m.request({
         method: 'POST',
-        url: dataUrl + 'form/custom-statistics-delete',
+        url: preprocessUrl + 'form/custom-statistics-delete',
         data: {
             preprocessId: preprocessId,
             customStatistics: [
