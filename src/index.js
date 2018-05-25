@@ -1,5 +1,6 @@
 import '../static/bootstrap4/css/bootstrap.css';
 import './index.css';
+import TRImage from '../static/images/TwoRavens-sm.png';
 
 import m from 'mithril';
 // common
@@ -147,8 +148,7 @@ class Body {
         let {pages, dpi} = app.getPrintProfile();
 
         return [
-            m(Header,
-
+            m(Header, {image: TRImage},
                 app.mode !== 'home' && m('div#precision', {style: {'margin-right': '2em'}}, [
                     m('label#labelTextFieldPrecision', {
                         for: 'textFieldPrecision',
