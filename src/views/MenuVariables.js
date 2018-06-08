@@ -146,7 +146,7 @@ export default class MenuVariables {
                         headers: ['Name', 'Label', variableAllCheckbox],
                         data: upper,
                         activeRow: app.selectedVariable,
-                        onclick: app.setSelectedVariable,
+                        onclick: (variable) => app.setSelectedVariable(variable === app.selectedVariable ? undefined : variable),
                         tableTags: colgroupVariables(),
                         attrsCells: {style: {padding: '.5em'}}
                     }),
@@ -172,7 +172,7 @@ export default class MenuVariables {
                         id: 'variablesListLower',
                         data: lower,
                         activeRow: app.selectedVariable,
-                        onclick: app.setSelectedVariable,
+                        onclick: (variable) => app.setSelectedVariable(variable === app.selectedVariable ? undefined : variable),
                         tableTags: colgroupVariables(),
                         attrsCells: {style: {padding: '.5em'}}
                     })

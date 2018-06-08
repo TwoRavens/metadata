@@ -205,7 +205,8 @@ export let editableStatistics;
 
 export let selectedVariable;
 export function setSelectedVariable (variable) {
-    selectedVariable = selectedVariable === variable ? undefined : variable;
+    if (selectedVariable === variable) return;
+    selectedVariable = variable;
 
     // ugly hack to make the css animation play
     let varlist = document.getElementById("variablesListCenter");
@@ -232,8 +233,8 @@ export function isStatistic (stat, variable) {
 // transposed statistics menu
 export let selectedStatistic;
 export let selectedCustomStatistic;
-export function setSelectedStatistic(stat) {selectedStatistic = stat};
-export function setSelectedCustomStatistic(stat) {selectedCustomStatistic = stat};
+export function setSelectedStatistic(stat) {selectedStatistic = stat}
+export function setSelectedCustomStatistic(stat) {selectedCustomStatistic = stat}
 
 export async function setField(variable, statistic, value) {
     // ignore non-edits
